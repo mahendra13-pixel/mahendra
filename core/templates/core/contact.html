@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/contact.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Contact Form Section -->
+<div class="contact-form-side">
+    <div class="contact-form-card">
+        <form method="POST" action="{% url 'core:contact' %}#messageee" id="contactform">
+            {% csrf_token %}
+
+            <div id="ho">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-primary" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Row 1: Name + Department -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fullname">Full Name *</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="fullname" name="name" placeholder="Mahendra Kunwar" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="department">Department *</label>
+                    <div class="input-icon">
+                        <i class="fas fa-building"></i>
+                        <input type="text" id="department" name="department" placeholder="IT Department" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Phone + Priority -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">Extension Number </label>
+                    <div class="input-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="text" id="phone1" name="phone" placeholder="11201">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priority *</label>
+                    <div class="input-icon">
+                        <i class="fas fa-flag"></i>
+                        <select id="priority" name="priority" required>
+                            <option value="">Select Priority</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Call Attended By + Handover To -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="call_attended_by">Call Attended By</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user-tie"></i>
+                        <select id="call_attended_by" name="call_attended_by">
+                            <option value="">Select Staff</option>
+                            <option value="Mahendra Kunwar">Mahendra Kunwar</option>
+                            <option value="Ram Kumar Badal">Ram Kumar Badal</option>
+                            <option value="Binaya Kunwar">Binaya Kunwar</option>
+                            <option value="Subash Dahal">Subash Dahal</option>
+                            <option value="Ashish Adhikari">Ashish Adhikari</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="handover_to">Handover To</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user-check"></i>
+                        <select id="handover_to" name="handover_to">
+                            <option value="">Select Staff</option>
+                            <option value="Mahendra Kunwar">Mahendra Kunwar</option>
+                            <option value="Ram Kumar Badal">Ram Kumar Badal</option>
+                            <option value="Binaya Kunwar">Binaya Kunwar</option>
+                            <option value="Subash Dahal">Subash Dahal</option>
+                            <option value="Ashish Adhikari">Ashish Adhikari</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: Solved By + Status -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="solved_by">Solved By</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user-cog"></i>
+                        <select id="solved_by" name="solved_by">
+                            <option value="">Select Staff</option>
+                            <option value="Mahendra Kunwar">Mahendra Kunwar</option>
+                            <option value="Ram Kumar Badal">Ram Kumar Badal</option>
+                            <option value="Binaya Kunwar">Binaya Kunwar</option>
+                            <option value="Subash Dahal">Subash Dahal</option>
+                            <option value="Ashish Adhikari">Ashish Adhikari</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <div class="input-icon">
+                        <i class="fas fa-tasks"></i>
+                        <select id="status" name="status">
+                            <option value="Pending" selected>Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width: Message -->
+            <div class="form-group">
+                <label for="message">Issue or Message *</label>
+                <div class="input-icon textarea-icon">
+                    <i class="fas fa-comment"></i>
+                    <textarea id="message" name="message" rows="3"
+                        placeholder="Please describe your issue or request..." required></textarea>
+                </div>
+            </div>
+
+            <!-- BUTTONS WITH DIFFERENT NAMES -->
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" name="send" value="send" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+                <button type="submit" name="resolve" value="resolve" class="btn btn-success">
+                    <i class="fas fa-check-circle"></i> Mark as Resolved
+                </button>
+            </div>
+
+            <div class="form-status" id="formStatus"></div>
+        </form>
+    </div>
+</div>
+
+<!-- Admin Controls - Only visible to admin -->
+{% if request.user.is_authenticated and request.user.is_staff %}
+<div class="admin-controls">
+    <form method="GET" class="d-flex gap-2">
+        <input type="date" name="date" class="form-control">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+    </form>
+
+    <button class="btn btn-success position-relative" type="button" data-bs-toggle="modal"
+        data-bs-target="#resolvedModal">
+        <i class="fas fa-check-circle"></i> Resolved Issues
+        <span class="badge bg-light text-success border ms-1">{{ resolved_contacts|length }}</span>
+    </button>
+</div>
+
+<!-- Resolved Issues Modal -->
+<div class="modal fade" id="resolvedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-check-circle"></i> Resolved Issues</h5>
+                <a href="{% url 'core:resolved_issues_excel' %}" target="_blank" class="btn btn-light btn-sm ms-2">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </a>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if resolved_contacts %}
+                <div class="row g-3">
+                    {% for contact in resolved_contacts %}
+                    <div class="col-md-6">
+                        <div class="contact-card"
+                            style="padding:12px; font-size:12px; border:1px solid #ddd; border-radius:8px;">
+                            <h6 style="margin-bottom:6px; font-size:0.9rem;">{{ contact.department }}</h6>
+                            <p style="margin:2px 0;"><strong>Name:</strong> {{ contact.name }}</p>
+                            <p style="margin:2px 0;"><strong>Ext:</strong> {{ contact.phone }}</p>
+                            <p style="margin:2px 0;"><strong>IP:</strong> {{ contact.ip_address }}</p>
+                            <p style="margin:2px 0;"><strong>OS:</strong> {{ contact.os_info|default:"N/A" }}</p>
+                            <p style="margin:2px 0;"><strong>Attended By:</strong> {{
+                                contact.call_attended_by|default:"N/A" }}</p>
+                            <p style="margin:2px 0;"><strong>Handover To:</strong> {{ contact.handover_to|default:"N/A"
+                                }}</p>
+                            <p style="margin:2px 0;"><strong>Solved By:</strong> {{ contact.solved_by|default:"N/A" }}
+                            </p>
+                            <p style="margin:2px 0;">
+                                <strong>Priority:</strong>
+                                <span class="badge 
+                                {% if contact.priority == 'High' %}bg-danger
+                                {% elif contact.priority == 'Medium' %}bg-warning text-dark
+                                {% elif contact.priority == 'Low' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                    {{ contact.priority }}
+                                </span>
+                            </p>
+                            <p style="margin:2px 0;">
+                                <strong>Status:</strong>
+                                <span class="badge 
+                                {% if contact.status == 'Resolved' %}bg-success
+                                {% elif contact.status == 'In Progress' %}bg-info text-dark
+                                {% elif contact.status == 'Closed' %}bg-secondary
+                                {% else %}bg-warning text-dark{% endif %}">
+                                    {{ contact.status }}
+                                </span>
+                            </p>
+                            <!-- ✅ CHANGED: Using created_at with date/time filters -->
+                            <p style="margin:2px 0;"><strong>Date:</strong> {{ contact.created_at|date:"Y-m-d" }}</p>
+                            <p style="margin:2px 0;"><strong>Time:</strong> {{ contact.created_at|time:"H:i:s" }}</p>
+                            <p style="margin:2px 0;"><strong>Issue:</strong> {{ contact.message|truncatechars:50 }}</p>
+                            <a href="{% url 'core:issue_detail' contact.id %}" target="_blank"
+                                class="btn btn-sm btn-outline-dark mt-2 w-100">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-muted">No resolved issues yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ============================================
+     ISSUE LISTS - HORIZONTAL SLIDER
+     ============================================ -->
+<section class="issue-slider-wrapper">
+    
+    <!-- Slider Navigation Buttons -->
+    <button class="slider-nav prev" id="sliderPrev" aria-label="Previous">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="slider-nav next" id="sliderNext" aria-label="Next">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+    <!-- Slider Container -->
+    <div class="issue-slider" id="issueSlider">
+        {% for contact in contacts %}
+        <div class="contact-card horizontal-card">
+            <h5>{{ contact.department }}</h5>
+            <p><strong>Name:</strong> {{ contact.name }}</p>
+            <p><strong>Ext:</strong> {{ contact.phone }}</p>
+            <p><strong>IP:</strong> {{ contact.ip_address }}</p>
+            <p><strong>OS:</strong> {{ contact.os_info|default:"N/A" }}</p>
+            <p><strong>Attended By:</strong> {{ contact.call_attended_by|default:"N/A" }}</p>
+            <p><strong>Handover To:</strong> {{ contact.handover_to|default:"N/A" }}</p>
+            <p><strong>Solved By:</strong> {{ contact.solved_by|default:"N/A" }}</p>
+            <p>
+                <strong>Priority:</strong>
+                <span class="badge 
+                {% if contact.priority == 'High' %}bg-danger
+                {% elif contact.priority == 'Medium' %}bg-warning text-dark
+                {% elif contact.priority == 'Low' %}bg-success
+                {% else %}bg-secondary{% endif %}">
+                    {{ contact.priority }}
+                </span>
+            </p>
+            <p>
+                <strong>Status:</strong>
+                <span class="badge 
+                {% if contact.status == 'Resolved' %}bg-success
+                {% elif contact.status == 'In Progress' %}bg-info text-dark
+                {% elif contact.status == 'Closed' %}bg-secondary
+                {% else %}bg-warning text-dark{% endif %}">
+                    {{ contact.status }}
+                </span>
+            </p>
+            <!-- ✅ CHANGED: Using created_at with date/time filters -->
+            <p><strong>Date:</strong> {{ contact.created_at|date:"Y-m-d" }}</p>
+            <p><strong>Time:</strong> {{ contact.created_at|time:"H:i:s" }}</p>
+            <p style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <strong>Issue:</strong> {{ contact.message|truncatechars:50 }}
+            </p>
+            <a href="{% url 'core:issue_detail' contact.id %}" target="_blank"
+                class="btn btn-sm btn-outline-dark mt-2 w-100">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+        </div>
+        {% empty %}
+        <div class="contact-card" style="min-width: 100%; text-align: center; padding: 40px;">
+            <i class="fas fa-inbox" style="font-size: 3rem; color: #d1d5db; margin-bottom: 15px;"></i>
+            <p style="font-size: 1.1rem; color: #6b7280;">No issues submitted yet.</p>
+            <p style="font-size: 0.9rem; color: #9ca3af;">Submit your first issue using the form above.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Scroll Indicators -->
+    <div class="scroll-indicators" id="scrollIndicators">
+        <!-- Generated by JavaScript -->
+    </div>
+</section>
+
+{% if request.user.is_authenticated and request.user.is_staff %}
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/contact.js' %}"></script>
+{% endblock %}

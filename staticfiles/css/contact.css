@@ -1,0 +1,497 @@
+/* ============================================
+   CONTACT PAGE SPECIFIC STYLES ONLY
+   ============================================ */
+
+/* Contact Section */
+.contact-section {
+    padding: 80px 0;
+    background: var(--light);
+}
+
+/* CONTACT FORM - CENTERED PERFECTLY */
+.contact-form-side {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: 24px;
+    padding: 30px 40px;  /* Reduced padding */
+    box-shadow: var(--shadow-lg);
+}
+
+.contact-form-card {
+    width: 100%;
+}
+
+.contact-form-card h3 {
+    font-size: 1.6rem;  /* Smaller font */
+    margin-bottom: 8px;
+    color: var(--dark);
+    text-align: center;
+}
+
+.contact-form-card > p {
+    color: var(--gray);
+    margin-bottom: 20px;  /* Reduced margin */
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+/* Form Container */
+.contact-form-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;  /* Reduced gap */
+}
+
+/* Form Rows - Perfect Grid */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;  /* Reduced gap */
+}
+
+/* Form Groups - Full Width on Mobile */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;  /* Reduced gap */
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.85rem;  /* Smaller font */
+    color: var(--dark);
+    margin-bottom: 2px;
+}
+
+/* Input Icons Container */
+.input-icon {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray);
+    font-size: 0.9rem;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Input Fields */
+.input-icon input,
+.input-icon select,
+.input-icon textarea {
+    width: 100%;
+    padding: 8px 12px 8px 38px;  /* Reduced padding */
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;  /* Slightly smaller radius */
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    color: var(--dark);
+}
+
+.input-icon input:focus,
+.input-icon select:focus,
+.input-icon textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);  /* Smaller shadow */
+}
+
+.input-icon input::placeholder,
+.input-icon textarea::placeholder {
+    color: #9ca3af;
+    font-size: 0.85rem;
+}
+
+/* Select Dropdown */
+.input-icon select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 35px;
+}
+
+.input-icon select::-ms-expand {
+    display: none;
+}
+
+/* Textarea */
+.input-icon.textarea-icon i {
+    top: 14px;
+    transform: none;
+}
+
+.input-icon textarea {
+    padding: 8px 12px 8px 38px;  /* Reduced padding */
+    min-height: 80px;  /* Smaller height */
+    resize: vertical;
+    font-size: 0.9rem;
+}
+
+/* Form Status Messages */
+#ho {
+    margin-bottom: 6px;
+}
+
+.alert {
+    padding: 8px 16px;  /* Reduced padding */
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+/* Submit Button */
+.btn-primary {
+    width: 100%;
+    padding: 10px;  /* Reduced padding */
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    transition: all 0.3s ease;
+    margin-top: 4px;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary i {
+    margin-right: 8px;
+}
+
+/* Form Status */
+.form-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.form-status.success {
+    display: block;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.form-status.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+/* ============ ADMIN CONTROLS ============ */
+.admin-controls {
+    max-width: 800px;
+    margin: 15px auto;  /* Reduced margin */
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.admin-controls .btn {
+    padding: 8px 20px;  /* Reduced padding */
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.admin-controls .btn-primary {
+    width: auto;
+}
+
+.admin-controls .form-control {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+/* ============ RESOLVED ISSUES MODAL ============ */
+.resolved-modal .modal-dialog {
+    max-width: 900px;
+}
+
+.resolved-modal .modal-content {
+    border-radius: 16px;
+}
+
+/* ============ ISSUE SLIDER ============ */
+.issue-slider-wrapper {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 0;  /* Reduced padding */
+}
+
+/* Slider Navigation Buttons - ROUND WHITE */
+.slider-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    color: var(--primary);
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.slider-nav:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 6px 25px rgba(37, 99, 235, 0.3);
+}
+
+.slider-nav:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.slider-nav.prev {
+    left: -15px;
+}
+
+.slider-nav.next {
+    right: -15px;
+}
+
+.slider-nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: translateY(-50%) scale(0.9);
+}
+
+.slider-nav:disabled:hover {
+    background: white;
+    color: var(--primary);
+    transform: translateY(-50%) scale(0.9);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+/* The Slider */
+.issue-slider {
+    display: flex;
+    gap: 16px;  /* Reduced gap */
+    overflow-x: auto;
+    padding: 10px 5px 15px 5px;  /* Reduced padding */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) #e5e7eb;
+}
+
+/* Custom Scrollbar */
+.issue-slider::-webkit-scrollbar {
+    height: 6px;  /* Smaller scrollbar */
+}
+
+.issue-slider::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.issue-slider::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.issue-slider::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Individual Card */
+.issue-slider .contact-card {
+    min-width: 210px;  /* Slightly smaller */
+    max-width: 210px;
+    flex-shrink: 0;
+    padding: 12px 14px;  /* Reduced padding */
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: var(--white);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.issue-slider .contact-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
+}
+
+.issue-slider .contact-card h5 {
+    font-size: 0.9rem;  /* Smaller font */
+    margin-bottom: 6px;
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.issue-slider .contact-card p {
+    margin: 2px 0;  /* Reduced margin */
+    font-size: 0.78rem;  /* Smaller font */
+    color: #4b5563;
+}
+
+.issue-slider .contact-card .badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+}
+
+.issue-slider .contact-card .btn-sm {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+/* Scroll Indicators */
+.scroll-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;  /* Reduced margin */
+}
+
+.scroll-dot {
+    width: 6px;  /* Smaller dots */
+    height: 6px;
+    border-radius: 50%;
+    background: #d1d5db;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.scroll-dot.active {
+    background: var(--primary);
+    width: 18px;  /* Smaller active dot */
+    border-radius: 3px;
+}
+
+/* ============ SECTION HEADERS ============ */
+.section-title {
+    text-align: center;
+    margin: 20px 0 10px;  /* Reduced margin */
+}
+
+.section-title h3 {
+    font-size: 1.4rem;  /* Smaller font */
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 2px;
+}
+
+.section-title p {
+    color: var(--gray);
+    font-size: 0.85rem;
+    margin-top: 2px;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 1024px) {
+    .slider-nav.prev {
+        left: -10px;
+    }
+    
+    .slider-nav.next {
+        right: -10px;
+    }
+    
+    .slider-nav {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-form-side {
+        padding: 20px;
+        margin: 0 15px;
+    }
+    
+    .contact-form-card h3 {
+        font-size: 1.3rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .input-icon input,
+    .input-icon select,
+    .input-icon textarea {
+        padding: 8px 10px 8px 35px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-primary {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .admin-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .admin-controls .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .slider-nav {
+        display: none; /* Hide arrows on mobile, use touch scroll */
+    }
+    
+    .issue-slider .contact-card {
+        min-width: 180px;
+        max-width: 180px;
+        padding: 10px 12px;
+    }
+    
+    .issue-slider {
+        gap: 12px;
+        padding: 8px 3px 12px 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-form-side {
+        padding: 14px;
+        margin: 0 10px;
+    }
+    
+    .issue-slider .contact-card {
+        min-width: 160px;
+        max-width: 160px;
+        padding: 10px;
+        font-size: 0.75rem;
+    }
+    
+    .issue-slider .contact-card h5 {
+        font-size: 0.8rem;
+    }
+}
