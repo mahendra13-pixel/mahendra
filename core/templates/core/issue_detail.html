@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Issue Details - {{ contact.department }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-4">
+                    <i class="fas fa-ticket-alt"></i> Issue Details — {{ contact.department }}
+                </div>
+
+                <div class="card-body p-4">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th>Name</th>
+                                <td>{{ contact.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <td>{{ contact.department }}</td>
+                            </tr>
+                            <tr>
+                                <th>Extension</th>
+                                <td>{{ contact.phone }}</td>
+                            </tr>
+                            <tr>
+                                <th>IP Address</th>
+                                <td>{{ contact.ip_address }}</td>
+                            </tr>
+                            <tr>
+                                <th>OS</th>
+                                <td>{{ contact.os_info|default:"N/A" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Priority</th>
+                                <td>
+                                    <span class="badge 
+                                        {% if contact.priority == 'High' %}bg-danger
+                                        {% elif contact.priority == 'Medium' %}bg-warning text-dark
+                                        {% elif contact.priority == 'Low' %}bg-success
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ contact.priority }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    <span class="badge 
+                                        {% if contact.status == 'Resolved' %}bg-success
+                                        {% elif contact.status == 'In Progress' %}bg-info text-dark
+                                        {% elif contact.status == 'Closed' %}bg-secondary
+                                        {% else %}bg-warning text-dark{% endif %}">
+                                        {{ contact.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Call Attended By</th>
+                                <td>{{ contact.call_attended_by|default:"Not assigned" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Handover To</th>
+                                <td>{{ contact.handover_to|default:"Not assigned" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Solved By</th>
+                                <td>{{ contact.solved_by|default:"Not solved yet" }}</td>
+                            </tr>
+                            <!-- ✅ FIXED: Using created_at with date/time filters -->
+                            <tr>
+                                <th>Date</th>
+                                <td>{{ contact.created_at|date:"Y-m-d" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Time</th>
+                                <td>{{ contact.created_at|time:"H:i:s" }}</td>
+                            </tr>
+                            {% if contact.resolved_at %}
+                            <tr>
+                                <th>Resolved At</th>
+                                <td>{{ contact.resolved_at|date:"Y-m-d H:i:s" }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Issue</th>
+                                <td>{{ contact.message }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-footer text-end">
+                    <a href="javascript:window.close()" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Close
+                    </a>
+                </div>
+            </div>
+
+            {% if request.user.is_staff or request.user.is_superuser %}
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                <a href="{% url 'core:issue_edit' contact.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <form method="POST" action="{% url 'core:issue_delete' contact.id %}"
+                    onsubmit="return confirm('Delete this issue?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+                {% if not contact.is_resolved %}
+                <form method="POST" action="{% url 'core:issue_mark_done' contact.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Mark as Resolved
+                    </button>
+                </form>
+                {% else %}
+                <span class="badge bg-success d-flex align-items-center px-3">Resolved</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

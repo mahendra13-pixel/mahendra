@@ -1,0 +1,73 @@
+from django.db import models
+from django.utils import timezone
+
+class Contact(models.Model):
+    PRIORITY_CHOICES = [
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+        ('Critical', 'Critical'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('In Progress', 'In Progress'),
+        ('Resolved', 'Resolved'),
+        ('Closed', 'Closed'),
+    ]
+    
+    # Staff choices for dropdown
+    STAFF_CHOICES = [
+        ('Mahendra Kunwar', 'Mahendra Kunwar'),
+        ('Ram Kumar Badal', 'Ram Kumar Badal'),
+        ('Binaya Kunwar', 'Binaya Kunwar'),
+        ('Subash Dahal', 'Subash Dahal'),
+        ('Ashish Adhikari', 'Ashish Adhikari'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    department = models.CharField(max_length=200, default="General")
+    phone = models.CharField(max_length=20)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    os_info = models.CharField(max_length=100, blank=True, null=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
+    date = models.DateField(auto_now_add=True, null=True, blank=True)
+    time = models.TimeField(auto_now_add=True, null=True, blank=True)
+    message = models.TextField()
+    
+    # New fields with restricted choices
+    call_attended_by = models.CharField(
+        max_length=100, 
+        choices=STAFF_CHOICES, 
+        blank=True, 
+        null=True
+    )
+    handover_to = models.CharField(
+        max_length=100, 
+        choices=STAFF_CHOICES, 
+        blank=True, 
+        null=True
+    )
+    solved_by = models.CharField(
+        max_length=100, 
+        choices=STAFF_CHOICES, 
+        blank=True, 
+        null=True
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    is_resolved = models.BooleanField(default=False)
+    
+    # Timestamps for tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.department}"
+
+    def mark_as_resolved(self):
+        """Mark the issue as resolved and set resolved_at timestamp"""
+        self.is_resolved = True
+        self.status = 'Resolved'
+        self.resolved_at = timezone.now()
+        self.save()
