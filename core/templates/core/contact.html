@@ -16,7 +16,7 @@
         <button class="pending-modal-close" id="pendingModalClose" aria-label="Close">
             <i class="fas fa-times"></i>
         </button>
-        
+
         <div class="pending-modal-title">
             <i class="fas fa-exclamation-triangle"></i>
             Pending & In Progress Issues
@@ -24,14 +24,15 @@
                 {{ pending_contacts|length }} issue{{ pending_contacts|pluralize }} require attention
             </span>
         </div>
-        
+
         <ul class="pending-modal-list">
             {% for contact in pending_contacts %}
             <li>
                 <span class="issue-title">
                     <i class="fas fa-user-circle"></i> {{ contact.name }}
                 </span>
-                <span class="badge-status {% if contact.status == 'Pending' %}badge-pending{% else %}badge-inprogress{% endif %}">
+                <span
+                    class="badge-status {% if contact.status == 'Pending' %}badge-pending{% else %}badge-inprogress{% endif %}">
                     {{ contact.status }}
                 </span>
                 <span class="issue-details">
@@ -48,7 +49,7 @@
             </li>
             {% endfor %}
         </ul>
-        
+
         <div class="pending-modal-footer">
             <button class="btn" id="pendingModalCloseBtn">
                 <i class="fas fa-check-circle"></i> I Understand
@@ -123,10 +124,12 @@
             <!-- Row 3: Call Attended By + Handover To - CTRL SELECT -->
             <div class="form-row">
                 <div class="form-group">
-                    <label for="call_attended_by">Call Attended By <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
+                    <label for="call_attended_by">Call Attended By <small
+                            style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
                     <div class="input-icon">
                         <i class="fas fa-user-tie"></i>
-                        <select id="call_attended_by" name="call_attended_by" multiple style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
+                        <select id="call_attended_by" name="call_attended_by" multiple
+                            style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
                             <option value="Mahendra Kunwar">Mahendra Kunwar</option>
                             <option value="Ram Kumar Badal">Ram Kumar Badal</option>
                             <option value="Binaya Kunwar">Binaya Kunwar</option>
@@ -137,10 +140,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="handover_to">Handover To <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
+                    <label for="handover_to">Handover To <small
+                            style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
                     <div class="input-icon">
                         <i class="fas fa-user-check"></i>
-                        <select id="handover_to" name="handover_to" multiple style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
+                        <select id="handover_to" name="handover_to" multiple
+                            style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
                             <option value="Mahendra Kunwar">Mahendra Kunwar</option>
                             <option value="Ram Kumar Badal">Ram Kumar Badal</option>
                             <option value="Binaya Kunwar">Binaya Kunwar</option>
@@ -154,10 +159,12 @@
             <!-- Row 4: Solved By + Status -->
             <div class="form-row">
                 <div class="form-group">
-                    <label for="solved_by">Solved By <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
+                    <label for="solved_by">Solved By <small
+                            style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
                     <div class="input-icon">
                         <i class="fas fa-user-cog"></i>
-                        <select id="solved_by" name="solved_by" multiple style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
+                        <select id="solved_by" name="solved_by" multiple
+                            style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
                             <option value="Mahendra Kunwar">Mahendra Kunwar</option>
                             <option value="Ram Kumar Badal">Ram Kumar Badal</option>
                             <option value="Binaya Kunwar">Binaya Kunwar</option>
@@ -184,10 +191,12 @@
             <!-- NEW Row 5: Assigned To + Remarks -->
             <div class="form-row">
                 <div class="form-group">
-                    <label for="assigned_to">Assigned To <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
+                    <label for="assigned_to">Assigned To <small
+                            style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
                     <div class="input-icon">
                         <i class="fas fa-user-check"></i>
-                        <select id="assigned_to" name="assigned_to" multiple style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
+                        <select id="assigned_to" name="assigned_to" multiple
+                            style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
                             <option value="Mahendra Kunwar">Mahendra Kunwar</option>
                             <option value="Ram Kumar Badal">Ram Kumar Badal</option>
                             <option value="Binaya Kunwar">Binaya Kunwar</option>
@@ -195,14 +204,16 @@
                             <option value="Ashish Adhikari">Ashish Adhikari</option>
                         </select>
                     </div>
-                    <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                    <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select
+                        multiple</small>
                 </div>
 
                 <div class="form-group">
                     <label for="remarks">Remarks</label>
                     <div class="input-icon textarea-icon">
                         <i class="fas fa-comment"></i>
-                        <textarea id="remarks" name="remarks" rows="3" style="padding: 6px 10px 6px 32px; min-height: 60px; resize: vertical; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark); font-family: inherit;"
+                        <textarea id="remarks" name="remarks" rows="3"
+                            style="padding: 6px 10px 6px 32px; min-height: 60px; resize: vertical; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark); font-family: inherit;"
                             placeholder="Any additional remarks or notes..."></textarea>
                     </div>
                 </div>
@@ -251,16 +262,23 @@
 </div>
 
 <!-- Resolved Issues Modal -->
+<!-- Resolved Issues Modal -->
 <div class="modal fade" id="resolvedModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title"><i class="fas fa-check-circle"></i> Resolved Issues</h5>
-                <a href="{% url 'core:resolved_issues_excel' %}" target="_blank" class="btn btn-light btn-sm ms-2">
-                    <i class="fas fa-file-excel"></i> Export Excel
-                </a>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
+                <div>
+                    <a href="{% url 'core:resolved_issues_excel' %}" target="_blank" class="btn btn-light btn-sm ms-2">
+                        <i class="fas fa-file-excel"></i> Full Export
+                    </a>
+                    <a href="{% url 'core:resolved_issues_excel_compact' %}" target="_blank"
+                        class="btn btn-light btn-sm ms-2">
+                        <i class="fas fa-file-excel"></i> Compact Export
+                    </a>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
             </div>
             <div class="modal-body">
                 {% if resolved_contacts %}
@@ -280,7 +298,8 @@
                                 }}</p>
                             <p style="margin:2px 0;"><strong>Solved By:</strong> {{ contact.solved_by|default:"N/A" }}
                             </p>
-                            <p style="margin:2px 0;"><strong>Assigned To:</strong> {{ contact.assigned_to|default:"N/A" }}</p>
+                            <p style="margin:2px 0;"><strong>Assigned To:</strong> {{ contact.assigned_to|default:"N/A"
+                                }}</p>
                             <p style="margin:2px 0;"><strong>Remarks:</strong> {{ contact.remarks|default:"N/A" }}</p>
                             <p style="margin:2px 0;">
                                 <strong>Priority:</strong>
@@ -326,7 +345,7 @@
      ISSUE LISTS - HORIZONTAL SLIDER
      ============================================ -->
 <section class="issue-slider-wrapper">
-    
+
     <!-- Slider Navigation Buttons -->
     <button class="slider-nav prev" id="sliderPrev" aria-label="Previous">
         <i class="fas fa-chevron-left"></i>
@@ -386,16 +405,16 @@
             <i class="fas fa-inbox" style="font-size: 3rem; color: #d1d5db; margin-bottom: 15px;"></i>
             <p style="font-size: 1.1rem; color: #6b7280;">
                 {% if is_admin_user %}
-                    No issues submitted yet.
+                No issues submitted yet.
                 {% else %}
-                    No issues found from your IP ({{ user_ip }})
+                No issues found from your IP ({{ user_ip }})
                 {% endif %}
             </p>
             <p style="font-size: 0.9rem; color: #9ca3af;">
                 {% if is_admin_user %}
-                    Submit your first issue using the form above.
+                Submit your first issue using the form above.
                 {% else %}
-                    Submit an issue using the form above and it will appear here.
+                Submit an issue using the form above and it will appear here.
                 {% endif %}
             </p>
         </div>
@@ -414,22 +433,22 @@
 <script src="{% static 'js/contact.js' %}"></script>
 <script>
     // Pending Modal - Only show if there are pending/in-progress issues
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('pendingModal');
         if (modal) {
             // Close modal when clicking the X button or "I Understand" button
             const closeBtn = document.getElementById('pendingModalClose');
             const closeBtn2 = document.getElementById('pendingModalCloseBtn');
-            
+
             function closeModal() {
                 modal.style.display = 'none';
             }
-            
+
             if (closeBtn) closeBtn.addEventListener('click', closeModal);
             if (closeBtn2) closeBtn2.addEventListener('click', closeModal);
-            
+
             // Prevent closing when clicking outside (only close with X button)
-            modal.addEventListener('click', function(e) {
+            modal.addEventListener('click', function (e) {
                 if (e.target === modal) {
                     // Don't close - only close with X button
                     e.stopPropagation();
