@@ -58,12 +58,20 @@
 </div>
 {% endif %}
 
-<!-- IP Info Banner - Shows user their IP and filter status -->
+<!-- IP Info Banner - Shows user their IP, Hostname, Username and filter status -->
 <div class="ip-info-banner" style="max-width: 800px; margin: 0 auto 15px auto; padding: 10px 15px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid #2563eb; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <div>
         <i class="fas fa-network-wired" style="color: #2563eb;"></i>
         <span style="font-size: 0.85rem; color: #1e293b;">
-            <strong>Your IP:</strong> {{ user_ip }}
+            <strong>IP:</strong> {{ user_ip }}
+        </span>
+        <span style="font-size: 0.85rem; color: #1e293b; margin-left: 10px;">
+            <i class="fas fa-server" style="color: #2563eb;"></i>
+            <strong>Hostname:</strong> {{ user_hostname }}
+        </span>
+        <span style="font-size: 0.85rem; color: #1e293b; margin-left: 10px;">
+            <i class="fas fa-user" style="color: #2563eb;"></i>
+            <strong>User:</strong> {{ user_username }}
         </span>
         {% if not is_admin_user %}
         <span class="badge bg-info text-dark ms-2" style="font-size: 0.7rem;">
@@ -268,6 +276,8 @@
                             <p style="margin:2px 0;"><strong>Name:</strong> {{ contact.name }}</p>
                             <p style="margin:2px 0;"><strong>Ext:</strong> {{ contact.phone }}</p>
                             <p style="margin:2px 0;"><strong>IP:</strong> {{ contact.ip_address }}</p>
+                            <p style="margin:2px 0;"><strong>Hostname:</strong> {{ contact.hostname|default:"N/A" }}</p>
+                            <p style="margin:2px 0;"><strong>Username:</strong> {{ contact.username|default:"N/A" }}</p>
                             <p style="margin:2px 0;"><strong>OS:</strong> {{ contact.os_info|default:"N/A" }}</p>
                             <p style="margin:2px 0;"><strong>Attended By:</strong> {{
                                 contact.call_attended_by|default:"N/A" }}</p>
@@ -336,6 +346,8 @@
             <p><strong>Name:</strong> {{ contact.name }}</p>
             <p><strong>Ext:</strong> {{ contact.phone }}</p>
             <p><strong>IP:</strong> {{ contact.ip_address }}</p>
+            <p><strong>Hostname:</strong> {{ contact.hostname|default:"N/A" }}</p>
+            <p><strong>Username:</strong> {{ contact.username|default:"N/A" }}</p>
             <p><strong>OS:</strong> {{ contact.os_info|default:"N/A" }}</p>
             <p><strong>Attended By:</strong> {{ contact.call_attended_by|default:"N/A" }}</p>
             <p><strong>Handover To:</strong> {{ contact.handover_to|default:"N/A" }}</p>

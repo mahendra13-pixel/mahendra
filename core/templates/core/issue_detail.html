@@ -4,128 +4,144 @@
 {% block title %}Issue Details - {{ contact.department }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-3">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-lg-8 col-md-10 col-12">
 
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-4">
-                    <i class="fas fa-ticket-alt"></i> Issue Details — {{ contact.department }}
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-warning text-dark fw-bold fs-6 rounded-top-3 py-2">
+                    <i class="fas fa-ticket-alt"></i> Issue Details
+                    <span class="float-end fs-6 fw-normal text-muted">#{{ contact.id }}</span>
                 </div>
 
-                <div class="card-body p-4">
-                    <table class="table table-bordered table-striped">
-                        <tbody>
-                            <tr>
-                                <th>Name</th>
-                                <td>{{ contact.name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Department</th>
-                                <td>{{ contact.department }}</td>
-                            </tr>
-                            <tr>
-                                <th>Extension</th>
-                                <td>{{ contact.phone }}</td>
-                            </tr>
-                            <tr>
-                                <th>IP Address</th>
-                                <td>{{ contact.ip_address }}</td>
-                            </tr>
-                            <tr>
-                                <th>OS</th>
-                                <td>{{ contact.os_info|default:"N/A" }}</td>
-                            </tr>
-                            <tr>
-                                <th>Priority</th>
-                                <td>
-                                    <span class="badge 
-                                        {% if contact.priority == 'High' %}bg-danger
-                                        {% elif contact.priority == 'Medium' %}bg-warning text-dark
-                                        {% elif contact.priority == 'Low' %}bg-success
-                                        {% else %}bg-secondary{% endif %}">
-                                        {{ contact.priority }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Status</th>
-                                <td>
-                                    <span class="badge 
-                                        {% if contact.status == 'Resolved' %}bg-success
-                                        {% elif contact.status == 'In Progress' %}bg-info text-dark
-                                        {% elif contact.status == 'Closed' %}bg-secondary
-                                        {% else %}bg-warning text-dark{% endif %}">
-                                        {{ contact.status }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Call Attended By</th>
-                                <td>{{ contact.call_attended_by|default:"Not assigned" }}</td>
-                            </tr>
-                            <tr>
-                                <th>Handover To</th>
-                                <td>{{ contact.handover_to|default:"Not assigned" }}</td>
-                            </tr>
-                            <tr>
-                                <th>Solved By</th>
-                                <td>{{ contact.solved_by|default:"Not solved yet" }}</td>
-                            </tr>
-                            <!-- ✅ FIXED: Using created_at with date/time filters -->
-                            <tr>
-                                <th>Date</th>
-                                <td>{{ contact.created_at|date:"Y-m-d" }}</td>
-                            </tr>
-                            <tr>
-                                <th>Time</th>
-                                <td>{{ contact.created_at|time:"H:i:s" }}</td>
-                            </tr>
-                            {% if contact.resolved_at %}
-                            <tr>
-                                <th>Resolved At</th>
-                                <td>{{ contact.resolved_at|date:"Y-m-d H:i:s" }}</td>
-                            </tr>
+                <div class="card-body p-3">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" style="font-size: 0.85rem;">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 35%; white-space: nowrap;">Name</th>
+                                    <td>{{ contact.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Department</th>
+                                    <td>{{ contact.department }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Extension</th>
+                                    <td>{{ contact.phone }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">IP Address</th>
+                                    <td>{{ contact.ip_address }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Hostname</th>
+                                    <td>{{ contact.hostname|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Username</th>
+                                    <td>{{ contact.username|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">OS</th>
+                                    <td>{{ contact.os_info|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Priority</th>
+                                    <td>
+                                        <span class="badge 
+                                            {% if contact.priority == 'High' %}bg-danger
+                                            {% elif contact.priority == 'Medium' %}bg-warning text-dark
+                                            {% elif contact.priority == 'Low' %}bg-success
+                                            {% else %}bg-secondary{% endif %}"
+                                            style="font-size: 0.75rem; padding: 3px 8px;">
+                                            {{ contact.priority }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Status</th>
+                                    <td>
+                                        <span class="badge 
+                                            {% if contact.status == 'Resolved' %}bg-success
+                                            {% elif contact.status == 'In Progress' %}bg-info text-dark
+                                            {% elif contact.status == 'Closed' %}bg-secondary
+                                            {% else %}bg-warning text-dark{% endif %}"
+                                            style="font-size: 0.75rem; padding: 3px 8px;">
+                                            {{ contact.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Call Attended By</th>
+                                    <td>{{ contact.call_attended_by|default:"Not assigned" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Handover To</th>
+                                    <td>{{ contact.handover_to|default:"Not assigned" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Solved By</th>
+                                    <td>{{ contact.solved_by|default:"Not solved yet" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Date</th>
+                                    <td>{{ contact.created_at|date:"Y-m-d" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Time</th>
+                                    <td>{{ contact.created_at|time:"H:i:s" }}</td>
+                                </tr>
+                                {% if contact.resolved_at %}
+                                <tr>
+                                    <th style="white-space: nowrap;">Resolved At</th>
+                                    <td>{{ contact.resolved_at|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th style="white-space: nowrap;" class="align-top">Issue</th>
+                                    <td class="text-wrap" style="word-break: break-word;">{{ contact.message }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-footer py-2">
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                        <a href="javascript:window.close()" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-times"></i> Close
+                        </a>
+                        
+                        {% if request.user.is_staff or request.user.is_superuser %}
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'core:issue_edit' contact.id %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form method="POST" action="{% url 'core:issue_delete' contact.id %}"
+                                onsubmit="return confirm('Delete this issue?');" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                            {% if not contact.is_resolved %}
+                            <form method="POST" action="{% url 'core:issue_mark_done' contact.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> Resolve
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-success d-flex align-items-center px-3" style="font-size: 0.75rem;">
+                                <i class="fas fa-check-circle me-1"></i> Resolved
+                            </span>
                             {% endif %}
-                            <tr>
-                                <th>Issue</th>
-                                <td>{{ contact.message }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="card-footer text-end">
-                    <a href="javascript:window.close()" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Close
-                    </a>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-
-            {% if request.user.is_staff or request.user.is_superuser %}
-            <div class="d-flex gap-2 mt-3 flex-wrap">
-                <a href="{% url 'core:issue_edit' contact.id %}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> Edit
-                </a>
-                <form method="POST" action="{% url 'core:issue_delete' contact.id %}"
-                    onsubmit="return confirm('Delete this issue?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </form>
-                {% if not contact.is_resolved %}
-                <form method="POST" action="{% url 'core:issue_mark_done' contact.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> Mark as Resolved
-                    </button>
-                </form>
-                {% else %}
-                <span class="badge bg-success d-flex align-items-center px-3">Resolved</span>
-                {% endif %}
-            </div>
-            {% endif %}
 
         </div>
     </div>
