@@ -42,6 +42,102 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ===============================
+    // MULTI-NAME SELECTION - TAG SYSTEM
+    // ===============================
+    function addName(field) {
+        const select = document.getElementById(field + '_select');
+        if (!select) return;
+        
+        const selectedName = select.value;
+        
+        if (!selectedName) {
+            alert('Please select a staff member first.');
+            return;
+        }
+        
+        const hiddenInput = document.getElementById(field);
+        const tagsContainer = document.getElementById(field + '_tags');
+        
+        if (!hiddenInput || !tagsContainer) return;
+        
+        // Get current names
+        let currentNames = hiddenInput.value ? hiddenInput.value.split(', ') : [];
+        
+        // Check if name already exists
+        if (currentNames.includes(selectedName)) {
+            alert(selectedName + ' is already added.');
+            return;
+        }
+        
+        // Add name
+        currentNames.push(selectedName);
+        hiddenInput.value = currentNames.join(', ');
+        
+        // Update tags display
+        updateTags(field);
+        
+        // Reset select
+        select.value = '';
+    }
+
+    function removeName(field, name) {
+        const hiddenInput = document.getElementById(field);
+        if (!hiddenInput) return;
+        
+        let currentNames = hiddenInput.value ? hiddenInput.value.split(', ') : [];
+        
+        // Remove name
+        currentNames = currentNames.filter(n => n !== name);
+        hiddenInput.value = currentNames.join(', ');
+        
+        // Update tags display
+        updateTags(field);
+    }
+
+    function updateTags(field) {
+        const hiddenInput = document.getElementById(field);
+        const tagsContainer = document.getElementById(field + '_tags');
+        
+        if (!hiddenInput || !tagsContainer) return;
+        
+        const currentNames = hiddenInput.value ? hiddenInput.value.split(', ') : [];
+        
+        // Clear and rebuild tags
+        tagsContainer.innerHTML = '';
+        
+        if (currentNames.length === 0) {
+            tagsContainer.innerHTML = '<span style="color: #999; font-size: 0.75rem; padding: 2px 5px;">No staff selected</span>';
+            return;
+        }
+        
+        currentNames.forEach(name => {
+            const tag = document.createElement('span');
+            tag.className = 'badge bg-secondary d-inline-flex align-items-center gap-1';
+            tag.style.cssText = 'padding: 4px 8px; font-size: 0.7rem; margin: 2px; background-color: #6b7280; color: white; border-radius: 4px;';
+            tag.innerHTML = `
+                ${name}
+                <span onclick="removeName('${field}', '${name}')" 
+                      style="cursor: pointer; margin-left: 4px; opacity: 0.7; hover: opacity: 1;">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+            tagsContainer.appendChild(tag);
+        });
+    }
+
+    // Initialize tags on page load (for edit mode)
+    function initializeTags() {
+        ['call_attended_by', 'handover_to', 'solved_by'].forEach(function(field) {
+            updateTags(field);
+        });
+    }
+    
+    // Make functions globally accessible
+    window.addName = addName;
+    window.removeName = removeName;
+    window.updateTags = updateTags;
+
+    // ===============================
     // ISSUE SLIDER - HORIZONTAL SCROLL
     // ===============================
     function initSlider() {
@@ -378,6 +474,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Initialize the slider
     initSlider();
+
+    // ===============================
+    // Initialize Tags on Page Load
+    // ===============================
+    initializeTags();
 
     // ===============================
     // Smooth Scroll to Form on Error

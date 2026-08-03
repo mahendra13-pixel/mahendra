@@ -86,9 +86,12 @@ def contact(request):
         priority = request.POST.get('priority')
         message = request.POST.get('message')
         department = request.POST.get('department', 'General')
-        call_attended_by = request.POST.get('call_attended_by', '')
-        handover_to = request.POST.get('handover_to', '')
-        solved_by = request.POST.get('solved_by', '')
+        
+        # UPDATED: Get multiple selections and join them with comma
+        call_attended_by = ', '.join(request.POST.getlist('call_attended_by'))
+        handover_to = ', '.join(request.POST.getlist('handover_to'))
+        solved_by = ', '.join(request.POST.getlist('solved_by'))
+        
         status = request.POST.get('status', 'Pending')
         
         now = timezone.localtime(timezone.now())
@@ -163,9 +166,12 @@ def issue_edit(request, pk):
         contact.ip_address = request.POST.get('ip_address')
         contact.priority = request.POST.get('priority')
         contact.message = request.POST.get('message')
-        contact.call_attended_by = request.POST.get('call_attended_by')
-        contact.handover_to = request.POST.get('handover_to')
-        contact.solved_by = request.POST.get('solved_by')
+        
+        # UPDATED: Get multiple selections and join them with comma
+        contact.call_attended_by = ', '.join(request.POST.getlist('call_attended_by'))
+        contact.handover_to = ', '.join(request.POST.getlist('handover_to'))
+        contact.solved_by = ', '.join(request.POST.getlist('solved_by'))
+        
         contact.status = request.POST.get('status')
         
         # Get current time in Asia/Kathmandu
