@@ -58,37 +58,7 @@
 </div>
 {% endif %}
 
-<!-- IP Info Banner - Shows user their IP, Hostname, Username and filter status -->
-<div class="ip-info-banner" style="max-width: 800px; margin: 0 auto 15px auto; padding: 10px 15px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid #2563eb; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-    <div>
-        <i class="fas fa-network-wired" style="color: #2563eb;"></i>
-        <span style="font-size: 0.85rem; color: #1e293b;">
-            <strong>IP:</strong> {{ user_ip }}
-        </span>
-        <span style="font-size: 0.85rem; color: #1e293b; margin-left: 10px;">
-            <i class="fas fa-server" style="color: #2563eb;"></i>
-            <strong>Hostname:</strong> {{ user_hostname }}
-        </span>
-        <span style="font-size: 0.85rem; color: #1e293b; margin-left: 10px;">
-            <i class="fas fa-user" style="color: #2563eb;"></i>
-            <strong>User:</strong> {{ user_username }}
-        </span>
-        {% if not is_admin_user %}
-        <span class="badge bg-info text-dark ms-2" style="font-size: 0.7rem;">
-            <i class="fas fa-eye"></i> Showing only your issues
-        </span>
-        {% else %}
-        <span class="badge bg-success ms-2" style="font-size: 0.7rem;">
-            <i class="fas fa-crown"></i> Admin - Viewing all issues
-        </span>
-        {% endif %}
-    </div>
-    <div>
-        <span style="font-size: 0.8rem; color: #64748b;">
-            <i class="far fa-clock"></i> Total: {{ contacts|length }} issue{{ contacts|length|pluralize }}
-        </span>
-    </div>
-</div>
+
 
 <!-- Contact Form Section -->
 <div class="contact-form-side">
@@ -211,6 +181,33 @@
                 </div>
             </div>
 
+            <!-- NEW Row 5: Assigned To + Remarks -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="assigned_to">Assigned To <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
+                    <div class="input-icon">
+                        <i class="fas fa-user-check"></i>
+                        <select id="assigned_to" name="assigned_to" multiple style="height: auto; min-height: 38px; padding: 4px 10px 4px 32px; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark);">
+                            <option value="Mahendra Kunwar">Mahendra Kunwar</option>
+                            <option value="Ram Kumar Badal">Ram Kumar Badal</option>
+                            <option value="Binaya Kunwar">Binaya Kunwar</option>
+                            <option value="Subash Dahal">Subash Dahal</option>
+                            <option value="Ashish Adhikari">Ashish Adhikari</option>
+                        </select>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Remarks</label>
+                    <div class="input-icon textarea-icon">
+                        <i class="fas fa-comment"></i>
+                        <textarea id="remarks" name="remarks" rows="3" style="padding: 6px 10px 6px 32px; min-height: 60px; resize: vertical; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark); font-family: inherit;"
+                            placeholder="Any additional remarks or notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+
             <!-- Full Width: Message -->
             <div class="form-group">
                 <label for="message">Issue or Message *</label>
@@ -283,6 +280,8 @@
                                 }}</p>
                             <p style="margin:2px 0;"><strong>Solved By:</strong> {{ contact.solved_by|default:"N/A" }}
                             </p>
+                            <p style="margin:2px 0;"><strong>Assigned To:</strong> {{ contact.assigned_to|default:"N/A" }}</p>
+                            <p style="margin:2px 0;"><strong>Remarks:</strong> {{ contact.remarks|default:"N/A" }}</p>
                             <p style="margin:2px 0;">
                                 <strong>Priority:</strong>
                                 <span class="badge 
@@ -350,6 +349,8 @@
             <p><strong>Attended By:</strong> {{ contact.call_attended_by|default:"N/A" }}</p>
             <p><strong>Handover To:</strong> {{ contact.handover_to|default:"N/A" }}</p>
             <p><strong>Solved By:</strong> {{ contact.solved_by|default:"N/A" }}</p>
+            <p><strong>Assigned To:</strong> {{ contact.assigned_to|default:"N/A" }}</p>
+            <p><strong>Remarks:</strong> {{ contact.remarks|default:"N/A" }}</p>
             <p>
                 <strong>Priority:</strong>
                 <span class="badge 

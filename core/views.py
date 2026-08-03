@@ -102,6 +102,17 @@ def about(request):
 def blog(request):
     return render(request, 'core/blog.html')
 
+# Function to generate Ticket ID
+def generate_ticket_id(contact):
+    """Generate Ticket ID in format IT-001, IT-002, etc."""
+    # Get all contacts ordered by id
+    all_contacts = Contact.objects.filter(id__lte=contact.id).order_by('id')
+    # Find the index of this contact
+    for idx, c in enumerate(all_contacts, 1):
+        if c.id == contact.id:
+            return f"IT-{str(idx).zfill(3)}"
+    return f"IT-{str(contact.id).zfill(3)}"
+
 # Contact Page - Main Form (Landing Page - Public)
 def contact(request):
     ip_address = get_client_ip(request)
@@ -134,10 +145,14 @@ def contact(request):
         message = request.POST.get('message')
         department = request.POST.get('department', 'General')
         
-        # UPDATED: Get multiple selections and join them with comma
+        # Get multiple selections and join them with comma
         call_attended_by = ', '.join(request.POST.getlist('call_attended_by'))
         handover_to = ', '.join(request.POST.getlist('handover_to'))
         solved_by = ', '.join(request.POST.getlist('solved_by'))
+        
+        # NEW: Get assigned_to and remarks
+        assigned_to = ', '.join(request.POST.getlist('assigned_to'))
+        remarks = request.POST.get('remarks', '')
         
         status = request.POST.get('status', 'Pending')
         
@@ -161,6 +176,8 @@ def contact(request):
             call_attended_by=call_attended_by,
             handover_to=handover_to,
             solved_by=solved_by,
+            assigned_to=assigned_to,  # NEW
+            remarks=remarks,          # NEW
             status=status,
             is_resolved=is_resolved,
             date=now.date(),
@@ -236,10 +253,14 @@ def issue_edit(request, pk):
         contact.priority = request.POST.get('priority')
         contact.message = request.POST.get('message')
         
-        # UPDATED: Get multiple selections and join them with comma
+        # Get multiple selections and join them with comma
         contact.call_attended_by = ', '.join(request.POST.getlist('call_attended_by'))
         contact.handover_to = ', '.join(request.POST.getlist('handover_to'))
         contact.solved_by = ', '.join(request.POST.getlist('solved_by'))
+        
+        # NEW: Get assigned_to and remarks
+        contact.assigned_to = ', '.join(request.POST.getlist('assigned_to'))
+        contact.remarks = request.POST.get('remarks', '')
         
         contact.status = request.POST.get('status')
         
@@ -290,12 +311,12 @@ def issue_mark_done(request, pk):
 @user_passes_test(is_admin)
 def resolved_issues_excel(request):
     selected_date = request.GET.get('date')
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('-id')
+    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')  # CHANGED: -id to id (ascending)
     
     if selected_date:
         resolved_contacts = resolved_contacts.filter(date=selected_date)
 
-    # Create DataFrame with ALL fields
+    # Create DataFrame with ALL fields in the specified order
     data = []
     for contact in resolved_contacts:
         # Convert to local time for display
@@ -303,21 +324,29 @@ def resolved_issues_excel(request):
         updated_at_local = timezone.localtime(contact.updated_at) if contact.updated_at else None
         resolved_at_local = timezone.localtime(contact.resolved_at) if contact.resolved_at else None
         
+        # Generate Ticket ID
+        ticket_id = generate_ticket_id(contact)
+        
         data.append({
-            # ✅ FIXED: Using created_at_local for Date and Time
-            'Date': created_at_local.strftime('%Y-%m-%d') if created_at_local else '',
-            'Time': created_at_local.strftime('%H:%M:%S') if created_at_local else '',
-            'Name': contact.name,
+            # ORDER: Date, Ticket ID, Department, Name, Issue/Message, Priority,
+            # Call Attended By, Assigned To, Handover To, Solved By, Status, Remarks,
+            # Time, Extension, IP Address, OS, Created At, Updated At, Resolved At, Is Resolved
+            'Date': created_at_local.strftime('%d-%b-%Y') if created_at_local else '',
+            'Ticket ID': ticket_id,
             'Department': contact.department,
+            'Name': contact.name,
+            'Issue/Message': contact.message,
+            'Priority': contact.priority,
+            'Call Attended By': contact.call_attended_by or '',
+            'Assigned To': contact.assigned_to or '',
+            'Handover To': contact.handover_to or '',
+            'Solved By': contact.solved_by or '',
+            'Status': contact.status,
+            'Remarks': contact.remarks or '',
+            'Time': created_at_local.strftime('%H:%M:%S') if created_at_local else '',
             'Extension': contact.phone,
             'IP Address': contact.ip_address or '',
             'OS': contact.os_info or 'N/A',
-            'Priority': contact.priority,
-            'Status': contact.status,
-            'Call Attended By': contact.call_attended_by or '',
-            'Handover To': contact.handover_to or '',
-            'Solved By': contact.solved_by or '',
-            'Issue/Message': contact.message,
             'Created At': created_at_local.strftime('%Y-%m-%d %H:%M:%S') if created_at_local else '',
             'Updated At': updated_at_local.strftime('%Y-%m-%d %H:%M:%S') if updated_at_local else '',
             'Resolved At': resolved_at_local.strftime('%Y-%m-%d %H:%M:%S') if resolved_at_local else '',
@@ -345,7 +374,7 @@ def resolved_issues_excel(request):
             adjusted_width = min(max_length + 2, 50)
             worksheet.column_dimensions[column_letter].width = adjusted_width
         
-        # Add header styling (optional - requires openpyxl import)
+        # Add header styling
         from openpyxl.styles import Font, PatternFill, Alignment
         header_font = Font(bold=True, color="FFFFFF")
         header_fill = PatternFill(start_color="1f6f4a", end_color="1f6f4a", fill_type="solid")

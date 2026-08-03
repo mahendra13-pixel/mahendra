@@ -85,6 +85,14 @@
                                     <td>{{ contact.solved_by|default:"Not solved yet" }}</td>
                                 </tr>
                                 <tr>
+                                    <th style="white-space: nowrap;">Assigned To</th>
+                                    <td>{{ contact.assigned_to|default:"Not assigned" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="white-space: nowrap;">Remarks</th>
+                                    <td>{{ contact.remarks|default:"No remarks" }}</td>
+                                </tr>
+                                <tr>
                                     <th style="white-space: nowrap;">Date</th>
                                     <td>{{ contact.created_at|date:"Y-m-d" }}</td>
                                 </tr>
