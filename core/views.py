@@ -73,6 +73,7 @@ def blog(request):
 def contact(request):
     ip_address = get_client_ip(request)
     os_info = get_client_os(request)
+    is_admin_user = request.user.is_authenticated and request.user.is_staff
 
     if request.method == 'POST':
         # Check which button was clicked
@@ -128,14 +129,28 @@ def contact(request):
         
         return redirect('core:contact')
     
+    # Get all unresolved issues
     contacts = Contact.objects.filter(is_resolved=False).order_by('-id')
+    
+    # IP FILTERING: If not admin, only show issues with matching IP
+    if not is_admin_user:
+        contacts = contacts.filter(ip_address=ip_address)
+    
     resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('-id')
+    
+    # IP FILTERING: If not admin, only show resolved issues with matching IP
+    if not is_admin_user:
+        resolved_contacts = resolved_contacts.filter(ip_address=ip_address)
     
     # Get pending and in-progress issues for the modal
     pending_contacts = Contact.objects.filter(
         is_resolved=False,
         status__in=['Pending', 'In Progress']
     ).order_by('-created_at')
+    
+    # IP FILTERING: If not admin, only show pending issues with matching IP
+    if not is_admin_user:
+        pending_contacts = pending_contacts.filter(ip_address=ip_address)
 
     selected_date = request.GET.get('date')
     if selected_date:
@@ -146,7 +161,9 @@ def contact(request):
     return render(request, 'core/contact.html', {
         'contacts': contacts,
         'resolved_contacts': resolved_contacts,
-        'pending_contacts': pending_contacts,  # Pass to template
+        'pending_contacts': pending_contacts,
+        'is_admin_user': is_admin_user,  # Pass to template
+        'user_ip': ip_address,  # Pass to template for display
     })
 
 # Issue Detail - Anyone can view
