@@ -398,6 +398,28 @@
     padding: 2px 4px;
 }
 
+/* ============ STATUS BUTTONS - ALL GREY ============ */
+.issue-slider .contact-card .d-flex.gap-2 .btn,
+.modal-body .contact-card .btn-sm,
+.admin-controls .btn,
+.btn-primary,
+.btn-success {
+    background: #6b7280 !important;
+    color: white !important;
+    border-color: #6b7280 !important;
+}
+
+.issue-slider .contact-card .d-flex.gap-2 .btn:hover,
+.modal-body .contact-card .btn-sm:hover,
+.admin-controls .btn:hover,
+.btn-primary:hover,
+.btn-success:hover {
+    background: #4b5563 !important;
+    border-color: #4b5563 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(107, 114, 128, 0.25);
+}
+
 /* Scroll Indicators */
 .scroll-indicators {
     display: flex;
@@ -464,6 +486,18 @@
 .modal-body .contact-card .btn-sm {
     font-size: 0.65rem !important;
     padding: 2px 6px !important;
+}
+
+/* Modal status buttons also grey */
+.modal-body .contact-card .btn-sm {
+    background: #6b7280 !important;
+    color: white !important;
+    border-color: #6b7280 !important;
+}
+
+.modal-body .contact-card .btn-sm:hover {
+    background: #4b5563 !important;
+    border-color: #4b5563 !important;
 }
 
 /* ============ RESPONSIVE ============ */
