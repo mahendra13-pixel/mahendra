@@ -311,8 +311,6 @@ def resolved_issues_excel(request):
             'Department': contact.department,
             'Extension': contact.phone,
             'IP Address': contact.ip_address or '',
-            'Hostname': contact.hostname or '',
-            'Username': contact.username or '',
             'OS': contact.os_info or 'N/A',
             'Priority': contact.priority,
             'Status': contact.status,
