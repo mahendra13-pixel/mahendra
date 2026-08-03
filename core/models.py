@@ -29,6 +29,8 @@ class Contact(models.Model):
     department = models.CharField(max_length=200, default="General")
     phone = models.CharField(max_length=20)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
+    hostname = models.CharField(max_length=255, blank=True, null=True)  # NEW
+    username = models.CharField(max_length=255, blank=True, null=True)  # NEW
     os_info = models.CharField(max_length=100, blank=True, null=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
     date = models.DateField(auto_now_add=True, null=True, blank=True)

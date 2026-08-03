@@ -54,6 +54,21 @@
                             </div>
                         </div>
 
+                        <!-- NEW: Hostname and Username Row -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="hostname" class="form-label">Hostname</label>
+                                <input type="text" id="hostname" name="hostname" class="form-control"
+                                    value="{{ contact.hostname|default:'' }}">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" id="username" name="username" class="form-control"
+                                    value="{{ contact.username|default:'' }}">
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="priority" class="form-label">Priority</label>

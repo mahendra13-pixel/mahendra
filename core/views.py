@@ -9,6 +9,8 @@ import pandas as pd
 from io import BytesIO
 from datetime import datetime
 import socket
+import os
+import getpass
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -33,6 +35,37 @@ def get_client_ip(request):
         ip = '127.0.0.1'
     
     return ip
+
+def get_client_hostname(request):
+    """Get the client hostname"""
+    try:
+        # First try to get from request
+        hostname = request.META.get('HTTP_HOST', '').split(':')[0]
+        if hostname:
+            return hostname
+    except:
+        pass
+    
+    try:
+        # Fallback to socket.gethostname()
+        return socket.gethostname()
+    except:
+        return 'Unknown'
+
+def get_client_username(request):
+    """Get the client username (who am i)"""
+    try:
+        # Try to get from request user if authenticated
+        if request.user.is_authenticated:
+            return request.user.username
+    except:
+        pass
+    
+    try:
+        # Fallback to getpass.getuser()
+        return getpass.getuser()
+    except:
+        return 'Unknown'
 
 def get_client_os(request):
     """Detect client operating system from user agent"""
@@ -72,6 +105,19 @@ def blog(request):
 # Contact Page - Main Form (Landing Page - Public)
 def contact(request):
     ip_address = get_client_ip(request)
+    
+    # Try to get hostname from POST (client-side JavaScript via hidden input)
+    # Fallback to server-side method
+    if request.method == 'POST':
+        hostname_from_hidden = request.POST.get('hostname_hidden', '')
+        if hostname_from_hidden and hostname_from_hidden not in ['Unknown', 'localhost', '127.0.0.1', '']:
+            hostname = hostname_from_hidden
+        else:
+            hostname = get_client_hostname(request)
+    else:
+        hostname = get_client_hostname(request)
+    
+    username = get_client_username(request)
     os_info = get_client_os(request)
     is_admin_user = request.user.is_authenticated and request.user.is_staff
 
@@ -107,6 +153,8 @@ def contact(request):
             department=department,
             phone=phone,
             ip_address=ip_address,
+            hostname=hostname,
+            username=username,
             os_info=os_info,
             priority=priority,
             message=message,
@@ -162,8 +210,10 @@ def contact(request):
         'contacts': contacts,
         'resolved_contacts': resolved_contacts,
         'pending_contacts': pending_contacts,
-        'is_admin_user': is_admin_user,  # Pass to template
-        'user_ip': ip_address,  # Pass to template for display
+        'is_admin_user': is_admin_user,
+        'user_ip': ip_address,
+        'user_hostname': hostname,
+        'user_username': username,
     })
 
 # Issue Detail - Anyone can view
@@ -181,6 +231,8 @@ def issue_edit(request, pk):
         contact.department = request.POST.get('department')
         contact.phone = request.POST.get('phone')
         contact.ip_address = request.POST.get('ip_address')
+        contact.hostname = request.POST.get('hostname')
+        contact.username = request.POST.get('username')
         contact.priority = request.POST.get('priority')
         contact.message = request.POST.get('message')
         
@@ -259,6 +311,8 @@ def resolved_issues_excel(request):
             'Department': contact.department,
             'Extension': contact.phone,
             'IP Address': contact.ip_address or '',
+            'Hostname': contact.hostname or '',
+            'Username': contact.username or '',
             'OS': contact.os_info or 'N/A',
             'Priority': contact.priority,
             'Status': contact.status,

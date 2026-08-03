@@ -2,7 +2,96 @@
 // CONTACT PAGE SPECIFIC JAVASCRIPT
 // ============================================
 
+// ===============================
+// PREVENT CACHING - Force fresh load every time
+// ===============================
+(function preventCaching() {
+    // Add cache-busting parameter to all links and forms
+    const cacheBuster = Date.now();
+    
+    // Override fetch and XMLHttpRequest to add cache-busting
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+        if (typeof url === 'string' && url.includes('?')) {
+            url += '&_=' + cacheBuster;
+        } else if (typeof url === 'string') {
+            url += '?_=' + cacheBuster;
+        }
+        return originalFetch.call(this, url, options);
+    };
+    
+    // Add cache-busting to all anchor tags
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (link && link.href && !link.href.startsWith('javascript:')) {
+            const url = new URL(link.href);
+            url.searchParams.set('_t', Date.now());
+            link.href = url.toString();
+        }
+    });
+    
+    // Add cache-busting to forms
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form && form.action) {
+            const url = new URL(form.action);
+            url.searchParams.set('_t', Date.now());
+            form.action = url.toString();
+        }
+    });
+    
+    console.log('Cache prevention enabled - Page will always load fresh');
+})();
+
 document.addEventListener("DOMContentLoaded", function () {
+
+    // ===============================
+    // CAPTURE CLIENT HOSTNAME
+    // ===============================
+    function captureClientHostname() {
+        const hostnameInput = document.getElementById('hostname_hidden');
+        if (!hostnameInput) return;
+        
+        let hostname = '';
+        
+        // Method 1: Try to get from window.location (works for network names)
+        try {
+            hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                hostname = '';
+            }
+        } catch(e) {}
+        
+        // Method 2: Try to get from navigator (some browsers expose it)
+        if (!hostname) {
+            try {
+                const ua = navigator.userAgent;
+                const match = ua.match(/\(([^)]+)\)/);
+                if (match) {
+                    const parts = match[1].split(';');
+                    for (let part of parts) {
+                        part = part.trim();
+                        if (part && !part.match(/windows|mac|linux|android|iphone|ipad/i)) {
+                            hostname = part;
+                            break;
+                        }
+                    }
+                }
+            } catch(e) {}
+        }
+        
+        // If we got a hostname and it's not localhost, store it
+        if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+            hostnameInput.value = hostname;
+            console.log('Client hostname captured:', hostname);
+        } else {
+            hostnameInput.value = '';
+            console.log('Could not capture client hostname, will use server fallback');
+        }
+    }
+
+    // Call the function to capture hostname
+    captureClientHostname();
 
     // ===============================
     // Hide Django Messages After 5s
@@ -136,6 +225,66 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addName = addName;
     window.removeName = removeName;
     window.updateTags = updateTags;
+
+    // ===============================
+    // AUTO-REMOVE RESOLVED ISSUES FROM SLIDER
+    // ===============================
+    function removeResolvedIssue(issueId) {
+        // Find the card with this issue ID
+        const card = document.querySelector(`[data-issue-id="${issueId}"]`);
+        if (card) {
+            // Animate removal
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                card.remove();
+                // Update total count
+                updateIssueCount();
+                // Refresh slider indicators
+                refreshSlider();
+                // Update total cards count
+                updateTotalCards();
+            }, 500);
+        }
+    }
+
+    function updateIssueCount() {
+        const totalSpan = document.querySelector('.ip-info-banner .far.fa-clock');
+        if (totalSpan) {
+            const remainingCards = document.querySelectorAll('.issue-slider .contact-card').length;
+            const parentSpan = totalSpan.closest('span');
+            if (parentSpan) {
+                parentSpan.textContent = ` Total: ${remainingCards} issue${remainingCards !== 1 ? 's' : ''}`;
+            }
+        }
+    }
+
+    function refreshSlider() {
+        // Recalculate slider dimensions
+        const slider = document.getElementById('issueSlider');
+        if (slider) {
+            // Trigger resize event to recalculate
+            window.dispatchEvent(new Event('resize'));
+        }
+    }
+
+    function updateTotalCards() {
+        // Update the totalCards variable in the slider
+        const slider = document.getElementById('issueSlider');
+        if (slider) {
+            // The slider will recalculate on next scroll event
+            // Dispatch scroll event to trigger recalculation
+            slider.dispatchEvent(new Event('scroll'));
+        }
+    }
+
+    // Listen for messages from the detail page
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'issue_resolved') {
+            removeResolvedIssue(event.data.issueId);
+        }
+    });
 
     // ===============================
     // ISSUE SLIDER - HORIZONTAL SCROLL
