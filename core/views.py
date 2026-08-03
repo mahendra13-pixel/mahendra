@@ -127,15 +127,23 @@ def contact(request):
     
     contacts = Contact.objects.filter(is_resolved=False).order_by('-id')
     resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('-id')
+    
+    # Get pending and in-progress issues for the modal
+    pending_contacts = Contact.objects.filter(
+        is_resolved=False,
+        status__in=['Pending', 'In Progress']
+    ).order_by('-created_at')
 
     selected_date = request.GET.get('date')
     if selected_date:
         contacts = contacts.filter(date=selected_date)
         resolved_contacts = resolved_contacts.filter(date=selected_date)
+        pending_contacts = pending_contacts.filter(date=selected_date)
 
     return render(request, 'core/contact.html', {
         'contacts': contacts,
         'resolved_contacts': resolved_contacts,
+        'pending_contacts': pending_contacts,  # Pass to template
     })
 
 # Issue Detail - Anyone can view

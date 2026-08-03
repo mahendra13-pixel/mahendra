@@ -9,6 +9,55 @@
 
 {% block content %}
 
+<!-- PENDING ISSUES MODAL - Shows on page load only if there are pending/in-progress issues -->
+{% if pending_contacts %}
+<div class="pending-modal-overlay" id="pendingModal">
+    <div class="pending-modal-box">
+        <button class="pending-modal-close" id="pendingModalClose" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="pending-modal-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            Pending & In Progress Issues
+            <span class="count-badge">
+                {{ pending_contacts|length }} issue{{ pending_contacts|pluralize }} require attention
+            </span>
+        </div>
+        
+        <ul class="pending-modal-list">
+            {% for contact in pending_contacts %}
+            <li>
+                <span class="issue-title">
+                    <i class="fas fa-user-circle"></i> {{ contact.name }}
+                </span>
+                <span class="badge-status {% if contact.status == 'Pending' %}badge-pending{% else %}badge-inprogress{% endif %}">
+                    {{ contact.status }}
+                </span>
+                <span class="issue-details">
+                    <i class="fas fa-building"></i> {{ contact.department }} &nbsp;|&nbsp;
+                    <i class="fas fa-phone"></i> {{ contact.phone }} &nbsp;|&nbsp;
+                    <i class="fas fa-flag"></i> {{ contact.priority }}
+                </span>
+                <span class="issue-details" style="margin-top: 6px; opacity: 0.8;">
+                    <i class="fas fa-comment"></i> {{ contact.message|truncatechars:80 }}
+                </span>
+                <span class="issue-details" style="margin-top: 4px; font-size: 0.7rem; opacity: 0.6;">
+                    <i class="far fa-clock"></i> {{ contact.created_at|date:"Y-m-d H:i" }}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <div class="pending-modal-footer">
+            <button class="btn" id="pendingModalCloseBtn">
+                <i class="fas fa-check-circle"></i> I Understand
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Contact Form Section -->
 <div class="contact-form-side">
     <div class="contact-form-card">
@@ -225,7 +274,6 @@
                                     {{ contact.status }}
                                 </span>
                             </p>
-                            <!-- ✅ CHANGED: Using created_at with date/time filters -->
                             <p style="margin:2px 0;"><strong>Date:</strong> {{ contact.created_at|date:"Y-m-d" }}</p>
                             <p style="margin:2px 0;"><strong>Time:</strong> {{ contact.created_at|time:"H:i:s" }}</p>
                             <p style="margin:2px 0;"><strong>Issue:</strong> {{ contact.message|truncatechars:50 }}</p>
@@ -291,7 +339,6 @@
                     {{ contact.status }}
                 </span>
             </p>
-            <!-- ✅ CHANGED: Using created_at with date/time filters -->
             <p><strong>Date:</strong> {{ contact.created_at|date:"Y-m-d" }}</p>
             <p><strong>Time:</strong> {{ contact.created_at|time:"H:i:s" }}</p>
             <p style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
@@ -317,11 +364,34 @@
     </div>
 </section>
 
-{% if request.user.is_authenticated and request.user.is_staff %}
-{% endif %}
-
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/contact.js' %}"></script>
+<script>
+    // Pending Modal - Only show if there are pending/in-progress issues
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('pendingModal');
+        if (modal) {
+            // Close modal when clicking the X button or "I Understand" button
+            const closeBtn = document.getElementById('pendingModalClose');
+            const closeBtn2 = document.getElementById('pendingModalCloseBtn');
+            
+            function closeModal() {
+                modal.style.display = 'none';
+            }
+            
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (closeBtn2) closeBtn2.addEventListener('click', closeModal);
+            
+            // Prevent closing when clicking outside (only close with X button)
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    // Don't close - only close with X button
+                    e.stopPropagation();
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

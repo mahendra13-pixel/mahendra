@@ -621,3 +621,359 @@
         font-size: 0.6rem !important;
     }
 }
+
+/* ============================================
+   PENDING ISSUES MODAL - GREY THEME
+   ============================================ */
+
+.pending-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.pending-modal-box {
+    background: #6b7280;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow-y: auto;
+    animation: pendingModalSlideIn 0.3s ease;
+}
+
+@keyframes pendingModalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.pending-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.pending-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.pending-modal-title {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 15px;
+}
+
+.pending-modal-title i {
+    margin-right: 10px;
+}
+
+.pending-modal-title .count-badge {
+    font-size: 0.8rem;
+    display: block;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.pending-modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: white;
+}
+
+.pending-modal-list li {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #fbbf24;
+    transition: all 0.3s ease;
+}
+
+.pending-modal-list li:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+}
+
+.pending-modal-list li .issue-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: white;
+}
+
+.pending-modal-list li .issue-details {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-top: 4px;
+    display: block;
+}
+
+.pending-modal-list li .issue-details i {
+    margin-right: 4px;
+}
+
+.pending-modal-list li .badge-status {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.badge-pending {
+    background: #f59e0b;
+    color: #000;
+}
+
+.badge-inprogress {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.pending-modal-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 40px 0;
+}
+
+.pending-modal-empty i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.pending-modal-footer {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pending-modal-footer .btn {
+    background: white;
+    color: #6b7280;
+    border: none;
+    padding: 8px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pending-modal-footer .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   ALL BUTTONS - GREY THEME (OVERRIDES)
+   ============================================ */
+
+/* Style ALL buttons on the contact page - grey with white text */
+.btn,
+.btn-sm,
+.btn-primary,
+.btn-success,
+.btn-warning,
+.btn-danger,
+.btn-info,
+.btn-secondary,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-warning,
+.btn-outline-danger,
+.btn-outline-info,
+.btn-outline-secondary,
+.btn-outline-dark,
+.issue-slider .contact-card .btn,
+.issue-slider .contact-card .btn-sm,
+.issue-slider .contact-card .btn-outline-dark,
+.admin-controls .btn,
+.admin-controls .btn-primary,
+.modal .btn,
+.modal .btn-sm,
+.modal .btn-primary,
+.modal .btn-success,
+.modal .btn-warning,
+.modal .btn-danger,
+.modal .btn-info,
+.modal .btn-secondary,
+.modal .btn-outline-dark,
+.modal .btn-light,
+.resolved-modal .modal-body .btn,
+.resolved-modal .modal-body .btn-sm,
+.resolved-modal .modal-body .btn-primary,
+.resolved-modal .modal-body .btn-success,
+.resolved-modal .modal-body .btn-warning,
+.resolved-modal .modal-body .btn-danger,
+.resolved-modal .modal-body .btn-info,
+.resolved-modal .modal-body .btn-secondary,
+.resolved-modal .modal-body .btn-outline-dark,
+.resolved-modal .modal-footer .btn,
+.resolved-modal .modal-footer .btn-sm,
+.resolved-modal .modal-footer .btn-primary,
+.resolved-modal .modal-footer .btn-success,
+.resolved-modal .modal-footer .btn-warning,
+.resolved-modal .modal-footer .btn-danger,
+.resolved-modal .modal-footer .btn-info,
+.resolved-modal .modal-footer .btn-secondary,
+.resolved-modal .contact-card .btn,
+.resolved-modal .contact-card .btn-sm,
+.resolved-modal .contact-card .btn-primary,
+.resolved-modal .contact-card .btn-success,
+.resolved-modal .contact-card .btn-warning,
+.resolved-modal .contact-card .btn-danger,
+.resolved-modal .contact-card .btn-info,
+.resolved-modal .contact-card .btn-secondary,
+.resolved-modal .contact-card .btn-outline-dark,
+.resolved-modal .modal-body > .btn,
+.resolved-modal .modal-body > .btn-sm,
+#resolvedIssuesList .btn,
+#resolvedIssuesList .btn-sm,
+#resolvedIssuesList .btn-primary,
+#resolvedIssuesList .btn-success,
+#resolvedIssuesList .btn-warning,
+#resolvedIssuesList .btn-danger,
+#resolvedIssuesList .btn-info,
+#resolvedIssuesList .btn-secondary,
+#resolvedIssuesList .btn-outline-dark,
+.resolved-issue-item .btn,
+.resolved-issue-item .btn-sm,
+.resolved-issue-item .btn-primary,
+.resolved-issue-item .btn-success,
+.resolved-issue-item .btn-warning,
+.resolved-issue-item .btn-danger,
+.resolved-issue-item .btn-info,
+.resolved-issue-item .btn-secondary,
+.resolved-issue-item .btn-outline-dark {
+    background: #6b7280 !important;
+    color: white !important;
+    border-color: #6b7280 !important;
+}
+
+/* Special override for btn-light (used in Export Excel button) */
+.modal .btn-light,
+.resolved-modal .modal-body .btn-light,
+.resolved-modal .modal-footer .btn-light {
+    background: #6b7280 !important;
+    color: white !important;
+    border-color: #6b7280 !important;
+}
+
+/* Hover state for ALL buttons */
+.btn:hover,
+.btn-sm:hover,
+.btn-primary:hover,
+.btn-success:hover,
+.btn-warning:hover,
+.btn-danger:hover,
+.btn-info:hover,
+.btn-secondary:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover,
+.btn-outline-danger:hover,
+.btn-outline-info:hover,
+.btn-outline-secondary:hover,
+.btn-outline-dark:hover,
+.issue-slider .contact-card .btn:hover,
+.issue-slider .contact-card .btn-sm:hover,
+.issue-slider .contact-card .btn-outline-dark:hover,
+.admin-controls .btn:hover,
+.admin-controls .btn-primary:hover,
+.modal .btn:hover,
+.modal .btn-sm:hover,
+.modal .btn-primary:hover,
+.modal .btn-success:hover,
+.modal .btn-warning:hover,
+.modal .btn-danger:hover,
+.modal .btn-info:hover,
+.modal .btn-secondary:hover,
+.modal .btn-outline-dark:hover,
+.modal .btn-light:hover,
+.resolved-modal .modal-body .btn:hover,
+.resolved-modal .modal-body .btn-sm:hover,
+.resolved-modal .modal-body .btn-primary:hover,
+.resolved-modal .modal-body .btn-success:hover,
+.resolved-modal .modal-body .btn-warning:hover,
+.resolved-modal .modal-body .btn-danger:hover,
+.resolved-modal .modal-body .btn-info:hover,
+.resolved-modal .modal-body .btn-secondary:hover,
+.resolved-modal .modal-body .btn-outline-dark:hover,
+.resolved-modal .modal-footer .btn:hover,
+.resolved-modal .modal-footer .btn-sm:hover,
+.resolved-modal .modal-footer .btn-primary:hover,
+.resolved-modal .modal-footer .btn-success:hover,
+.resolved-modal .modal-footer .btn-warning:hover,
+.resolved-modal .modal-footer .btn-danger:hover,
+.resolved-modal .modal-footer .btn-info:hover,
+.resolved-modal .modal-footer .btn-secondary:hover,
+.resolved-modal .modal-footer .btn-outline-dark:hover,
+.resolved-modal .contact-card .btn:hover,
+.resolved-modal .contact-card .btn-sm:hover,
+.resolved-modal .contact-card .btn-primary:hover,
+.resolved-modal .contact-card .btn-success:hover,
+.resolved-modal .contact-card .btn-warning:hover,
+.resolved-modal .contact-card .btn-danger:hover,
+.resolved-modal .contact-card .btn-info:hover,
+.resolved-modal .contact-card .btn-secondary:hover,
+.resolved-modal .contact-card .btn-outline-dark:hover,
+.resolved-modal .modal-body > .btn:hover,
+.resolved-modal .modal-body > .btn-sm:hover,
+#resolvedIssuesList .btn:hover,
+#resolvedIssuesList .btn-sm:hover,
+#resolvedIssuesList .btn-primary:hover,
+#resolvedIssuesList .btn-success:hover,
+#resolvedIssuesList .btn-warning:hover,
+#resolvedIssuesList .btn-danger:hover,
+#resolvedIssuesList .btn-info:hover,
+#resolvedIssuesList .btn-secondary:hover,
+#resolvedIssuesList .btn-outline-dark:hover,
+.resolved-issue-item .btn:hover,
+.resolved-issue-item .btn-sm:hover,
+.resolved-issue-item .btn-primary:hover,
+.resolved-issue-item .btn-success:hover,
+.resolved-issue-item .btn-warning:hover,
+.resolved-issue-item .btn-danger:hover,
+.resolved-issue-item .btn-info:hover,
+.resolved-issue-item .btn-secondary:hover,
+.resolved-issue-item .btn-outline-dark:hover {
+    background: #4b5563 !important;
+    border-color: #4b5563 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(107, 114, 128, 0.25);
+    color: white !important;
+}
