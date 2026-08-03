@@ -103,14 +103,18 @@ def blog(request):
     return render(request, 'core/blog.html')
 
 # Function to generate Ticket ID
+# Function to generate Ticket ID - FIXED
 def generate_ticket_id(contact):
-    """Generate Ticket ID in format IT-001, IT-002, etc."""
-    # Get all contacts ordered by id
-    all_contacts = Contact.objects.filter(id__lte=contact.id).order_by('id')
-    # Find the index of this contact
-    for idx, c in enumerate(all_contacts, 1):
+    """Generate Ticket ID in format IT-001, IT-002, etc. (only for resolved issues)"""
+    # Get ONLY resolved contacts ordered by id
+    all_resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')
+    
+    # Find the index of this contact among resolved contacts
+    for idx, c in enumerate(all_resolved_contacts, 1):
         if c.id == contact.id:
             return f"IT-{str(idx).zfill(3)}"
+    
+    # If contact is not resolved, fallback to its ID
     return f"IT-{str(contact.id).zfill(3)}"
 
 # Contact Page - Main Form (Landing Page - Public)
@@ -306,17 +310,17 @@ def issue_mark_done(request, pk):
     messages.success(request, "Issue marked as resolved.")
     return redirect('core:issue_detail', pk=contact.pk)
 
-# Resolved Issues Excel Export - Admin Only
+# Resolved Issues Excel Export (Full) - Admin Only
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def resolved_issues_excel(request):
     selected_date = request.GET.get('date')
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')  # CHANGED: -id to id (ascending)
+    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')  # Ascending order
     
     if selected_date:
         resolved_contacts = resolved_contacts.filter(date=selected_date)
 
-    # Create DataFrame with ALL fields in the specified order
+    # Create DataFrame with ALL fields in the specified order (20 columns)
     data = []
     for contact in resolved_contacts:
         # Convert to local time for display
@@ -393,6 +397,85 @@ def resolved_issues_excel(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     filename = f"resolved_issues_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+     
+    return response
+
+# Resolved Issues Excel Export (Compact) - Admin Only
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def resolved_issues_excel_compact(request):
+    selected_date = request.GET.get('date')
+    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')  # Ascending order
+    
+    if selected_date:
+        resolved_contacts = resolved_contacts.filter(date=selected_date)
+
+    # Create DataFrame with ONLY Date to Remarks (12 columns)
+    data = []
+    for contact in resolved_contacts:
+        # Convert to local time for display
+        created_at_local = timezone.localtime(contact.created_at) if contact.created_at else None
+        
+        # Generate Ticket ID
+        ticket_id = generate_ticket_id(contact)
+        
+        data.append({
+            # ONLY 12 COLUMNS: Date to Remarks
+            'Date': created_at_local.strftime('%d-%b-%Y') if created_at_local else '',
+            'Ticket ID': ticket_id,
+            'Department': contact.department,
+            'Name': contact.name,
+            'Issue/Message': contact.message,
+            'Priority': contact.priority,
+            'Call Attended By': contact.call_attended_by or '',
+            'Assigned To': contact.assigned_to or '',
+            'Handover To': contact.handover_to or '',
+            'Solved By': contact.solved_by or '',
+            'Status': contact.status,
+            'Remarks': contact.remarks or '',
+        })
+    
+    df = pd.DataFrame(data)
+    
+    # Create Excel file in memory
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Resolved Issues (Compact)', index=False)
+        
+        # Auto-adjust column widths
+        worksheet = writer.sheets['Resolved Issues (Compact)']
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Add header styling
+        from openpyxl.styles import Font, PatternFill, Alignment
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="1f6f4a", end_color="1f6f4a", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        for cell in worksheet[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+    
+    output.seek(0)
+    
+    # Create response
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"resolved_issues_compact_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
      
     return response
