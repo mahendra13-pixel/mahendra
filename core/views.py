@@ -165,7 +165,7 @@ def contact(request):
         is_resolved = False
         if action == 'resolve':
             is_resolved = True
-            status = 'Resolved'
+            status = 'Closed'
         
         contact = Contact.objects.create(
             name=name,
@@ -303,7 +303,7 @@ def issue_mark_done(request, pk):
     contact = get_object_or_404(Contact, pk=pk)
     now = timezone.localtime(timezone.now())
     contact.is_resolved = True
-    contact.status = 'Resolved'
+    contact.status = 'Closed'
     contact.resolved_at = now
     contact.updated_at = now
     contact.save()
