@@ -50,7 +50,8 @@
                                     <th style="white-space: nowrap;">Priority</th>
                                     <td>
                                         <span class="badge 
-                                            {% if contact.priority == 'High' %}bg-danger
+                                            {% if contact.priority == 'Urgent' %}bg-danger
+                                            {% elif contact.priority == 'High' %}bg-danger
                                             {% elif contact.priority == 'Medium' %}bg-warning text-dark
                                             {% elif contact.priority == 'Low' %}bg-success
                                             {% else %}bg-secondary{% endif %}"

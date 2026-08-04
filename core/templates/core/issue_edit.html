@@ -76,7 +76,7 @@
                                     <option value="Low" {% if contact.priority == 'Low' %}selected{% endif %}>Low</option>
                                     <option value="Medium" {% if contact.priority == 'Medium' %}selected{% endif %}>Medium</option>
                                     <option value="High" {% if contact.priority == 'High' %}selected{% endif %}>High</option>
-                                    <option value="Critical" {% if contact.priority == 'Critical' %}selected{% endif %}>Critical</option>
+                                    <option value="Urgent" {% if contact.priority == 'Urgent' %}selected{% endif %}>Urgent</option>
                                 </select>
                             </div>
 
@@ -85,7 +85,6 @@
                                 <select id="status" name="status" class="form-select">
                                     <option value="Pending" {% if contact.status == 'Pending' %}selected{% endif %}>Pending</option>
                                     <option value="In Progress" {% if contact.status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                                    <option value="Resolved" {% if contact.status == 'Resolved' %}selected{% endif %}>Resolved</option>
                                     <option value="Closed" {% if contact.status == 'Closed' %}selected{% endif %}>Closed</option>
                                 </select>
                             </div>
