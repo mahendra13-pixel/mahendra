@@ -111,6 +111,25 @@
                                     <th style="white-space: nowrap;" class="align-top">Issue</th>
                                     <td class="text-wrap" style="word-break: break-word;">{{ contact.message }}</td>
                                 </tr>
+                                {% if contact.media_file %}
+                                <tr>
+                                    <th style="white-space: nowrap;" class="align-top">Media</th>
+                                    <td>
+                                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                                            <!-- Download Button -->
+                                            <a href="{{ contact.media_file.url }}" download
+                                                class="btn btn-sm btn-success">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                            <!-- File Info -->
+                                            <span style="font-size: 0.7rem; color: #6b7280;">
+                                                {{ contact.media_file.name|cut:"media_files/" }}
+                                                ({{ contact.media_file.size|filesizeformat }})
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -121,7 +140,7 @@
                         <a href="javascript:window.close()" class="btn btn-secondary btn-sm">
                             <i class="fas fa-times"></i> Close
                         </a>
-                        
+
                         {% if request.user.is_staff or request.user.is_superuser %}
                         <div class="d-flex flex-wrap gap-2">
                             <a href="{% url 'core:issue_edit' contact.id %}" class="btn btn-warning btn-sm">

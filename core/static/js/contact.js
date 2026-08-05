@@ -680,3 +680,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log('Contact page functionality loaded - Peaceful Boys Hostel');
 });
+// ===============================
+// VIDEO UPLOAD - Edit page
+// ===============================
+function updateVideoLabelEdit(input) {
+    const fileNameSpan = document.getElementById('videoFileNameEdit');
+    if (input.files && input.files.length > 0) {
+        fileNameSpan.textContent = '🎬 ' + input.files[0].name;
+    } else {
+        fileNameSpan.textContent = '';
+    }
+}
+
+// ===============================
+// MEDIA UPLOAD - Contact form
+// ===============================
+function updateMediaLabel(input) {
+    const fileNameSpan = document.getElementById('mediaFileName');
+    if (input.files && input.files.length > 0) {
+        const file = input.files[0];
+        const fileType = file.type.startsWith('video/') ? '🎬' : '🖼️';
+        fileNameSpan.textContent = fileType + ' ' + file.name;
+    } else {
+        fileNameSpan.textContent = '';
+    }
+}
+
+// ===============================
+// MEDIA UPLOAD - Edit page (All file types)
+// ===============================
+function updateMediaLabelEdit(input) {
+    const fileNameSpan = document.getElementById('mediaFileNameEdit');
+    if (input.files && input.files.length > 0) {
+        const file = input.files[0];
+        const fileType = file.type.startsWith('video/') ? '🎬' : 
+                        file.type.startsWith('image/') ? '🖼️' :
+                        file.type.startsWith('application/pdf') ? '📄' :
+                        '📎';
+        fileNameSpan.textContent = fileType + ' ' + file.name;
+    } else {
+        fileNameSpan.textContent = '';
+    }
+}

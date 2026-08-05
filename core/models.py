@@ -6,14 +6,13 @@ class Contact(models.Model):
         ('Low', 'Low'),
         ('Medium', 'Medium'),
         ('High', 'High'),
-        ('Critical', 'Critical'),
+        ('Urgent', 'Urgent'),  # Changed from 'Critical' to 'Urgent'
     ]
     
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
-        ('Resolved', 'Resolved'),
-        ('Closed', 'Closed'),
+        ('Closed', 'Closed'),  # Removed 'Resolved'
     ]
     
     # Staff choices for dropdown
@@ -36,34 +35,15 @@ class Contact(models.Model):
     date = models.DateField(auto_now_add=True, null=True, blank=True)
     time = models.TimeField(auto_now_add=True, null=True, blank=True)
     message = models.TextField()
+    media_file = models.FileField(upload_to='media_files/', null=True, blank=True, verbose_name="Media File (Image/Video)")
     
-    # New fields with restricted choices
-    call_attended_by = models.CharField(
-        max_length=100, 
-        choices=STAFF_CHOICES, 
-        blank=True, 
-        null=True
-    )
-    handover_to = models.CharField(
-        max_length=100, 
-        choices=STAFF_CHOICES, 
-        blank=True, 
-        null=True
-    )
-    solved_by = models.CharField(
-        max_length=100, 
-        choices=STAFF_CHOICES, 
-        blank=True, 
-        null=True
-    )
+    # Multi-select fields (stores comma-separated values)
+    call_attended_by = models.CharField(max_length=255, blank=True, null=True)
+    handover_to = models.CharField(max_length=255, blank=True, null=True)
+    solved_by = models.CharField(max_length=255, blank=True, null=True)
     
     # NEW FIELDS: Assigned To and Remarks
-    assigned_to = models.CharField(
-        max_length=100, 
-        choices=STAFF_CHOICES, 
-        blank=True, 
-        null=True
-    )
+    assigned_to = models.CharField(max_length=255, blank=True, null=True)
     remarks = models.TextField(blank=True, null=True)
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
@@ -80,6 +60,6 @@ class Contact(models.Model):
     def mark_as_resolved(self):
         """Mark the issue as resolved and set resolved_at timestamp"""
         self.is_resolved = True
-        self.status = 'Resolved'
+        self.status = 'Closed'  # Changed from 'Resolved' to 'Closed'
         self.resolved_at = timezone.now()
         self.save()

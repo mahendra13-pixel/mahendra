@@ -23,7 +23,7 @@
                     {% endfor %}
                     {% endif %}
 
-                    <form method="POST" action="{% url 'core:issue_edit' contact.id %}">
+                    <form method="POST" action="{% url 'core:issue_edit' contact.id %}" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <div class="row">
@@ -151,8 +151,51 @@
 
                         <div class="mb-3">
                             <label for="message" class="form-label">Issue or Message</label>
-                            <textarea id="message" name="message" rows="4"
-                                class="form-control">{{ contact.message }}</textarea>
+                            <textarea id="message" name="message" rows="4" class="form-control">{{ contact.message }}</textarea>
+                        </div>
+
+                        <!-- Media Section -->
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Media Attachment</label>
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <!-- Media Upload -->
+                                    <div class="media-upload-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                                        <label for="media_upload_edit" style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #f3f4f6; border-radius: 20px; border: 1.5px dashed #d1d5db; font-size: 0.8rem; transition: all 0.3s ease; width: fit-content;">
+                                            <i class="fas fa-paperclip" style="font-size: 1.1rem; color: #2563eb;"></i>
+                                            <span style="font-weight: 500;">Upload File</span>
+                                            <span id="mediaFileNameEdit" style="color: #6b7280; font-weight: normal; margin-left: 4px;"></span>
+                                        </label>
+                                        <input type="file" id="media_upload_edit" name="media_file" style="display: none;" onchange="updateMediaLabelEdit(this)">
+                                        <small class="text-muted" style="font-size: 0.65rem;">
+                                            <i class="fas fa-file"></i> Max: 100MB
+                                        </small>
+                                    </div>
+
+                                    <!-- View/Download Buttons - Only show if media exists -->
+                                    {% if contact.media_file %}
+                                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                                        <a href="{{ contact.media_file.url }}" target="_blank" class="btn btn-sm btn-info" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 14px;">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="{{ contact.media_file.url }}" download class="btn btn-sm btn-success" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 14px;">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                        <!-- Remove file checkbox -->
+                                        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #dc2626;">
+                                            <input type="checkbox" name="media_clear" value="on" style="cursor: pointer; width: 14px; height: 14px;">
+                                            Remove
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if contact.media_file %}
+                                <div style="margin-top: 6px; font-size: 0.75rem; color: #6b7280;">
+                                    <i class="fas fa-file"></i> Current: {{ contact.media_file.name|cut:"media_files/" }}
+                                    ({{ contact.media_file.size|filesizeformat }})
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
