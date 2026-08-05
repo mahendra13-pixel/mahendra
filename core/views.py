@@ -103,7 +103,6 @@ def blog(request):
     return render(request, 'core/blog.html')
 
 # Function to generate Ticket ID
-# Function to generate Ticket ID - FIXED
 def generate_ticket_id(contact):
     """Generate Ticket ID in format IT-001, IT-002, etc. (only for resolved issues)"""
     # Get ONLY resolved contacts ordered by id
@@ -180,8 +179,9 @@ def contact(request):
             call_attended_by=call_attended_by,
             handover_to=handover_to,
             solved_by=solved_by,
-            assigned_to=assigned_to,  # NEW
-            remarks=remarks,          # NEW
+            assigned_to=assigned_to,
+            remarks=remarks,
+            media_file=request.FILES.get('media_file') if request.FILES else None,
             status=status,
             is_resolved=is_resolved,
             date=now.date(),
@@ -266,17 +266,25 @@ def issue_edit(request, pk):
         contact.assigned_to = ', '.join(request.POST.getlist('assigned_to'))
         contact.remarks = request.POST.get('remarks', '')
         
+        # Handle media file upload
+        if request.FILES.get('media_file'):
+            contact.media_file = request.FILES.get('media_file')
+        elif request.POST.get('media_clear') == 'on':
+            if contact.media_file:
+                contact.media_file.delete(save=False)
+                contact.media_file = None
+        
         contact.status = request.POST.get('status')
         
         # Get current time in Asia/Kathmandu
         now = timezone.localtime(timezone.now())
         contact.updated_at = now
         
-        # If status is set to Resolved, mark as resolved
-        if contact.status == 'Resolved' and not contact.is_resolved:
+        # If status is set to Closed, mark as resolved
+        if contact.status == 'Closed' and not contact.is_resolved:
             contact.is_resolved = True
             contact.resolved_at = now
-        elif contact.status != 'Resolved' and contact.is_resolved:
+        elif contact.status != 'Closed' and contact.is_resolved:
             contact.is_resolved = False
             contact.resolved_at = None
             
@@ -315,26 +323,20 @@ def issue_mark_done(request, pk):
 @user_passes_test(is_admin)
 def resolved_issues_excel(request):
     selected_date = request.GET.get('date')
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')  # Ascending order
+    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')
     
     if selected_date:
         resolved_contacts = resolved_contacts.filter(date=selected_date)
 
-    # Create DataFrame with ALL fields in the specified order (20 columns)
     data = []
     for contact in resolved_contacts:
-        # Convert to local time for display
         created_at_local = timezone.localtime(contact.created_at) if contact.created_at else None
         updated_at_local = timezone.localtime(contact.updated_at) if contact.updated_at else None
         resolved_at_local = timezone.localtime(contact.resolved_at) if contact.resolved_at else None
         
-        # Generate Ticket ID
         ticket_id = generate_ticket_id(contact)
         
         data.append({
-            # ORDER: Date, Ticket ID, Department, Name, Issue/Message, Priority,
-            # Call Attended By, Assigned To, Handover To, Solved By, Status, Remarks,
-            # Time, Extension, IP Address, OS, Created At, Updated At, Resolved At, Is Resolved
             'Date': created_at_local.strftime('%d-%b-%Y') if created_at_local else '',
             'Ticket ID': ticket_id,
             'Department': contact.department,
@@ -359,12 +361,10 @@ def resolved_issues_excel(request):
     
     df = pd.DataFrame(data)
     
-    # Create Excel file in memory
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name='Resolved Issues', index=False)
         
-        # Auto-adjust column widths
         worksheet = writer.sheets['Resolved Issues']
         for column in worksheet.columns:
             max_length = 0
@@ -378,7 +378,6 @@ def resolved_issues_excel(request):
             adjusted_width = min(max_length + 2, 50)
             worksheet.column_dimensions[column_letter].width = adjusted_width
         
-        # Add header styling
         from openpyxl.styles import Font, PatternFill, Alignment
         header_font = Font(bold=True, color="FFFFFF")
         header_fill = PatternFill(start_color="1f6f4a", end_color="1f6f4a", fill_type="solid")
@@ -391,7 +390,6 @@ def resolved_issues_excel(request):
     
     output.seek(0)
     
-    # Create response
     response = HttpResponse(
         output.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -406,22 +404,18 @@ def resolved_issues_excel(request):
 @user_passes_test(is_admin)
 def resolved_issues_excel_compact(request):
     selected_date = request.GET.get('date')
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')  # Ascending order
+    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')
     
     if selected_date:
         resolved_contacts = resolved_contacts.filter(date=selected_date)
 
-    # Create DataFrame with ONLY Date to Remarks (12 columns)
     data = []
     for contact in resolved_contacts:
-        # Convert to local time for display
         created_at_local = timezone.localtime(contact.created_at) if contact.created_at else None
         
-        # Generate Ticket ID
         ticket_id = generate_ticket_id(contact)
         
         data.append({
-            # ONLY 12 COLUMNS: Date to Remarks
             'Date': created_at_local.strftime('%d-%b-%Y') if created_at_local else '',
             'Ticket ID': ticket_id,
             'Department': contact.department,
@@ -438,12 +432,10 @@ def resolved_issues_excel_compact(request):
     
     df = pd.DataFrame(data)
     
-    # Create Excel file in memory
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name='Resolved Issues (Compact)', index=False)
         
-        # Auto-adjust column widths
         worksheet = writer.sheets['Resolved Issues (Compact)']
         for column in worksheet.columns:
             max_length = 0
@@ -457,7 +449,6 @@ def resolved_issues_excel_compact(request):
             adjusted_width = min(max_length + 2, 50)
             worksheet.column_dimensions[column_letter].width = adjusted_width
         
-        # Add header styling
         from openpyxl.styles import Font, PatternFill, Alignment
         header_font = Font(bold=True, color="FFFFFF")
         header_fill = PatternFill(start_color="1f6f4a", end_color="1f6f4a", fill_type="solid")
@@ -470,7 +461,6 @@ def resolved_issues_excel_compact(request):
     
     output.seek(0)
     
-    # Create response
     response = HttpResponse(
         output.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
