@@ -1,4 +1,4 @@
 Set WshShell = CreateObject("WScript.Shell")
 projectPath = "C:\Users\GIH\Documents\Farwest-Freelance & InfoTech\ff-infotech"
-command = "cd /d "" & projectPath & "" && py serve.py"
-WshShell.Run command, 0, False
+pyPath = "C:\Users\GIH\AppData\Local\Programs\Python\Launcher\py.exe"
+WshShell.Run "cmd /c cd /d "" & projectPath & "" && "" & pyPath & "" serve.py", 0, False

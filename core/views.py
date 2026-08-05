@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse
 from django.utils import timezone
 from .models import Contact
+from django.db import models  # ADD THIS IMPORT
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
@@ -201,15 +202,19 @@ def contact(request):
     # Get all unresolved issues
     contacts = Contact.objects.filter(is_resolved=False).order_by('-id')
     
-    # IP FILTERING: If not admin, only show issues with matching IP
+    # IP FILTERING: If not admin, only show issues with matching IP OR public issues
     if not is_admin_user:
-        contacts = contacts.filter(ip_address=ip_address)
+        contacts = contacts.filter(
+            models.Q(ip_address=ip_address) | models.Q(is_public=True)
+        )
     
     resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('-id')
     
-    # IP FILTERING: If not admin, only show resolved issues with matching IP
+    # IP FILTERING: If not admin, only show resolved issues with matching IP OR public issues
     if not is_admin_user:
-        resolved_contacts = resolved_contacts.filter(ip_address=ip_address)
+        resolved_contacts = resolved_contacts.filter(
+            models.Q(ip_address=ip_address) | models.Q(is_public=True)
+        )
     
     # Get pending and in-progress issues for the modal
     pending_contacts = Contact.objects.filter(
@@ -217,9 +222,11 @@ def contact(request):
         status__in=['Pending', 'In Progress']
     ).order_by('-created_at')
     
-    # IP FILTERING: If not admin, only show pending issues with matching IP
+    # IP FILTERING: If not admin, only show pending issues with matching IP OR public issues
     if not is_admin_user:
-        pending_contacts = pending_contacts.filter(ip_address=ip_address)
+        pending_contacts = pending_contacts.filter(
+            models.Q(ip_address=ip_address) | models.Q(is_public=True)
+        )
 
     selected_date = request.GET.get('date')
     if selected_date:
@@ -317,6 +324,22 @@ def issue_mark_done(request, pk):
     contact.save()
     messages.success(request, "Issue marked as resolved.")
     return redirect('core:issue_detail', pk=contact.pk)
+
+# Toggle Public/Private Issue - Admin Only
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def toggle_public_issue(request, pk):
+    """Toggle the public visibility of an issue"""
+    contact = get_object_or_404(Contact, pk=pk)
+    contact.is_public = not contact.is_public
+    contact.save()
+    
+    if contact.is_public:
+        messages.success(request, f"✅ Issue #{pk} is now PUBLIC - visible to everyone!")
+    else:
+        messages.warning(request, f"🔒 Issue #{pk} is now PRIVATE - only visible to the original IP")
+    
+    return redirect('core:contact')
 
 # Resolved Issues Excel Export (Full) - Admin Only
 @login_required(login_url='/admin/login/')
