@@ -36,6 +36,7 @@ class Contact(models.Model):
     time = models.TimeField(auto_now_add=True, null=True, blank=True)
     message = models.TextField()
     media_file = models.FileField(upload_to='media_files/', null=True, blank=True, verbose_name="Media File (Image/Video)")
+    is_public = models.BooleanField(default=False)
     
     # Multi-select fields (stores comma-separated values)
     call_attended_by = models.CharField(max_length=255, blank=True, null=True)

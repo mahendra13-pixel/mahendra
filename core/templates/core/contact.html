@@ -375,7 +375,15 @@
     <!-- Slider Container -->
     <div class="issue-slider" id="issueSlider">
         {% for contact in contacts %}
-        <div class="contact-card horizontal-card">
+        <div class="contact-card horizontal-card" style="position: relative; {% if contact.is_public %}border: 2px solid #22c55e;{% endif %}">
+            
+            <!-- Public Badge -->
+            {% if contact.is_public %}
+            <div style="position: absolute; top: 5px; right: 5px; background: #22c55e; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.6rem; font-weight: bold; z-index: 5;">
+                <i class="fas fa-globe"></i> PUBLIC
+            </div>
+            {% endif %}
+            
             <h5>{{ contact.department }}</h5>
             <p><strong>Name:</strong> {{ contact.name }}</p>
             <p><strong>Ext:</strong> {{ contact.phone }}</p>
@@ -414,10 +422,32 @@
             <p style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 <strong>Issue:</strong> {{ contact.message|truncatechars:50 }}
             </p>
-            <a href="{% url 'core:issue_detail' contact.id %}" target="_blank"
-                class="btn btn-sm btn-outline-dark mt-2 w-100">
-                <i class="fas fa-eye"></i> View Details
-            </a>
+            
+            <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;">
+                <!-- View Details -->
+                <a href="{% url 'core:issue_detail' contact.id %}" target="_blank"
+                    class="btn btn-sm btn-outline-dark flex-fill">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+                
+                <!-- Make Public/Private Toggle - Only visible to admin -->
+                {% if is_admin_user %}
+                <form method="POST" action="{% url 'core:toggle_public_issue' contact.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm 
+                        {% if contact.is_public %}btn-success{% else %}btn-outline-secondary{% endif %}"
+                        style="padding: 2px 10px; font-size: 0.65rem; 
+                               {% if contact.is_public %}background-color: #22c55e; border-color: #22c55e; color: white;{% else %}color: #6b7280;{% endif %}"
+                        title="{% if contact.is_public %}Make Private (visible only to original IP){% else %}Make Public (visible to everyone){% endif %}">
+                        {% if contact.is_public %}
+                        <i class="fas fa-globe" style="color: white;"></i> Public
+                        {% else %}
+                        <i class="fas fa-eye" style="color: #6b7280;"></i> Make Public
+                        {% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
         </div>
         {% empty %}
         <div class="contact-card" style="min-width: 100%; text-align: center; padding: 40px;">
