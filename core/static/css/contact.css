@@ -4,7 +4,7 @@
 
 /* Contact Section */
 .contact-section {
-    padding: 40px 0;
+    padding: 10px 0;
     background: var(--light);
 }
 
@@ -13,8 +13,8 @@
     max-width: 800px;
     margin: 0 auto;
     background: var(--white);
-    border-radius: 16px;
-    padding: 20px 25px;
+    border-radius: 12px;
+    padding: 12px 20px 10px 20px;
     box-shadow: var(--shadow-lg);
 }
 
@@ -23,43 +23,43 @@
 }
 
 .contact-form-card h3 {
-    font-size: 1.3rem;
-    margin-bottom: 4px;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
     color: var(--dark);
     text-align: center;
 }
 
 .contact-form-card > p {
     color: var(--gray);
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
 }
 
 /* Form Container */
 .contact-form-card form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 /* Form Rows - Perfect Grid */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 4px;
 }
 
 /* Form Groups - Full Width on Mobile */
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .form-group label {
     font-weight: 600;
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     color: var(--dark);
     margin-bottom: 0;
 }
@@ -72,11 +72,11 @@
 
 .input-icon i {
     position: absolute;
-    left: 10px;
+    left: 8px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--gray);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     z-index: 1;
     pointer-events: none;
 }
@@ -86,14 +86,15 @@
 .input-icon select,
 .input-icon textarea {
     width: 100%;
-    padding: 6px 10px 6px 32px;
+    padding: 4px 8px 4px 28px;
     border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 0.82rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
     font-family: inherit;
     transition: all 0.3s ease;
     background: #f9fafb;
     color: var(--dark);
+    min-height: 32px;
 }
 
 .input-icon input:focus,
@@ -108,14 +109,14 @@
 .input-icon input::placeholder,
 .input-icon textarea::placeholder {
     color: #9ca3af;
-    font-size: 0.78rem;
+    font-size: 0.68rem;
 }
 
 /* Select Dropdown */
 .input-icon select {
     appearance: none;
     cursor: pointer;
-    padding-right: 30px;
+    padding-right: 24px;
 }
 
 .input-icon select::-ms-expand {
@@ -124,33 +125,33 @@
 
 /* Textarea */
 .input-icon.textarea-icon i {
-    top: 10px;
+    top: 8px;
     transform: none;
 }
 
 .input-icon textarea {
-    padding: 6px 10px 6px 32px;
-    min-height: 60px;
+    padding: 4px 8px 4px 28px;
+    min-height: 44px;
     resize: vertical;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
 }
 
 /* Form Status Messages */
 #ho {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .alert {
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-weight: 500;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     margin-bottom: 2px;
 }
 
 /* Submit Buttons Container */
 .d-flex.gap-2 {
-    gap: 6px !important;
+    gap: 4px !important;
     margin-top: 2px;
 }
 
@@ -158,10 +159,10 @@
 .btn-primary,
 .btn-success {
     width: 100%;
-    padding: 7px 10px;
-    font-size: 0.88rem;
+    padding: 5px 8px;
+    font-size: 0.75rem;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 6px;
     border: none;
     transition: all 0.3s ease;
     margin-top: 0;
@@ -191,17 +192,17 @@
 
 .btn-primary i,
 .btn-success i {
-    margin-right: 6px;
+    margin-right: 4px;
 }
 
 /* Form Status */
 .form-status {
-    margin-top: 6px;
-    padding: 6px 10px;
-    border-radius: 6px;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
     display: none;
     text-align: center;
-    font-size: 0.82rem;
+    font-size: 0.7rem;
 }
 
 .form-status.success {
@@ -221,18 +222,18 @@
 /* ============ ADMIN CONTROLS ============ */
 .admin-controls {
     max-width: 800px;
-    margin: 10px auto;
+    margin: 4px auto;
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: wrap;
 }
 
 .admin-controls .btn {
-    padding: 5px 14px;
-    border-radius: 8px;
+    padding: 3px 10px;
+    border-radius: 6px;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.68rem;
 }
 
 .admin-controls .btn-primary {
@@ -240,8 +241,9 @@
 }
 
 .admin-controls .form-control {
-    padding: 5px 10px;
-    font-size: 0.82rem;
+    padding: 3px 8px;
+    font-size: 0.68rem;
+    min-height: 28px;
 }
 
 /* ============ RESOLVED ISSUES MODAL ============ */
@@ -250,7 +252,7 @@
 }
 
 .resolved-modal .modal-content {
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 /* ============ ISSUE SLIDER ============ */
@@ -258,7 +260,7 @@
     position: relative;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 4px 0;
+    padding: 2px 0;
 }
 
 /* Slider Navigation Buttons - ROUND WHITE */
@@ -267,8 +269,8 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 10;
-    width: 32px;
-    height: 32px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: white;
     color: var(--primary);
@@ -279,7 +281,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
+    font-size: 0.65rem;
 }
 
 .slider-nav:hover {
@@ -295,11 +297,11 @@
 }
 
 .slider-nav.prev {
-    left: -12px;
+    left: -8px;
 }
 
 .slider-nav.next {
-    right: -12px;
+    right: -8px;
 }
 
 .slider-nav:disabled {
@@ -318,9 +320,9 @@
 /* The Slider */
 .issue-slider {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     overflow-x: auto;
-    padding: 6px 3px 10px 3px;
+    padding: 4px 2px 6px 2px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
@@ -329,31 +331,31 @@
 
 /* Custom Scrollbar */
 .issue-slider::-webkit-scrollbar {
-    height: 4px;
+    height: 3px;
 }
 
 .issue-slider::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .issue-slider::-webkit-scrollbar-thumb {
     background: var(--primary);
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .issue-slider::-webkit-scrollbar-thumb:hover {
     background: var(--primary-dark);
 }
 
-/* Individual Card */
+/* Individual Card - COMPACT */
 .issue-slider .contact-card {
-    min-width: 180px;
-    max-width: 180px;
+    min-width: 160px;
+    max-width: 160px;
     flex-shrink: 0;
-    padding: 8px 10px;
+    padding: 5px 7px;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--white);
     transition: all 0.3s ease;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
@@ -366,36 +368,36 @@
 }
 
 .issue-slider .contact-card h5 {
-    font-size: 0.82rem;
-    margin-bottom: 3px;
+    font-size: 0.7rem;
+    margin-bottom: 2px;
     color: var(--dark);
     font-weight: 600;
 }
 
 .issue-slider .contact-card p {
     margin: 1px 0;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: #4b5563;
-    line-height: 1.3;
+    line-height: 1.2;
 }
 
 .issue-slider .contact-card .badge {
-    font-size: 0.6rem;
-    padding: 2px 6px;
+    font-size: 0.5rem;
+    padding: 1px 4px;
 }
 
 .issue-slider .contact-card .btn-sm {
-    font-size: 0.68rem;
-    padding: 2px 6px;
+    font-size: 0.55rem;
+    padding: 1px 4px;
 }
 
 .issue-slider .contact-card .d-flex.gap-2 {
-    gap: 4px !important;
+    gap: 2px !important;
 }
 
 .issue-slider .contact-card .d-flex.gap-2 .btn {
-    font-size: 0.65rem;
-    padding: 2px 4px;
+    font-size: 0.55rem;
+    padding: 1px 3px;
 }
 
 /* ============ STATUS BUTTONS - ALL GREY ============ */
@@ -424,13 +426,13 @@
 .scroll-indicators {
     display: flex;
     justify-content: center;
-    gap: 4px;
-    margin-top: 4px;
+    gap: 2px;
+    margin-top: 2px;
 }
 
 .scroll-dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     background: #d1d5db;
     transition: all 0.3s ease;
@@ -439,18 +441,18 @@
 
 .scroll-dot.active {
     background: var(--primary);
-    width: 14px;
+    width: 10px;
     border-radius: 2px;
 }
 
 /* ============ SECTION HEADERS ============ */
 .section-title {
     text-align: center;
-    margin: 12px 0 6px;
+    margin: 6px 0 4px;
 }
 
 .section-title h3 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--dark);
     margin-bottom: 0;
@@ -458,34 +460,34 @@
 
 .section-title p {
     color: var(--gray);
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     margin-top: 0;
 }
 
 /* ============ RESOLVED ISSUES MODAL CARDS ============ */
 .modal-body .contact-card {
-    padding: 8px 10px !important;
-    font-size: 0.7rem !important;
+    padding: 4px 6px !important;
+    font-size: 0.6rem !important;
 }
 
 .modal-body .contact-card h6 {
-    font-size: 0.78rem !important;
-    margin-bottom: 3px !important;
+    font-size: 0.65rem !important;
+    margin-bottom: 2px !important;
 }
 
 .modal-body .contact-card p {
     margin: 1px 0 !important;
-    font-size: 0.68rem !important;
+    font-size: 0.55rem !important;
 }
 
 .modal-body .contact-card .badge {
-    font-size: 0.58rem !important;
-    padding: 2px 6px !important;
+    font-size: 0.5rem !important;
+    padding: 1px 4px !important;
 }
 
 .modal-body .contact-card .btn-sm {
-    font-size: 0.65rem !important;
-    padding: 2px 6px !important;
+    font-size: 0.55rem !important;
+    padding: 1px 4px !important;
 }
 
 /* Modal status buttons also grey */
@@ -503,53 +505,54 @@
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1024px) {
     .slider-nav.prev {
-        left: -8px;
+        left: -6px;
     }
     
     .slider-nav.next {
-        right: -8px;
+        right: -6px;
     }
     
     .slider-nav {
-        width: 28px;
-        height: 28px;
-        font-size: 0.7rem;
+        width: 22px;
+        height: 22px;
+        font-size: 0.55rem;
     }
 }
 
 @media (max-width: 768px) {
     .contact-form-side {
-        padding: 14px 16px;
+        padding: 10px 14px;
         margin: 0 10px;
-        border-radius: 12px;
+        border-radius: 10px;
     }
     
     .contact-form-card h3 {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
     }
     
     .form-row {
         grid-template-columns: 1fr;
-        gap: 6px;
+        gap: 4px;
     }
     
     .input-icon input,
     .input-icon select,
     .input-icon textarea {
-        padding: 5px 8px 5px 28px;
-        font-size: 0.78rem;
+        padding: 4px 6px 4px 24px;
+        font-size: 0.68rem;
+        min-height: 28px;
     }
     
     .btn-primary,
     .btn-success {
-        padding: 6px 8px;
-        font-size: 0.82rem;
+        padding: 5px 6px;
+        font-size: 0.7rem;
     }
     
     .admin-controls {
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
     }
     
     .admin-controls .btn {
@@ -562,63 +565,63 @@
     }
     
     .issue-slider .contact-card {
-        min-width: 150px;
-        max-width: 150px;
-        padding: 6px 8px;
+        min-width: 130px;
+        max-width: 130px;
+        padding: 4px 5px;
     }
     
     .issue-slider {
-        gap: 8px;
-        padding: 4px 2px 8px 2px;
+        gap: 5px;
+        padding: 3px 2px 5px 2px;
     }
 }
 
 @media (max-width: 480px) {
     .contact-form-side {
-        padding: 10px 12px;
+        padding: 8px 10px;
         margin: 0 5px;
-        border-radius: 10px;
+        border-radius: 8px;
     }
     
     .contact-form-card h3 {
-        font-size: 1rem;
+        font-size: 0.85rem;
     }
     
     .contact-form-card > p {
-        font-size: 0.75rem;
-        margin-bottom: 8px;
+        font-size: 0.65rem;
+        margin-bottom: 4px;
     }
     
     .issue-slider .contact-card {
-        min-width: 130px;
-        max-width: 130px;
-        padding: 5px 6px;
+        min-width: 110px;
+        max-width: 110px;
+        padding: 3px 4px;
     }
     
     .issue-slider .contact-card h5 {
-        font-size: 0.7rem;
-    }
-    
-    .issue-slider .contact-card p {
         font-size: 0.6rem;
     }
     
-    .issue-slider .contact-card .badge {
+    .issue-slider .contact-card p {
         font-size: 0.5rem;
-        padding: 1px 4px;
+    }
+    
+    .issue-slider .contact-card .badge {
+        font-size: 0.45rem;
+        padding: 1px 3px;
     }
     
     .issue-slider .contact-card .btn-sm {
-        font-size: 0.55rem;
-        padding: 1px 4px;
+        font-size: 0.45rem;
+        padding: 1px 3px;
     }
     
     .modal-body .contact-card {
-        padding: 5px 6px !important;
+        padding: 3px 4px !important;
     }
     
     .modal-body .contact-card p {
-        font-size: 0.6rem !important;
+        font-size: 0.5rem !important;
     }
 }
 
@@ -645,8 +648,8 @@
     max-width: 800px;
     width: 90%;
     max-height: 80vh;
-    border-radius: 16px;
-    padding: 30px;
+    border-radius: 12px;
+    padding: 20px 24px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     position: relative;
     overflow-y: auto;
@@ -666,15 +669,15 @@
 
 .pending-modal-close {
     position: absolute;
-    top: 15px;
-    right: 20px;
+    top: 12px;
+    right: 16px;
     background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    font-size: 28px;
+    font-size: 24px;
     cursor: pointer;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -689,22 +692,22 @@
 
 .pending-modal-title {
     color: white;
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
     text-align: center;
     border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 15px;
+    padding-bottom: 10px;
 }
 
 .pending-modal-title i {
-    margin-right: 10px;
+    margin-right: 8px;
 }
 
 .pending-modal-title .count-badge {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     display: block;
     opacity: 0.7;
-    margin-top: 5px;
+    margin-top: 3px;
 }
 
 .pending-modal-list {
@@ -715,10 +718,10 @@
 }
 
 .pending-modal-list li {
-    padding: 12px 15px;
-    margin-bottom: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border-radius: 6px;
     border-left: 4px solid #fbbf24;
     transition: all 0.3s ease;
 }
@@ -730,28 +733,28 @@
 
 .pending-modal-list li .issue-title {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.85rem;
     color: white;
 }
 
 .pending-modal-list li .issue-details {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     opacity: 0.9;
-    margin-top: 4px;
+    margin-top: 3px;
     display: block;
 }
 
 .pending-modal-list li .issue-details i {
-    margin-right: 4px;
+    margin-right: 3px;
 }
 
 .pending-modal-list li .badge-status {
     display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.7rem;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.6rem;
     font-weight: 600;
-    margin-left: 8px;
+    margin-left: 6px;
 }
 
 .badge-pending {
@@ -767,19 +770,19 @@
 .pending-modal-empty {
     text-align: center;
     color: rgba(255, 255, 255, 0.7);
-    padding: 40px 0;
+    padding: 30px 0;
 }
 
 .pending-modal-empty i {
-    font-size: 3rem;
-    margin-bottom: 15px;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
     display: block;
 }
 
 .pending-modal-footer {
     text-align: center;
-    margin-top: 20px;
-    padding-top: 15px;
+    margin-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -787,8 +790,8 @@
     background: white;
     color: #6b7280;
     border: none;
-    padding: 8px 30px;
-    border-radius: 8px;
+    padding: 6px 24px;
+    border-radius: 6px;
     font-weight: 600;
     transition: all 0.3s ease;
 }

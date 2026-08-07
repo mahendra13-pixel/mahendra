@@ -4,20 +4,20 @@
 {% block title %}Edit Issue — {{ contact.department }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-1">
     <div class="row justify-content-center">
         <div class="col-md-8">
 
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-4">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-3 py-1">
                     <i class="fas fa-edit"></i> Edit Issue — {{ contact.department }}
                 </div>
 
-                <div class="card-body p-4">
+                <div class="card-body p-2">
 
                     {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-primary" role="alert">
+                    <div class="alert alert-primary" role="alert" style="padding: 4px 10px; margin-bottom: 4px; font-size: 0.8rem;">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -27,52 +27,52 @@
                         {% csrf_token %}
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Full Name</label>
-                                <input type="text" id="name" name="name" class="form-control"
+                            <div class="col-md-6 mb-2">
+                                <label for="name" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Full Name</label>
+                                <input type="text" id="name" name="name" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.name }}">
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="department" class="form-label">Department</label>
-                                <input type="text" id="department" name="department" class="form-control"
+                            <div class="col-md-6 mb-2">
+                                <label for="department" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Department</label>
+                                <input type="text" id="department" name="department" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.department }}">
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Extension Number</label>
-                                <input type="text" id="phone" name="phone" class="form-control"
+                            <div class="col-md-6 mb-2">
+                                <label for="phone" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Extension Number</label>
+                                <input type="text" id="phone" name="phone" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.phone }}">
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="ip_address" class="form-label">IP Address</label>
-                                <input type="text" id="ip_address" name="ip_address" class="form-control"
+                            <div class="col-md-6 mb-2">
+                                <label for="ip_address" class="form-label" style="font-size: 0.7rem; font-weight: 600;">IP Address</label>
+                                <input type="text" id="ip_address" name="ip_address" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.ip_address|default:'' }}">
                             </div>
                         </div>
 
                         <!-- Hostname and Username Row -->
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="hostname" class="form-label">Hostname</label>
-                                <input type="text" id="hostname" name="hostname" class="form-control"
+                            <div class="col-md-6 mb-2">
+                                <label for="hostname" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Hostname</label>
+                                <input type="text" id="hostname" name="hostname" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.hostname|default:'' }}">
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" id="username" name="username" class="form-control"
+                            <div class="col-md-6 mb-2">
+                                <label for="username" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Username</label>
+                                <input type="text" id="username" name="username" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.username|default:'' }}">
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="priority" class="form-label">Priority</label>
-                                <select id="priority" name="priority" class="form-select">
+                            <div class="col-md-6 mb-2">
+                                <label for="priority" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
+                                <select id="priority" name="priority" class="form-select" style="font-size: 0.75rem; padding: 3px 8px; min-height: 30px;">
                                     <option value="Low" {% if contact.priority == 'Low' %}selected{% endif %}>Low</option>
                                     <option value="Medium" {% if contact.priority == 'Medium' %}selected{% endif %}>Medium</option>
                                     <option value="High" {% if contact.priority == 'High' %}selected{% endif %}>High</option>
@@ -80,9 +80,9 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <select id="status" name="status" class="form-select">
+                            <div class="col-md-6 mb-2">
+                                <label for="status" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Status</label>
+                                <select id="status" name="status" class="form-select" style="font-size: 0.75rem; padding: 3px 8px; min-height: 30px;">
                                     <option value="Pending" {% if contact.status == 'Pending' %}selected{% endif %}>Pending</option>
                                     <option value="In Progress" {% if contact.status == 'In Progress' %}selected{% endif %}>In Progress</option>
                                     <option value="Closed" {% if contact.status == 'Closed' %}selected{% endif %}>Closed</option>
@@ -92,105 +92,105 @@
 
                         <!-- Admin Only Fields with CTRL+Click Multi-Select -->
                         <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label for="call_attended_by">Call Attended By <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
-                                <select id="call_attended_by" name="call_attended_by" multiple style="height: auto; min-height: 38px; padding: 4px 10px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.9rem; background: #fff; color: #212529;">
+                            <div class="col-md-3 mb-2">
+                                <label for="call_attended_by" style="font-size: 0.7rem; font-weight: 600;">Call Attended By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
+                                <select id="call_attended_by" name="call_attended_by" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.call_attended_by %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.call_attended_by %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.call_attended_by %}selected{% endif %}>Binaya Kunwar</option>
                                     <option value="Subash Dahal" {% if "Subash Dahal" in contact.call_attended_by %}selected{% endif %}>Subash Dahal</option>
                                     <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.call_attended_by %}selected{% endif %}>Ashish Adhikari</option>
                                 </select>
-                                <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
 
-                            <div class="col-md-3 mb-3">
-                                <label for="assigned_to">Assigned To <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
-                                <select id="assigned_to" name="assigned_to" multiple style="height: auto; min-height: 38px; padding: 4px 10px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.9rem; background: #fff; color: #212529;">
+                            <div class="col-md-3 mb-2">
+                                <label for="assigned_to" style="font-size: 0.7rem; font-weight: 600;">Assigned To <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
+                                <select id="assigned_to" name="assigned_to" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.assigned_to %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.assigned_to %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.assigned_to %}selected{% endif %}>Binaya Kunwar</option>
                                     <option value="Subash Dahal" {% if "Subash Dahal" in contact.assigned_to %}selected{% endif %}>Subash Dahal</option>
                                     <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.assigned_to %}selected{% endif %}>Ashish Adhikari</option>
                                 </select>
-                                <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
 
-                            <div class="col-md-3 mb-3">
-                                <label for="handover_to">Handover To <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
-                                <select id="handover_to" name="handover_to" multiple style="height: auto; min-height: 38px; padding: 4px 10px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.9rem; background: #fff; color: #212529;">
+                            <div class="col-md-3 mb-2">
+                                <label for="handover_to" style="font-size: 0.7rem; font-weight: 600;">Handover To <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
+                                <select id="handover_to" name="handover_to" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.handover_to %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.handover_to %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.handover_to %}selected{% endif %}>Binaya Kunwar</option>
                                     <option value="Subash Dahal" {% if "Subash Dahal" in contact.handover_to %}selected{% endif %}>Subash Dahal</option>
                                     <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.handover_to %}selected{% endif %}>Ashish Adhikari</option>
                                 </select>
-                                <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
 
-                            <div class="col-md-3 mb-3">
-                                <label for="solved_by">Solved By <small style="font-weight:normal; color:#6b7280; font-size:0.7rem;">(Ctrl+Click)</small></label>
-                                <select id="solved_by" name="solved_by" multiple style="height: auto; min-height: 38px; padding: 4px 10px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.9rem; background: #fff; color: #212529;">
+                            <div class="col-md-3 mb-2">
+                                <label for="solved_by" style="font-size: 0.7rem; font-weight: 600;">Solved By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
+                                <select id="solved_by" name="solved_by" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.solved_by %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.solved_by %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.solved_by %}selected{% endif %}>Binaya Kunwar</option>
                                     <option value="Subash Dahal" {% if "Subash Dahal" in contact.solved_by %}selected{% endif %}>Subash Dahal</option>
                                     <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.solved_by %}selected{% endif %}>Ashish Adhikari</option>
                                 </select>
-                                <small class="text-muted" style="font-size: 0.65rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
                         </div>
 
                         <!-- Remarks -->
                         <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label for="remarks" class="form-label">Remarks</label>
-                                <textarea id="remarks" name="remarks" rows="3" class="form-control">{{ contact.remarks|default:"" }}</textarea>
+                            <div class="col-md-12 mb-2">
+                                <label for="remarks" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Remarks</label>
+                                <textarea id="remarks" name="remarks" rows="2" class="form-control" style="font-size: 0.75rem; padding: 3px 8px; min-height: 40px;">{{ contact.remarks|default:"" }}</textarea>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Issue or Message</label>
-                            <textarea id="message" name="message" rows="4" class="form-control">{{ contact.message }}</textarea>
+                        <div class="mb-2">
+                            <label for="message" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Issue or Message</label>
+                            <textarea id="message" name="message" rows="3" class="form-control" style="font-size: 0.75rem; padding: 3px 8px; min-height: 50px;">{{ contact.message }}</textarea>
                         </div>
 
                         <!-- Media Section -->
                         <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Media Attachment</label>
-                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="col-md-12 mb-2">
+                                <label class="form-label" style="font-size: 0.7rem; font-weight: 600;">Media Attachment</label>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <!-- Media Upload -->
-                                    <div class="media-upload-wrapper" style="display: flex; align-items: center; gap: 10px;">
-                                        <label for="media_upload_edit" style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #f3f4f6; border-radius: 20px; border: 1.5px dashed #d1d5db; font-size: 0.8rem; transition: all 0.3s ease; width: fit-content;">
-                                            <i class="fas fa-paperclip" style="font-size: 1.1rem; color: #2563eb;"></i>
+                                    <div class="media-upload-wrapper" style="display: flex; align-items: center; gap: 8px;">
+                                        <label for="media_upload_edit" style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 12px; background: #f3f4f6; border-radius: 16px; border: 1.5px dashed #d1d5db; font-size: 0.7rem; transition: all 0.3s ease; width: fit-content;">
+                                            <i class="fas fa-paperclip" style="font-size: 0.9rem; color: #2563eb;"></i>
                                             <span style="font-weight: 500;">Upload File</span>
                                             <span id="mediaFileNameEdit" style="color: #6b7280; font-weight: normal; margin-left: 4px;"></span>
                                         </label>
                                         <input type="file" id="media_upload_edit" name="media_file" style="display: none;" onchange="updateMediaLabelEdit(this)">
-                                        <small class="text-muted" style="font-size: 0.65rem;">
+                                        <small class="text-muted" style="font-size: 0.55rem;">
                                             <i class="fas fa-file"></i> Max: 100MB
                                         </small>
                                     </div>
 
                                     <!-- View/Download Buttons - Only show if media exists -->
                                     {% if contact.media_file %}
-                                    <div class="d-flex gap-2 flex-wrap align-items-center">
-                                        <a href="{{ contact.media_file.url }}" target="_blank" class="btn btn-sm btn-info" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 14px;">
+                                    <div class="d-flex gap-1 flex-wrap align-items-center">
+                                        <a href="{{ contact.media_file.url }}" target="_blank" class="btn btn-sm btn-info" style="font-size: 0.6rem; padding: 2px 8px; border-radius: 16px;">
                                             <i class="fas fa-eye"></i> View
                                         </a>
-                                        <a href="{{ contact.media_file.url }}" download class="btn btn-sm btn-success" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 14px;">
+                                        <a href="{{ contact.media_file.url }}" download class="btn btn-sm btn-success" style="font-size: 0.6rem; padding: 2px 8px; border-radius: 16px;">
                                             <i class="fas fa-download"></i> Download
                                         </a>
                                         <!-- Remove file checkbox -->
-                                        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #dc2626;">
-                                            <input type="checkbox" name="media_clear" value="on" style="cursor: pointer; width: 14px; height: 14px;">
+                                        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; color: #dc2626;">
+                                            <input type="checkbox" name="media_clear" value="on" style="cursor: pointer; width: 12px; height: 12px;">
                                             Remove
                                         </label>
                                     </div>
                                     {% endif %}
                                 </div>
                                 {% if contact.media_file %}
-                                <div style="margin-top: 6px; font-size: 0.75rem; color: #6b7280;">
+                                <div style="margin-top: 3px; font-size: 0.65rem; color: #6b7280;">
                                     <i class="fas fa-file"></i> Current: {{ contact.media_file.name|cut:"media_files/" }}
                                     ({{ contact.media_file.size|filesizeformat }})
                                 </div>
@@ -198,11 +198,11 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'core:issue_detail' contact.id %}" class="btn btn-secondary">
+                        <div class="d-flex justify-content-end gap-1">
+                            <a href="{% url 'core:issue_detail' contact.id %}" class="btn btn-secondary" style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
                         </div>
