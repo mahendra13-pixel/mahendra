@@ -122,6 +122,10 @@
                                                     class="btn btn-sm btn-success">
                                                     <i class="fas fa-file-archive"></i> Download All (ZIP)
                                                 </a>
+                                                <a href="{{ contact.media_file.url }}" target="_blank"
+                                                    class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i> View ZIP
+                                                </a>
                                                 <span style="font-size: 0.7rem; color: #6b7280;">
                                                     📦 {{ contact.media_file.name|cut:"media_files/" }}
                                                     ({{ contact.media_file.size|filesizeformat }})
@@ -130,7 +134,11 @@
                                                     <i class="fas fa-folder-open"></i> {{ contact.file_count|default:0 }} files
                                                 </span>
                                             {% else %}
-                                                <!-- Single File - Direct Download -->
+                                                <!-- Single File - View + Download -->
+                                                <a href="{{ contact.media_file.url }}" target="_blank"
+                                                    class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
                                                 <a href="{{ contact.media_file.url }}" download
                                                     class="btn btn-sm btn-success">
                                                     <i class="fas fa-download"></i> Download
@@ -145,7 +153,7 @@
                                             {% if contact.is_multiple %}
                                                 <i class="fas fa-info-circle"></i> Extract the ZIP file to view all uploaded files
                                             {% else %}
-                                                <i class="fas fa-info-circle"></i> Click download to save the file
+                                                <i class="fas fa-info-circle"></i> Click View to preview or Download to save the file
                                             {% endif %}
                                         </div>
                                     </td>
