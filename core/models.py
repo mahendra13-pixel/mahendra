@@ -38,6 +38,10 @@ class Contact(models.Model):
     media_file = models.FileField(upload_to='media_files/', null=True, blank=True, verbose_name="Media File (Image/Video)")
     is_public = models.BooleanField(default=False)
     
+    # NEW FIELDS: Track single vs multiple files
+    is_multiple = models.BooleanField(default=False)  # True if multiple files uploaded
+    file_count = models.IntegerField(default=0)       # Number of files uploaded
+    
     # Multi-select fields (stores comma-separated values)
     call_attended_by = models.CharField(max_length=255, blank=True, null=True)
     handover_to = models.CharField(max_length=255, blank=True, null=True)

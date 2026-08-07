@@ -167,6 +167,43 @@ def contact(request):
             is_resolved = True
             status = 'Closed'
         
+        # ============================================================
+        # HANDLE FILES - Single vs Multiple
+        # ============================================================
+        from io import BytesIO
+        import zipfile
+        from django.core.files.base import ContentFile
+        
+        multiple_files = request.FILES.getlist('multiple_files')
+        media_file = None
+        is_multiple = False
+        file_count = 0
+        
+        if multiple_files and len(multiple_files) > 0:
+            if len(multiple_files) == 1:
+                # Only one file, save directly (no ZIP)
+                media_file = multiple_files[0]
+                is_multiple = False
+                file_count = 1
+            else:
+                # Multiple files, create ZIP
+                zip_buffer = BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                    for file in multiple_files:
+                        zip_file.writestr(file.name, file.read())
+                zip_buffer.seek(0)
+                media_file = ContentFile(zip_buffer.read())
+                media_file.name = f"files_{now.strftime('%Y%m%d_%H%M%S')}.zip"
+                is_multiple = True
+                file_count = len(multiple_files)
+        else:
+            single_file = request.FILES.get('media_file')
+            if single_file:
+                media_file = single_file
+                is_multiple = False
+                file_count = 1
+        # ============================================================
+        
         contact = Contact.objects.create(
             name=name,
             department=department,
@@ -182,7 +219,9 @@ def contact(request):
             solved_by=solved_by,
             assigned_to=assigned_to,
             remarks=remarks,
-            media_file=request.FILES.get('media_file') if request.FILES else None,
+            media_file=media_file,
+            is_multiple=is_multiple,
+            file_count=file_count,
             status=status,
             is_resolved=is_resolved,
             date=now.date(),

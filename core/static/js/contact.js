@@ -680,6 +680,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log('Contact page functionality loaded - Peaceful Boys Hostel');
 });
+
 // ===============================
 // VIDEO UPLOAD - Edit page
 // ===============================
@@ -721,4 +722,173 @@ function updateMediaLabelEdit(input) {
     } else {
         fileNameSpan.textContent = '';
     }
+}
+
+// ===============================
+// MULTIPLE FILE ATTACHMENT - Compact Version
+// ===============================
+
+let selectedFiles = [];
+let totalFileSize = 0;
+const MAX_SIZE = 100 * 1024 * 1024; // 100 MB
+
+function handleMultipleFiles(input) {
+    const files = input.files;
+    const fileListContainer = document.getElementById('fileListContainer');
+    const fileCountDisplay = document.getElementById('fileCountDisplay');
+    const fileCountText = document.getElementById('fileCountText');
+    
+    if (!files || files.length === 0) return;
+    
+    // Calculate total size
+    let newTotalSize = totalFileSize;
+    for (let i = 0; i < files.length; i++) {
+        newTotalSize += files[i].size;
+    }
+    
+    // Check if exceeds 100 MB limit
+    if (newTotalSize > MAX_SIZE) {
+        alert(`Total file size (${formatFileSize(newTotalSize)}) exceeds the 100 MB limit!`);
+        input.value = '';
+        return;
+    }
+    
+    // Add files to selected list (avoid duplicates)
+    for (let i = 0; i < files.length; i++) {
+        const exists = selectedFiles.some(f => f.name === files[i].name && f.size === files[i].size);
+        if (!exists) {
+            selectedFiles.push(files[i]);
+            totalFileSize += files[i].size;
+        }
+    }
+    
+    // Update UI
+    updateFileListUI();
+    
+    // Show file count
+    fileCountDisplay.style.display = 'inline-block';
+    const count = selectedFiles.length;
+    fileCountText.textContent = count === 1 ? '1 file selected' : `${count} files selected`;
+    
+    // Show file list
+    if (selectedFiles.length > 0) {
+        fileListContainer.style.display = 'block';
+        renderFileList();
+    }
+    
+    // Reset input
+    input.value = '';
+}
+
+function renderFileList() {
+    const container = document.getElementById('fileListContainer');
+    container.innerHTML = '';
+    
+    if (selectedFiles.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'block';
+    
+    // Show first 5 files
+    const maxShow = 5;
+    const showFiles = selectedFiles.slice(0, maxShow);
+    
+    showFiles.forEach((file, index) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.65rem;';
+        const icon = getFileIcon(file.name);
+        div.innerHTML = `
+            <span><i class="${icon}" style="color: #6b7280; width: 14px;"></i> ${file.name}</span>
+            <span style="color: #6b7280;">${formatFileSize(file.size)}</span>
+        `;
+        container.appendChild(div);
+    });
+    
+    if (selectedFiles.length > maxShow) {
+        const more = document.createElement('div');
+        more.style.cssText = 'padding: 2px 0; font-size: 0.65rem; color: #6b7280;';
+        more.textContent = `+ ${selectedFiles.length - maxShow} more file(s)`;
+        container.appendChild(more);
+    }
+}
+
+function updateFileListUI() {
+    const fileCountDisplay = document.getElementById('fileCountDisplay');
+    const fileCountText = document.getElementById('fileCountText');
+    const fileListContainer = document.getElementById('fileListContainer');
+    
+    if (selectedFiles.length === 0) {
+        fileCountDisplay.style.display = 'none';
+        fileListContainer.style.display = 'none';
+        fileListContainer.innerHTML = '';
+        return;
+    }
+    
+    fileCountDisplay.style.display = 'inline-block';
+    const count = selectedFiles.length;
+    fileCountText.textContent = count === 1 ? '1 file selected' : `${count} files selected`;
+    
+    renderFileList();
+}
+
+function removeFile(index) {
+    if (index >= 0 && index < selectedFiles.length) {
+        totalFileSize -= selectedFiles[index].size;
+        selectedFiles.splice(index, 1);
+        updateFileListUI();
+    }
+}
+
+function clearAllFiles() {
+    if (selectedFiles.length === 0) return;
+    if (!confirm(`Remove all ${selectedFiles.length} files?`)) return;
+    
+    selectedFiles = [];
+    totalFileSize = 0;
+    updateFileListUI();
+    
+    document.getElementById('fileCountDisplay').style.display = 'none';
+    document.getElementById('fileListContainer').style.display = 'none';
+    document.getElementById('fileListContainer').innerHTML = '';
+}
+
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const icons = {
+        'pdf': 'fas fa-file-pdf',
+        'doc': 'fas fa-file-word',
+        'docx': 'fas fa-file-word',
+        'xls': 'fas fa-file-excel',
+        'xlsx': 'fas fa-file-excel',
+        'ppt': 'fas fa-file-powerpoint',
+        'pptx': 'fas fa-file-powerpoint',
+        'jpg': 'fas fa-file-image',
+        'jpeg': 'fas fa-file-image',
+        'png': 'fas fa-file-image',
+        'gif': 'fas fa-file-image',
+        'mp4': 'fas fa-file-video',
+        'avi': 'fas fa-file-video',
+        'mkv': 'fas fa-file-video',
+        'mp3': 'fas fa-file-audio',
+        'wav': 'fas fa-file-audio',
+        'zip': 'fas fa-file-archive',
+        'rar': 'fas fa-file-archive',
+        'txt': 'fas fa-file-alt',
+        'py': 'fas fa-file-code',
+        'html': 'fas fa-file-code',
+        'css': 'fas fa-file-code',
+        'js': 'fas fa-file-code',
+        'json': 'fas fa-file-code',
+    };
+    return icons[ext] || 'fas fa-file';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
