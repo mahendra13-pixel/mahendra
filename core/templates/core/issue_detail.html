@@ -116,16 +116,37 @@
                                     <th style="white-space: nowrap;" class="align-top">Media</th>
                                     <td>
                                         <div class="d-flex gap-2 flex-wrap align-items-center">
-                                            <!-- Download Button -->
-                                            <a href="{{ contact.media_file.url }}" download
-                                                class="btn btn-sm btn-success">
-                                                <i class="fas fa-download"></i> Download
-                                            </a>
-                                            <!-- File Info -->
-                                            <span style="font-size: 0.7rem; color: #6b7280;">
-                                                {{ contact.media_file.name|cut:"media_files/" }}
-                                                ({{ contact.media_file.size|filesizeformat }})
-                                            </span>
+                                            {% if contact.is_multiple %}
+                                                <!-- Multiple Files - Download ZIP -->
+                                                <a href="{{ contact.media_file.url }}" download
+                                                    class="btn btn-sm btn-success">
+                                                    <i class="fas fa-file-archive"></i> Download All (ZIP)
+                                                </a>
+                                                <span style="font-size: 0.7rem; color: #6b7280;">
+                                                    📦 {{ contact.media_file.name|cut:"media_files/" }}
+                                                    ({{ contact.media_file.size|filesizeformat }})
+                                                </span>
+                                                <span style="font-size: 0.65rem; background: #e5e7eb; color: #374151; padding: 2px 8px; border-radius: 12px;">
+                                                    <i class="fas fa-folder-open"></i> {{ contact.file_count|default:0 }} files
+                                                </span>
+                                            {% else %}
+                                                <!-- Single File - Direct Download -->
+                                                <a href="{{ contact.media_file.url }}" download
+                                                    class="btn btn-sm btn-success">
+                                                    <i class="fas fa-download"></i> Download
+                                                </a>
+                                                <span style="font-size: 0.7rem; color: #6b7280;">
+                                                    📄 {{ contact.media_file.name|cut:"media_files/" }}
+                                                    ({{ contact.media_file.size|filesizeformat }})
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div style="font-size: 0.7rem; color: #6b7280; margin-top: 4px;">
+                                            {% if contact.is_multiple %}
+                                                <i class="fas fa-info-circle"></i> Extract the ZIP file to view all uploaded files
+                                            {% else %}
+                                                <i class="fas fa-info-circle"></i> Click download to save the file
+                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
