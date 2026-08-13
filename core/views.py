@@ -12,6 +12,8 @@ from datetime import datetime
 import socket
 import os
 import getpass
+import zipfile
+from django.core.files.base import ContentFile
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -103,19 +105,20 @@ def about(request):
 def blog(request):
     return render(request, 'core/blog.html')
 
-# Function to generate Ticket ID
+# Function to generate Ticket ID - OPTIMIZED VERSION
 def generate_ticket_id(contact):
     """Generate Ticket ID in format IT-001, IT-002, etc. (only for resolved issues)"""
-    # Get ONLY resolved contacts ordered by id
-    all_resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')
+    if not contact.is_resolved:
+        return f"IT-{str(contact.id).zfill(3)}"
     
-    # Find the index of this contact among resolved contacts
-    for idx, c in enumerate(all_resolved_contacts, 1):
-        if c.id == contact.id:
-            return f"IT-{str(idx).zfill(3)}"
+    # Count resolved contacts with ID less than or equal to current
+    count = Contact.objects.filter(
+        is_resolved=True,
+        is_stored=False,
+        id__lte=contact.id
+    ).count()
     
-    # If contact is not resolved, fallback to its ID
-    return f"IT-{str(contact.id).zfill(3)}"
+    return f"IT-{str(count).zfill(3)}"
 
 # Contact Page - Main Form (Landing Page - Public)
 def contact(request):
@@ -204,42 +207,45 @@ def contact(request):
                 file_count = 1
         # ============================================================
         
-        contact = Contact.objects.create(
-            name=name,
-            department=department,
-            phone=phone,
-            ip_address=ip_address,
-            hostname=hostname,
-            username=username,
-            os_info=os_info,
-            priority=priority,
-            message=message,
-            call_attended_by=call_attended_by,
-            handover_to=handover_to,
-            solved_by=solved_by,
-            assigned_to=assigned_to,
-            remarks=remarks,
-            media_file=media_file,
-            is_multiple=is_multiple,
-            file_count=file_count,
-            status=status,
-            is_resolved=is_resolved,
-            date=now.date(),
-            time=now.time(),
-            created_at=now,
-            resolved_at=now if is_resolved else None,
-            updated_at=now
-        )
+        try:
+            contact = Contact.objects.create(
+                name=name,
+                department=department,
+                phone=phone,
+                ip_address=ip_address,
+                hostname=hostname,
+                username=username,
+                os_info=os_info,
+                priority=priority,
+                message=message,
+                call_attended_by=call_attended_by,
+                handover_to=handover_to,
+                solved_by=solved_by,
+                assigned_to=assigned_to,
+                remarks=remarks,
+                media_file=media_file,
+                is_multiple=is_multiple,
+                file_count=file_count,
+                status=status,
+                is_resolved=is_resolved,
+                date=now.date(),
+                time=now.time(),
+                created_at=now,
+                resolved_at=now if is_resolved else None,
+                updated_at=now
+            )
 
-        if action == 'resolve':
-            messages.success(request, f"Hi {name}, your issue has been created and marked as Resolved!")
-        else:
-            messages.success(request, f"Hi {name}, your message has been submitted successfully.")
+            if action == 'resolve':
+                messages.success(request, f"Hi {name}, your issue has been created and marked as Resolved!")
+            else:
+                messages.success(request, f"Hi {name}, your message has been submitted successfully.")
+        except Exception as e:
+            messages.error(request, f"Error submitting issue: {str(e)}")
         
         return redirect('core:contact')
     
     # Get all unresolved issues
-    contacts = Contact.objects.filter(is_resolved=False).order_by('-id')
+    contacts = Contact.objects.filter(is_resolved=False,is_stored=False).order_by('-id')
     
     # IP FILTERING: If not admin, only show issues with matching IP OR public issues
     if not is_admin_user:
@@ -247,7 +253,7 @@ def contact(request):
             models.Q(ip_address=ip_address) | models.Q(is_public=True)
         )
     
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('-id')
+    resolved_contacts = Contact.objects.filter(is_resolved=True,is_stored=False).order_by('-id')
     
     # IP FILTERING: If not admin, only show resolved issues with matching IP OR public issues
     if not is_admin_user:
@@ -257,7 +263,7 @@ def contact(request):
     
     # Get pending and in-progress issues for the modal
     pending_contacts = Contact.objects.filter(
-        is_resolved=False,
+        is_resolved=False,is_stored=False,
         status__in=['Pending', 'In Progress']
     ).order_by('-created_at')
     
@@ -267,17 +273,27 @@ def contact(request):
             models.Q(ip_address=ip_address) | models.Q(is_public=True)
         )
 
-# Date filter for Issue Slider (uses 'date' parameter)
-      # Date filter for Issue Slider (uses 'date' parameter)
+    # Date filter for Issue Slider (uses 'date' parameter)
     slider_date = request.GET.get('date')
     if slider_date:
-        contacts = contacts.filter(date=slider_date)
-        pending_contacts = pending_contacts.filter(date=slider_date)
+        try:
+            # Try to parse as date if it's a string
+            slider_date_obj = datetime.strptime(slider_date, '%Y-%m-%d').date()
+            contacts = contacts.filter(date=slider_date_obj)
+            pending_contacts = pending_contacts.filter(date=slider_date_obj)
+        except (ValueError, TypeError):
+            # If it's already a date object or can't parse, try direct filter
+            contacts = contacts.filter(date=slider_date)
+            pending_contacts = pending_contacts.filter(date=slider_date)
 
     # Date filter for Resolved Modal (uses 'resolved_date' parameter)
     resolved_date = request.GET.get('resolved_date')
     if resolved_date:
-        resolved_contacts = resolved_contacts.filter(date=resolved_date)
+        try:
+            resolved_date_obj = datetime.strptime(resolved_date, '%Y-%m-%d').date()
+            resolved_contacts = resolved_contacts.filter(date=resolved_date_obj)
+        except (ValueError, TypeError):
+            resolved_contacts = resolved_contacts.filter(date=resolved_date)
         
     return render(request, 'core/contact.html', {
         'contacts': contacts,
@@ -291,14 +307,14 @@ def contact(request):
 
 # Issue Detail - Anyone can view
 def issue_detail(request, pk):
-    contact = get_object_or_404(Contact, pk=pk)
+    contact = get_object_or_404(Contact, pk=pk,is_stored=False)
     return render(request, 'core/issue_detail.html', {'contact': contact})
 
 # Edit Issue - Admin Only
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def issue_edit(request, pk):
-    contact = get_object_or_404(Contact, pk=pk)
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
     if request.method == 'POST':
         contact.name = request.POST.get('name')
         contact.department = request.POST.get('department')
@@ -349,7 +365,7 @@ def issue_edit(request, pk):
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def issue_delete(request, pk):
-    contact = get_object_or_404(Contact, pk=pk)
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
     if request.method == 'POST':
         contact.delete()
         messages.success(request, "Issue deleted successfully.")
@@ -360,7 +376,7 @@ def issue_delete(request, pk):
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def issue_mark_done(request, pk):
-    contact = get_object_or_404(Contact, pk=pk)
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
     now = timezone.localtime(timezone.now())
     contact.is_resolved = True
     contact.status = 'Closed'
@@ -375,7 +391,7 @@ def issue_mark_done(request, pk):
 @user_passes_test(is_admin)
 def toggle_public_issue(request, pk):
     """Toggle the public visibility of an issue"""
-    contact = get_object_or_404(Contact, pk=pk)
+    contact = get_object_or_404(Contact, pk=pk,is_stored=False)
     contact.is_public = not contact.is_public
     contact.save()
     
@@ -402,31 +418,59 @@ def store_submit(request):
         priority = request.POST.get('priority')
         remarks = request.POST.get('remarks', '')
         description = request.POST.get('description')
+        now = timezone.localtime(timezone.now())
       
         
         # Get file
-        media_file = request.FILES.get('media_file')
+        multiple_files = request.FILES.getlist('media_file')
+        media_file = None
+        is_multiple = False
+        file_count = 0
         
-        now = timezone.localtime(timezone.now())
+        if multiple_files and len(multiple_files) > 0:
+            if len(multiple_files) == 1:
+                # Only one file, save directly (no ZIP)
+                media_file = multiple_files[0]
+                is_multiple = False
+                file_count = 1
+            else:
+                # Multiple files, create ZIP
+                zip_buffer = BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                    for file in multiple_files:
+                        zip_file.writestr(file.name, file.read())
+                zip_buffer.seek(0)
+                media_file = ContentFile(zip_buffer.read())
+                media_file.name = f"store_files_{now.strftime('%Y%m%d_%H%M%S')}.zip" 
+                is_multiple = True
+                file_count = len(multiple_files)
         
-        contact = Contact.objects.create(
-            name=name,
-            department=department,
-            phone=phone,
-            ip_address=get_client_ip(request),
-            priority=priority,
-            message=None,
-            description=description, 
-            remarks=remarks,
-            media_file=media_file,
-            status='Stored',
-            is_stored=True,
-            stored_at=now,
-            created_at=now,
-            updated_at=now
-        )
+      
         
-        messages.success(request, f"✅ Issue '{name}' stored successfully!")
+        try:
+            contact = Contact.objects.create(
+                name=name,
+                department=department,
+                phone=phone,
+                ip_address=get_client_ip(request),
+                priority=priority,
+                message=None,
+                description=description, 
+                remarks=remarks,
+                media_file=media_file,
+                is_multiple=is_multiple,  # ← ADD THIS
+                file_count=file_count,     # ← ADD THIS
+                status='Stored',
+                is_stored=True,
+                stored_at=now,
+                created_at=now,
+                updated_at=now
+            )
+            
+            messages.success(request, f"✅ Issue '{name}' stored successfully!")
+        except Exception as e:
+            messages.error(request, f"Error storing issue: {str(e)}")
+        
         return redirect('core:contact')
     
     return redirect('core:contact')
@@ -478,10 +522,14 @@ def storage_restore(request, pk):
 @user_passes_test(is_admin)
 def resolved_issues_excel(request):
     selected_date = request.GET.get('date')
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')
+    resolved_contacts = Contact.objects.filter(is_resolved=True, is_stored=False).order_by('id')
     
     if selected_date:
-        resolved_contacts = resolved_contacts.filter(date=selected_date)
+        try:
+            selected_date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            resolved_contacts = resolved_contacts.filter(date=selected_date_obj)
+        except (ValueError, TypeError):
+            resolved_contacts = resolved_contacts.filter(date=selected_date)
 
     data = []
     for contact in resolved_contacts:
@@ -559,10 +607,14 @@ def resolved_issues_excel(request):
 @user_passes_test(is_admin)
 def resolved_issues_excel_compact(request):
     selected_date = request.GET.get('date')
-    resolved_contacts = Contact.objects.filter(is_resolved=True).order_by('id')
+    resolved_contacts = Contact.objects.filter(is_resolved=True, is_stored=False).order_by('id')
     
     if selected_date:
-        resolved_contacts = resolved_contacts.filter(date=selected_date)
+        try:
+            selected_date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            resolved_contacts = resolved_contacts.filter(date=selected_date_obj)
+        except (ValueError, TypeError):
+            resolved_contacts = resolved_contacts.filter(date=selected_date)
 
     data = []
     for contact in resolved_contacts:
@@ -631,3 +683,78 @@ def stored_item_detail(request, pk):
     """View for stored items - shows only name, department, description, remarks"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
     return render(request, 'core/stored_item_detail.html', {'item': item})
+
+
+# Edit Stored Item - Admin Only
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def store_edit(request, pk):
+    """Edit a stored item - ADMIN ONLY"""
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    
+    if request.method == 'POST':
+        # Get form data
+        name = request.POST.get('name')
+        department = request.POST.get('department')
+        phone = request.POST.get('phone')
+        priority = request.POST.get('priority')
+        remarks = request.POST.get('remarks', '')
+        description = request.POST.get('description')
+        
+        # Update the item
+        item.name = name
+        item.department = department
+        item.phone = phone
+        item.priority = priority
+        item.remarks = remarks
+        item.description = description
+        
+        # Handle file upload
+        if request.FILES.get('media_file'):
+            # Delete old file if exists
+            if item.media_file:
+                item.media_file.delete(save=False)
+            
+            # Get the new file
+            multiple_files = request.FILES.getlist('media_file')
+            media_file = None
+            is_multiple = False
+            file_count = 0
+            
+            if multiple_files and len(multiple_files) > 0:
+                if len(multiple_files) == 1:
+                    media_file = multiple_files[0]
+                    is_multiple = False
+                    file_count = 1
+                else:
+                    zip_buffer = BytesIO()
+                    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                        for file in multiple_files:
+                            zip_file.writestr(file.name, file.read())
+                    zip_buffer.seek(0)
+                    media_file = ContentFile(zip_buffer.read())
+                    now = timezone.localtime(timezone.now())
+                    media_file.name = f"store_files_{now.strftime('%Y%m%d_%H%M%S')}.zip"
+                    is_multiple = True
+                    file_count = len(multiple_files)
+                
+                item.media_file = media_file
+                item.is_multiple = is_multiple
+                item.file_count = file_count
+        
+        # Remove file if checkbox checked
+        elif request.POST.get('media_clear') == 'on':
+            if item.media_file:
+                item.media_file.delete(save=False)
+                item.media_file = None
+                item.is_multiple = False
+                item.file_count = 0
+        
+        # Update timestamp
+        item.updated_at = timezone.localtime(timezone.now())
+        item.save()
+        
+        messages.success(request, f"✅ Stored item '{name}' updated successfully!")
+        return redirect('core:storage_view')
+    
+    return render(request, 'core/store_edit.html', {'item': item})

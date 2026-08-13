@@ -18,4 +18,6 @@ urlpatterns = [
     path('storage-delete/<int:pk>/', views.storage_delete, name='storage_delete'),  # Delete from storage (admin only)
     path('storage-restore/<int:pk>/', views.storage_restore, name='storage_restore'),  # Restore from storage (admin only)
     path('stored-item/<int:pk>/', views.stored_item_detail, name='stored_item_detail'),
+    # Store edit (admin only)
+    path('store/edit/<int:pk>/', views.store_edit, name='store_edit'),
 ]
