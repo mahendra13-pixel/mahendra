@@ -12,4 +12,10 @@ urlpatterns = [
     path('resolved-excel/', views.resolved_issues_excel, name='resolved_issues_excel'),
     path('resolved-excel-compact/', views.resolved_issues_excel_compact, name='resolved_issues_excel_compact'),
     path('toggle-public/<int:pk>/', views.toggle_public_issue, name='toggle_public_issue'),
+    path('store/', views.store_issue, name='store_issue'),  # Store form (everyone)
+    path('store-submit/', views.store_submit, name='store_submit'),  # Submit store (everyone)
+    path('storage/', views.storage_view, name='storage_view'),  # Storage view (admin only)
+    path('storage-delete/<int:pk>/', views.storage_delete, name='storage_delete'),  # Delete from storage (admin only)
+    path('storage-restore/<int:pk>/', views.storage_restore, name='storage_restore'),  # Restore from storage (admin only)
+    path('stored-item/<int:pk>/', views.stored_item_detail, name='stored_item_detail'),
 ]

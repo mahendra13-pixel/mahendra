@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Storage - Stored Items{% endblock %}
+
+{% block content %}
+<style>
+    /* Notepad Modal Styles */
+    .notepad-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99999;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .notepad-modal.show {
+        display: flex;
+    }
+
+    .notepad-content {
+        background: #fefefe;
+        padding: 0;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notepad-header {
+        background: #f3f4f6;
+        padding: 12px 20px;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: move;
+    }
+
+    .notepad-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .notepad-header .notepad-close {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0 8px;
+    }
+
+    .notepad-header .notepad-close:hover {
+        color: #dc2626;
+    }
+
+    .notepad-body {
+        padding: 16px 20px;
+        overflow-y: auto;
+        flex: 1;
+        background: #fafafa;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #1f2937;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .notepad-body .field-label {
+        color: #6b7280;
+        font-weight: 600;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+        display: block;
+    }
+
+    .notepad-body .field-value {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        padding: 4px 0 8px 0;
+        border-bottom: 1px dashed #e5e7eb;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .notepad-body .field-value:last-child {
+        border-bottom: none;
+    }
+
+    .notepad-footer {
+        background: #f9fafb;
+        padding: 8px 20px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        font-size: 0.7rem;
+        color: #6b7280;
+    }
+
+    .notepad-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 2px 8px;
+        font-size: 0.7rem;
+        border-radius: 4px;
+    }
+
+    .notepad-btn:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+    }
+
+    /* Force inputs to work properly */
+    input[type="text"],
+    input[type="search"] {
+        pointer-events: auto !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        z-index: 9999 !important;
+        position: relative !important;
+        background: #ffffff !important;
+        color: #1f2937 !important;
+    }
+
+    form {
+        pointer-events: auto !important;
+    }
+
+    form * {
+        pointer-events: auto !important;
+    }
+</style>
+
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 style="font-size: 1.1rem; margin: 0;">
+            <i class="fas fa-database" style="color: #7c3aed;"></i> Storage
+        </h4>
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'core:store_issue' %}" class="btn btn-sm btn-primary"
+                style="font-size: 0.7rem; padding: 4px 12px;">
+                <i class="fas fa-plus"></i> New
+            </a>
+            <a href="{% url 'core:contact' %}" class="btn btn-sm btn-outline-secondary"
+                style="font-size: 0.7rem; padding: 4px 12px;">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Working Search Bar -->
+    <div style="margin-bottom: 12px; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <form method="GET" action="" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 150px; position: relative;">
+                <i class="fas fa-search"
+                    style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.8rem; z-index: 9999; pointer-events: none;"></i>
+                <input type="text" name="search" value="{{ request.GET.search|default:'' }}"
+                    placeholder="Search by name, department, description..." id="searchInput"
+                    style="width: 100%; padding: 8px 12px 8px 32px; font-size: 0.8rem; border: 2px solid #d1d5db; border-radius: 6px; outline: none; background: #ffffff !important; color: #1f2937 !important; box-sizing: border-box; min-height: 38px; pointer-events: auto !important; z-index: 9999 !important; position: relative !important;">
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="padding: 8px 16px; font-size: 0.8rem; cursor: pointer; border: none; border-radius: 6px; background: #2563eb; color: #ffffff; min-height: 38px; pointer-events: auto !important;">
+                <i class="fas fa-search"></i> Search
+            </button>
+            {% if request.GET.search %}
+            <a href="?" class="btn btn-outline-secondary"
+                style="padding: 8px 14px; font-size: 0.8rem; text-decoration: none; cursor: pointer; border: 1px solid #6b7280; border-radius: 6px; color: #6b7280; background: #ffffff; min-height: 38px; pointer-events: auto !important;">
+                <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-primary" role="alert" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if stored_items %}
+    <div style="font-size: 0.7rem; color: #6b7280; margin-bottom: 8px;">
+        <i class="fas fa-filter"></i> Showing {{ stored_items|length }} item{{ stored_items|pluralize }}
+        {% if request.GET.search %}
+        matching "{{ request.GET.search }}"
+        {% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
+        {% for item in stored_items %}
+        <div class="card"
+            style="border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <!-- Card Header -->
+            <div
+                style="background: #f3f4f6; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
+                <span
+                    style="font-size: 0.65rem; font-weight: 600; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;">
+                    {{ item.name }}
+                </span>
+                <span class="badge bg-warning text-dark" style="font-size: 0.5rem; padding: 1px 6px;">
+                    {{ item.priority }}
+                </span>
+            </div>
+
+            <!-- Card Body -->
+            <div style="padding: 6px 10px;">
+                <div style="font-size: 0.6rem; color: #6b7280; margin-bottom: 2px;">
+                    <i class="fas fa-building"></i> {{ item.department }}
+                </div>
+                <div style="font-size: 0.6rem; color: #6b7280; margin-bottom: 2px;">
+                    <i class="fas fa-phone"></i> {{ item.phone|default:"N/A" }}
+                </div>
+                <div
+                    style="font-size: 0.6rem; color: #374151; margin-bottom: 4px; max-height: 32px; overflow: hidden; text-overflow: ellipsis;">
+                    {{ item.description|truncatechars:50 }}
+                </div>
+
+                <!-- File Attachment with Download Button Only -->
+                {% if item.media_file %}
+                <div
+                    style="font-size: 0.55rem; color: #2563eb; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                    <i class="fas fa-paperclip"></i>
+                    {% if item.is_multiple %}
+                    <span>{{ item.file_count }} files</span>
+                    <a href="{{ item.media_file.url }}" download class="btn btn-sm btn-outline-success"
+                        style="font-size: 0.45rem; padding: 0px 4px; line-height: 1.4; text-decoration: none;"
+                        title="Download ZIP">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    {% else %}
+                    <span>1 file</span>
+                    <a href="{{ item.media_file.url }}" download class="btn btn-sm btn-outline-success"
+                        style="font-size: 0.45rem; padding: 0px 4px; line-height: 1.4; text-decoration: none;"
+                        title="Download file">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div style="font-size: 0.5rem; color: #9ca3af;">
+                    <i class="far fa-clock"></i> {{ item.stored_at|date:"Y-m-d H:i" }}
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div style="background: #f9fafb; padding: 4px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb;">
+                <a href="{% url 'core:stored_item_detail' item.id %}" target="_blank"
+                    class="btn btn-sm btn-outline-info" style="font-size: 0.5rem; padding: 1px 6px;">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                <!-- Notepad Button -->
+                <button type="button" class="btn btn-sm btn-outline-warning" onclick="openNotepad({{ item.id }})"
+                    style="font-size: 0.5rem; padding: 1px 6px; cursor: pointer; border: 1px solid #f59e0b; border-radius: 4px; background: transparent; color: #f59e0b;">
+                    <i class="fas fa-book"></i>
+                </button>
+                <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline;"
+                    onsubmit="return confirm('Delete this stored item?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                        style="font-size: 0.5rem; padding: 1px 6px;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div
+        style="margin-top: 12px; font-size: 0.7rem; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px;">
+        <i class="fas fa-database"></i> Total: {{ stored_items|length }} item{{ stored_items|pluralize }} in storage
+    </div>
+
+    {% else %}
+    <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+        <i class="fas fa-inbox" style="font-size: 3rem; color: #d1d5db; display: block; margin-bottom: 15px;"></i>
+        <p style="font-size: 1rem; margin-bottom: 4px;">
+            {% if request.GET.search %}
+            No items matching "{{ request.GET.search }}"
+            {% else %}
+            No items in storage
+            {% endif %}
+        </p>
+        <p style="font-size: 0.8rem; color: #9ca3af;">Click "New" to store an issue</p>
+        <a href="{% url 'core:store_issue' %}" class="btn btn-primary btn-sm mt-2"
+            style="font-size: 0.7rem; padding: 4px 14px;">
+            <i class="fas fa-plus"></i> Store New Issue
+        </a>
+        {% if request.GET.search %}
+        <div style="margin-top: 8px;">
+            <a href="?" class="btn btn-sm btn-outline-secondary"
+                style="font-size: 0.7rem; padding: 4px 14px; text-decoration: none;">
+                <i class="fas fa-undo"></i> Show All
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Make sure the search input works
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('focus', function () {
+                this.style.borderColor = '#2563eb';
+                this.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+            });
+            searchInput.addEventListener('blur', function () {
+                this.style.borderColor = '#d1d5db';
+                this.style.boxShadow = 'none';
+            });
+            // Log to console to confirm
+            console.log('Search input found and ready');
+        }
+    });
+</script>
+
+<!-- Notepad Modal -->
+<div class="notepad-modal" id="notepadModal">
+    <div class="notepad-content">
+        <div class="notepad-header">
+            <h5><i class="fas fa-book" style="color: #f59e0b;"></i> Notepad</h5>
+            <button class="notepad-close" onclick="closeNotepad()">&times;</button>
+        </div>
+        <div class="notepad-body" id="notepadBody">
+            <span class="field-label">Name</span>
+            <span class="field-value" id="notepadName">-</span>
+            <span class="field-label">Department</span>
+            <span class="field-value" id="notepadDepartment">-</span>
+            <span class="field-label">Description</span>
+            <span class="field-value" id="notepadDescription">-</span>
+            <span class="field-label">Remarks</span>
+            <span class="field-value" id="notepadRemarks">-</span>
+            <span class="field-label">Priority</span>
+            <span class="field-value" id="notepadPriority">-</span>
+            <span class="field-label">Stored At</span>
+            <span class="field-value" id="notepadStoredAt">-</span>
+        </div>
+        <div class="notepad-footer">
+            <span><i class="far fa-clock"></i> <span id="notepadTimestamp"></span></span>
+            <button class="notepad-btn" onclick="copyNotepad()">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+            <button class="notepad-btn" onclick="closeNotepad()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const storedItemsData = {
+        {% for item in stored_items %}
+        {{ item.id }}: {
+            name: "{{ item.name|escapejs }}",
+            department: "{{ item.department|escapejs }}",
+            description: "{{ item.description|escapejs }}",
+            remarks: "{{ item.remarks|default:'No remarks'|escapejs }}",
+            priority: "{{ item.priority|escapejs }}",
+            stored_at: "{{ item.stored_at|date:'Y-m-d H:i:s' }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    function openNotepad(itemId) {
+        const data = storedItemsData[itemId];
+        if (data) {
+            document.getElementById('notepadName').textContent = data.name || '-';
+            document.getElementById('notepadDepartment').textContent = data.department || '-';
+            document.getElementById('notepadDescription').textContent = data.description || '-';
+            document.getElementById('notepadRemarks').textContent = data.remarks || '-';
+            document.getElementById('notepadPriority').textContent = data.priority || '-';
+            document.getElementById('notepadStoredAt').textContent = data.stored_at || '-';
+            document.getElementById('notepadTimestamp').textContent = new Date().toLocaleString();
+
+            document.getElementById('notepadModal').classList.add('show');
+        }
+    }
+
+    function closeNotepad() {
+        document.getElementById('notepadModal').classList.remove('show');
+    }
+
+    function copyUsingTextarea(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        textarea.style.width = '1px';
+        textarea.style.height = '1px';
+        textarea.style.padding = '0';
+        textarea.style.border = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.boxShadow = 'none';
+        textarea.style.background = 'transparent';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert('✅ Copied to clipboard!');
+            } else {
+                alert('❌ Failed to copy. Please copy manually.');
+            }
+        } catch (err) {
+            alert('❌ Failed to copy. Please copy manually.');
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+
+    function copyNotepad() {
+        const name = document.getElementById('notepadName').textContent;
+        const dept = document.getElementById('notepadDepartment').textContent;
+        const desc = document.getElementById('notepadDescription').textContent;
+        const remarks = document.getElementById('notepadRemarks').textContent;
+        const priority = document.getElementById('notepadPriority').textContent;
+        const storedAt = document.getElementById('notepadStoredAt').textContent;
+
+        const text = 'Name: ' + name + '\nDepartment: ' + dept + '\nDescription: ' + desc + '\nRemarks: ' + remarks + '\nPriority: ' + priority + '\nStored At: ' + storedAt;
+
+        // Try using the modern Clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('✅ Copied to clipboard!');
+            }).catch(function() {
+                copyUsingTextarea(text);
+            });
+        } else {
+            copyUsingTextarea(text);
+        }
+    }
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeNotepad();
+        }
+    });
+
+    // Close modal on outside click
+    document.getElementById('notepadModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeNotepad();
+        }
+    });
+</script>
+
+{% endblock %}
