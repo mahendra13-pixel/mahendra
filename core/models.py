@@ -26,15 +26,16 @@ class Contact(models.Model):
     
     name = models.CharField(max_length=200)
     department = models.CharField(max_length=200, default="General")
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, blank=True, null=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     hostname = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=255, blank=True, null=True)
     os_info = models.CharField(max_length=100, blank=True, null=True)
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium', blank=True, null=True)
     date = models.DateField(auto_now_add=True, null=True, blank=True)
     time = models.TimeField(auto_now_add=True, null=True, blank=True)
-    message = models.TextField()
+    message = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     media_file = models.FileField(upload_to='media_files/', null=True, blank=True, verbose_name="Media File (Image/Video)")
     is_public = models.BooleanField(default=False)
     
@@ -58,6 +59,9 @@ class Contact(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
+    description = models.TextField(blank=True, null=True)  # NEW: For store form
+    is_stored = models.BooleanField(default=False)
+    stored_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.department}"
@@ -68,3 +72,5 @@ class Contact(models.Model):
         self.status = 'Closed'  # Changed from 'Resolved' to 'Closed'
         self.resolved_at = timezone.now()
         self.save()
+
+        

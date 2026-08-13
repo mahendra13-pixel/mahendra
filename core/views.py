@@ -267,12 +267,18 @@ def contact(request):
             models.Q(ip_address=ip_address) | models.Q(is_public=True)
         )
 
-    selected_date = request.GET.get('date')
-    if selected_date:
-        contacts = contacts.filter(date=selected_date)
-        resolved_contacts = resolved_contacts.filter(date=selected_date)
-        pending_contacts = pending_contacts.filter(date=selected_date)
+# Date filter for Issue Slider (uses 'date' parameter)
+      # Date filter for Issue Slider (uses 'date' parameter)
+    slider_date = request.GET.get('date')
+    if slider_date:
+        contacts = contacts.filter(date=slider_date)
+        pending_contacts = pending_contacts.filter(date=slider_date)
 
+    # Date filter for Resolved Modal (uses 'resolved_date' parameter)
+    resolved_date = request.GET.get('resolved_date')
+    if resolved_date:
+        resolved_contacts = resolved_contacts.filter(date=resolved_date)
+        
     return render(request, 'core/contact.html', {
         'contacts': contacts,
         'resolved_contacts': resolved_contacts,
@@ -379,6 +385,93 @@ def toggle_public_issue(request, pk):
         messages.warning(request, f"🔒 Issue #{pk} is now PRIVATE - only visible to the original IP")
     
     return redirect('core:contact')
+
+
+# Store Issue - Open Store Form (Anyone can access)
+def store_issue(request):
+    """Open the store form page - Anyone can access"""
+    return render(request, 'core/store_form.html')
+
+# Submit Store Issue (Anyone can submit)
+def store_submit(request):
+    """Submit an issue to storage - Anyone can submit"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        department = request.POST.get('department')
+        phone = request.POST.get('phone')
+        priority = request.POST.get('priority')
+        remarks = request.POST.get('remarks', '')
+        description = request.POST.get('description')
+      
+        
+        # Get file
+        media_file = request.FILES.get('media_file')
+        
+        now = timezone.localtime(timezone.now())
+        
+        contact = Contact.objects.create(
+            name=name,
+            department=department,
+            phone=phone,
+            ip_address=get_client_ip(request),
+            priority=priority,
+            message=None,
+            description=description, 
+            remarks=remarks,
+            media_file=media_file,
+            status='Stored',
+            is_stored=True,
+            stored_at=now,
+            created_at=now,
+            updated_at=now
+        )
+        
+        messages.success(request, f"✅ Issue '{name}' stored successfully!")
+        return redirect('core:contact')
+    
+    return redirect('core:contact')
+
+# Storage View - Show all stored items (ADMIN ONLY)
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def storage_view(request):
+    """View all stored issues - ADMIN ONLY"""
+    stored_items = Contact.objects.filter(is_stored=True).order_by('-stored_at')
+    search_query = request.GET.get('search')
+    if search_query:
+        stored_items = stored_items.filter(
+            models.Q(name__icontains=search_query) |
+            models.Q(department__icontains=search_query) |
+            models.Q(description__icontains=search_query) |
+            models.Q(remarks__icontains=search_query)
+        )
+    return render(request, 'core/storage_view.html', {'stored_items': stored_items})
+
+# Delete stored item (ADMIN ONLY)
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def storage_delete(request, pk):
+    """Delete a stored item - ADMIN ONLY"""
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    if request.method == 'POST':
+        item.delete()
+        messages.success(request, "✅ Item removed from storage")
+        return redirect('core:storage_view')
+    return redirect('core:storage_view')
+
+# Restore stored item (ADMIN ONLY)
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def storage_restore(request, pk):
+    """Restore a stored item back to main issues - ADMIN ONLY"""
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    item.is_stored = False
+    item.is_resolved = False
+    item.status = 'Pending'
+    item.save()
+    messages.success(request, f"✅ Item '{item.name}' restored to main issues")
+    return redirect('core:storage_view')
+
 
 # Resolved Issues Excel Export (Full) - Admin Only
 @login_required(login_url='/admin/login/')
@@ -531,3 +624,10 @@ def resolved_issues_excel_compact(request):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
      
     return response
+
+
+# Stored Item Detail - Shows limited fields for stored items
+def stored_item_detail(request, pk):
+    """View for stored items - shows only name, department, description, remarks"""
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    return render(request, 'core/stored_item_detail.html', {'item': item})
