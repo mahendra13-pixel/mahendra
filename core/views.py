@@ -14,6 +14,7 @@ import os
 import getpass
 import zipfile
 from django.core.files.base import ContentFile
+from django.core.paginator import Paginator
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -294,11 +295,23 @@ def contact(request):
             resolved_contacts = resolved_contacts.filter(date=resolved_date_obj)
         except (ValueError, TypeError):
             resolved_contacts = resolved_contacts.filter(date=resolved_date)
-        
+
+    resolved_paginator = Paginator(resolved_contacts, 15)
+    resolved_page = request.GET.get('resolved_page', 1)
+    resolved_page_obj = resolved_paginator.get_page(resolved_page) 
+
+    slider_paginator = Paginator(contacts, 20)  # 20 issues per page
+    slider_page = request.GET.get('page', 1)    # Get page from URL (?page=2)
+    slider_page_obj = slider_paginator.get_page(slider_page)   
+
+    pending_paginator = Paginator(pending_contacts, 10)  # 10 per page for modal
+    pending_page = request.GET.get('pending_page', 1)    # Get page from URL (?pending_page=2)
+    pending_page_obj = pending_paginator.get_page(pending_page)
+
     return render(request, 'core/contact.html', {
-        'contacts': contacts,
-        'resolved_contacts': resolved_contacts,
-        'pending_contacts': pending_contacts,
+        'slider_page_obj': slider_page_obj,
+        'resolved_page_obj': resolved_page_obj,
+        'pending_page_obj': pending_page_obj,
         'is_admin_user': is_admin_user,
         'user_ip': ip_address,
         'user_hostname': hostname,
@@ -489,7 +502,12 @@ def storage_view(request):
             models.Q(description__icontains=search_query) |
             models.Q(remarks__icontains=search_query)
         )
-    return render(request, 'core/storage_view.html', {'stored_items': stored_items})
+
+    paginator = Paginator(stored_items, 20)  # 20 items per page
+    page_number = request.GET.get('page', 1)  # Get page from URL (?page=2)
+    page_obj = paginator.get_page(page_number)    
+
+    return render(request, 'core/storage_view.html', {'page_obj': page_obj,})
 
 # Delete stored item (ADMIN ONLY)
 @login_required(login_url='/admin/login/')

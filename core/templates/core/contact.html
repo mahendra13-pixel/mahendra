@@ -10,7 +10,7 @@
 {% block content %}
 
 <!-- PENDING ISSUES MODAL - Shows on page load only if there are pending/in-progress issues -->
-{% if pending_contacts %}
+{% if pending_page_obj %}
 <div class="pending-modal-overlay" id="pendingModal">
     <div class="pending-modal-box">
         <button class="pending-modal-close" id="pendingModalClose" aria-label="Close">
@@ -21,12 +21,19 @@
             <i class="fas fa-exclamation-triangle"></i>
             Pending & In Progress Issues
             <span class="count-badge">
-                {{ pending_contacts|length }} issue{{ pending_contacts|pluralize }} require attention
+                {{ pending_page_obj.paginator.count }} issue{{ pending_page_obj.paginator.count|pluralize }} require
+                attention
             </span>
         </div>
 
+        <!-- ✅ Show count info -->
+        <div style="font-size: 0.7rem; color: #6b7280; padding: 0 20px; margin-bottom: 8px;">
+            Showing {{ pending_page_obj.start_index }} - {{ pending_page_obj.end_index }}
+            of {{ pending_page_obj.paginator.count }} pending issues
+        </div>
+
         <ul class="pending-modal-list">
-            {% for contact in pending_contacts %}
+            {% for contact in pending_page_obj %}
             <li>
                 <span class="issue-title">
                     <i class="fas fa-user-circle"></i> {{ contact.name }}
@@ -49,6 +56,35 @@
             </li>
             {% endfor %}
         </ul>
+        <!-- ✅ Add Pagination Controls for Pending Modal -->
+        <div
+            style="display: flex; justify-content: center; gap: 8px; padding: 10px 20px; border-top: 1px solid #e5e7eb; flex-wrap: wrap;">
+            {% if pending_page_obj.has_previous %}
+            <a href="?pending_page=1{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+                class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
+                <i class="fas fa-angle-double-left"></i> First
+            </a>
+            <a href="?pending_page={{ pending_page_obj.previous_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+                class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
+                <i class="fas fa-angle-left"></i> Previous
+            </a>
+            {% endif %}
+
+            <span class="btn btn-sm btn-secondary disabled" style="font-size: 0.65rem; cursor: default;">
+                Page {{ pending_page_obj.number }} of {{ pending_page_obj.paginator.num_pages }}
+            </span>
+
+            {% if pending_page_obj.has_next %}
+            <a href="?pending_page={{ pending_page_obj.next_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+                class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
+                Next <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?pending_page={{ pending_page_obj.paginator.num_pages }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+                class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
+                Last <i class="fas fa-angle-double-right"></i>
+            </a>
+            {% endif %}
+        </div>
 
         <div class="pending-modal-footer">
             <button class="btn" id="pendingModalCloseBtn">
@@ -297,7 +333,7 @@
     <button class="btn btn-success position-relative" type="button" data-bs-toggle="modal"
         data-bs-target="#resolvedModal">
         <i class="fas fa-check-circle"></i> Resolved Issues
-        <span class="badge bg-light text-success border ms-1">{{ resolved_contacts|length }}</span>
+        <span class="badge bg-light text-success border ms-1">{{ resolved_page_obj.paginator.count }}</span>
     </button>
 </div>
 <!-- Resolved Issues Modal -->
@@ -339,9 +375,13 @@
                         {% endif %}
                     </form>
                 </div>
-                {% if resolved_contacts %}
+                {% if resolved_page_obj %}
+                <div style="margin-bottom: 8px; font-size: 0.8rem; color: #6b7280;">
+                    Showing {{ resolved_page_obj.start_index }} - {{ resolved_page_obj.end_index }}
+                    of {{ resolved_page_obj.paginator.count }} resolved issues
+                </div>
                 <div class="row g-3">
-                    {% for contact in resolved_contacts %}
+                    {% for contact in resolved_page_obj %}
                     <div class="col-md-6">
                         <div class="contact-card"
                             style="padding:12px; font-size:12px; border:1px solid #ddd; border-radius:8px;">
@@ -391,6 +431,34 @@
                     </div>
                     {% endfor %}
                 </div>
+                <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+                    {% if resolved_page_obj.has_previous %}
+                    <a href="?resolved_page=1{% if request.GET.resolved_date %}&resolved_date={{ request.GET.resolved_date }}{% endif %}"
+                        class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-angle-double-left"></i> First
+                    </a>
+                    <a href="?resolved_page={{ resolved_page_obj.previous_page_number }}{% if request.GET.resolved_date %}&resolved_date={{ request.GET.resolved_date }}{% endif %}"
+                        class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-angle-left"></i> Previous
+                    </a>
+                    {% endif %}
+
+                    <span class="btn btn-sm btn-secondary disabled">
+                        Page {{ resolved_page_obj.number }} of {{ resolved_page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if resolved_page_obj.has_next %}
+                    <a href="?resolved_page={{ resolved_page_obj.next_page_number }}{% if request.GET.resolved_date %}&resolved_date={{ request.GET.resolved_date }}{% endif %}"
+                        class="btn btn-sm btn-outline-secondary">
+                        Next <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?resolved_page={{ resolved_page_obj.paginator.num_pages }}{% if request.GET.resolved_date %}&resolved_date={{ request.GET.resolved_date }}{% endif %}"
+                        class="btn btn-sm btn-outline-secondary">
+                        Last <i class="fas fa-angle-double-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+
                 {% else %}
                 <p class="text-center text-muted">No resolved issues yet.</p>
                 {% endif %}
@@ -405,6 +473,16 @@
      ============================================ -->
 <section class="issue-slider-wrapper">
 
+    <!-- ✅ Show count info for Issue Slider - ADD THIS -->
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 10px;">
+        <span style="font-size: 0.7rem; color: #6b7280;">
+            <i class="fas fa-list"></i>
+            Showing {{ slider_page_obj.start_index }} - {{ slider_page_obj.end_index }}
+            of {{ slider_page_obj.paginator.count }} unresolved issues
+        </span>
+    </div>
+
 
     <!-- Slider Navigation Buttons -->
     <button class="slider-nav prev" id="sliderPrev" aria-label="Previous">
@@ -416,7 +494,7 @@
 
     <!-- Slider Container -->
     <div class="issue-slider" id="issueSlider">
-        {% for contact in contacts %}
+        {% for contact in slider_page_obj %}
         <div class="contact-card horizontal-card"
             style="position: relative; {% if contact.is_public %}border: 2px solid #22c55e;{% endif %}">
 
@@ -513,6 +591,36 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- ✅ Add Pagination Controls for Issue Slider -->
+    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+        {% if slider_page_obj.has_previous %}
+        <a href="?page=1{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">
+            <i class="fas fa-angle-double-left"></i> First
+        </a>
+        <a href="?page={{ slider_page_obj.previous_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">
+            <i class="fas fa-angle-left"></i> Previous
+        </a>
+        {% endif %}
+
+        <span class="btn btn-sm btn-secondary disabled" style="font-size: 0.7rem; cursor: default;">
+            Page {{ slider_page_obj.number }} of {{ slider_page_obj.paginator.num_pages }}
+        </span>
+
+        {% if slider_page_obj.has_next %}
+        <a href="?page={{ slider_page_obj.next_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">
+            Next <i class="fas fa-angle-right"></i>
+        </a>
+        <a href="?page={{ slider_page_obj.paginator.num_pages }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">
+            Last <i class="fas fa-angle-double-right"></i>
+        </a>
+        {% endif %}
+    </div>
+
 
     <!-- Scroll Indicators -->
     <div class="scroll-indicators" id="scrollIndicators">
