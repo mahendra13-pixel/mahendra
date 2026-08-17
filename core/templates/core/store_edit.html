@@ -118,6 +118,9 @@
                                             <i class="fas fa-check-circle" style="color: #16a34a; font-size: 0.8rem;"></i>
                                             <span style="font-size: 0.7rem; font-weight: 500; color: #374151;">
                                                 {{ stored_files|length }} file{{ stored_files|length|pluralize }} attached
+                                                {% if has_legacy_file %}
+                                                <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy file)</span>
+                                                {% endif %}
                                             </span>
                                         </div>
                                         <button type="button" class="eye-btn" onclick='openFileViewer([

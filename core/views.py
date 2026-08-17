@@ -323,12 +323,53 @@ def issue_detail(request, pk):
         'contact': contact,
         'stored_files': stored_files,
     })
-# Edit Issue - Admin Only
+## Edit Issue - Admin Only
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def issue_edit(request, pk):
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
-    stored_files = StoredFile.objects.filter(contact=contact)
+    
+    # ============================================================
+    # ✅ GET ALL FILES - BOTH OLD AND NEW
+    # ============================================================
+    
+    # Get new files from StoredFile model
+    stored_files_qs = StoredFile.objects.filter(contact=contact)
+    stored_files = list(stored_files_qs)
+    
+    # Check for old legacy file in media_file
+    has_legacy_file = False
+    legacy_file = None
+    
+    if contact.media_file:
+        # Check if this file is already in stored_files (by checking if any stored_file has same file name)
+        # If not, it's a legacy file
+        file_name = contact.media_file.name.split('/')[-1]
+        exists_in_stored = any(sf.file_name == file_name for sf in stored_files)
+        
+        if not exists_in_stored:
+            has_legacy_file = True
+            legacy_file = {
+                'name': file_name,
+                'size': contact.media_file.size,
+                'url': contact.media_file.url,
+            }
+            # Also add to stored_files list so it appears in the list
+            # Create a virtual object with the same attributes
+            class VirtualFile:
+                pass
+            virtual = VirtualFile()
+            virtual.file_name = file_name
+            virtual.file_size = contact.media_file.size
+            virtual.file_url = contact.media_file.url
+            virtual.file = contact.media_file
+            virtual.is_legacy = True
+            stored_files.append(virtual)
+    
+    # Total file count
+    total_files = len(stored_files)
+    
+    # ============================================================
     
     if request.method == 'POST':   
         contact.name = request.POST.get('name')
@@ -347,13 +388,14 @@ def issue_edit(request, pk):
         contact.remarks = request.POST.get('remarks', '')
         
         # ============================================================
-        # ✅ HANDLE NEW FILES - FIXED
+        # ✅ HANDLE FILE OPERATIONS
         # ============================================================
         
         # Check if user wants to remove all files
         if request.POST.get('remove_all_files') == 'on':
-            # Delete all stored files
+            # Delete all StoredFile records
             StoredFile.objects.filter(contact=contact).delete()
+            # Delete legacy media_file
             if contact.media_file:
                 contact.media_file.delete(save=False)
                 contact.media_file = None
@@ -362,27 +404,37 @@ def issue_edit(request, pk):
         
         # Check if new files were uploaded
         elif request.FILES.getlist('edit_multiple_files'):
-            # Delete old files first (optional - or keep existing)
-            # Uncomment below if you want to replace all files:
-            # StoredFile.objects.filter(contact=contact).delete()
-            # if contact.media_file:
-            #     contact.media_file.delete(save=False)
-            #     contact.media_file = None
-            
-            # Get the new files
             multiple_files = request.FILES.getlist('edit_multiple_files')
             
             # Validate file sizes (500 MB limit)
-            MAX_SIZE = 500 * 1024 * 1024
+            MAX_SIZE = 1024 * 1024 * 1024
             for file in multiple_files:
                 if file.size > MAX_SIZE:
-                    messages.error(request, f"File '{file.name}' exceeds 500 MB limit.")
+                    messages.error(request, f"File '{file.name}' exceeds 1 GB limit.")
                     return render(request, 'core/issue_edit.html', {
                         'contact': contact,
                         'stored_files': stored_files,
+                        'total_files': total_files,
                     })
             
-            # Create StoredFile records for each file
+            # ✅ If there's a legacy media_file, migrate it to StoredFile first
+            if contact.media_file:
+                # Check if legacy file already exists in StoredFile
+                existing = StoredFile.objects.filter(
+                    contact=contact,
+                    file_name=contact.media_file.name.split('/')[-1]
+                )
+                if not existing:
+                    StoredFile.objects.create(
+                        contact=contact,
+                        file=contact.media_file,
+                        file_name=contact.media_file.name.split('/')[-1],
+                        file_size=contact.media_file.size
+                    )
+                # Don't delete media_file yet, keep for backward compatibility
+                # But we'll update it later
+            
+            # Create StoredFile records for each new file
             for file in multiple_files:
                 StoredFile.objects.create(
                     contact=contact,
@@ -391,19 +443,20 @@ def issue_edit(request, pk):
                     file_size=file.size
                 )
             
-            # Update contact's media_file (for backward compatibility)
-            if not contact.media_file:
-                contact.media_file = multiple_files[0]
+            # Update contact's media_file (point to first file for backward compatibility)
+            all_files = StoredFile.objects.filter(contact=contact)
+            if all_files.exists():
+                contact.media_file = all_files.first().file
             
             # Update file count
             contact.file_count = StoredFile.objects.filter(contact=contact).count()
             contact.is_multiple = contact.file_count > 1
         
         # ============================================================
-        # ✅ HANDLE SINGLE FILE UPLOAD (Keep for backward compatibility)
+        # ✅ HANDLE SINGLE FILE UPLOAD (Backward compatibility)
         # ============================================================
         elif request.FILES.get('media_file'):
-            # Delete old files
+            # Delete all existing files
             StoredFile.objects.filter(contact=contact).delete()
             if contact.media_file:
                 contact.media_file.delete(save=False)
@@ -448,8 +501,12 @@ def issue_edit(request, pk):
     
     return render(request, 'core/issue_edit.html', {
         'contact': contact,
-        'stored_files': stored_files,
+        'stored_files': stored_files,  # Contains BOTH old and new files
+        'total_files': total_files,
+        'has_legacy_file': has_legacy_file,
+        'legacy_file': legacy_file,
     })
+
 
 # Delete Issue - Admin Only
 @login_required(login_url='/admin/login/')
@@ -794,9 +851,43 @@ def stored_item_detail(request, pk):
 @user_passes_test(is_admin)
 def store_edit(request, pk):
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
-    stored_files = StoredFile.objects.filter(contact=item)
+    
+    # ✅ Get ALL files - BOTH old and new
+    stored_files_qs = StoredFile.objects.filter(contact=item)
+    stored_files = list(stored_files_qs)
+    
+    # Check for legacy media_file
+    has_legacy_file = False
+    legacy_file = None
+    
+    if item.media_file:
+        file_name = item.media_file.name.split('/')[-1]
+        exists_in_stored = any(sf.file_name == file_name for sf in stored_files)
+        
+        if not exists_in_stored:
+            has_legacy_file = True
+            legacy_file = {
+                'name': file_name,
+                'size': item.media_file.size,
+                'url': item.media_file.url,
+            }
+            # Add to stored_files list
+            class VirtualFile:
+                pass
+            virtual = VirtualFile()
+            virtual.file_name = file_name
+            virtual.file_size = item.media_file.size
+            virtual.file_url = item.media_file.url
+            virtual.file = item.media_file
+            virtual.is_legacy = True
+            stored_files.append(virtual)
+    
+    total_files = len(stored_files)
     
     if request.method == 'POST':
+        # ============================================================
+        # ✅ GET FORM DATA
+        # ============================================================
         name = request.POST.get('name')
         department = request.POST.get('department')
         phone = request.POST.get('phone')
@@ -804,6 +895,7 @@ def store_edit(request, pk):
         remarks = request.POST.get('remarks', '')
         description = request.POST.get('description')
         
+        # Update the item
         item.name = name
         item.department = department
         item.phone = phone
@@ -812,7 +904,7 @@ def store_edit(request, pk):
         item.description = description
         
         # ============================================================
-        # ✅ HANDLE FILE UPLOADS - FIXED
+        # ✅ HANDLE FILE UPLOADS
         # ============================================================
         
         # Check if user wants to remove all files
@@ -836,6 +928,19 @@ def store_edit(request, pk):
             is_multiple = False
             file_count = 0
             
+            # Validate file sizes (500 MB limit)
+            MAX_SIZE = 1024 * 1024 * 1024
+            for file in multiple_files:
+                if file.size > MAX_SIZE:
+                    messages.error(request, f"File '{file.name}' exceeds 1 GB limit.")
+                    return render(request, 'core/store_edit.html', {
+                        'item': item,
+                        'stored_files': stored_files,
+                        'total_files': total_files,
+                        'has_legacy_file': has_legacy_file,
+                        'legacy_file': legacy_file,
+                    })
+            
             if multiple_files and len(multiple_files) > 0:
                 file_count = len(multiple_files)
                 if file_count == 1:
@@ -858,7 +963,8 @@ def store_edit(request, pk):
                     )
         
         # ============================================================
-        
+        # ✅ SAVE AND REDIRECT
+        # ============================================================
         item.updated_at = timezone.localtime(timezone.now())
         item.save()
         
@@ -868,8 +974,10 @@ def store_edit(request, pk):
     return render(request, 'core/store_edit.html', {
         'item': item,
         'stored_files': stored_files,
+        'total_files': total_files,
+        'has_legacy_file': has_legacy_file,
+        'legacy_file': legacy_file,
     })
-
 
 
 def get_zip_contents(request, pk):
