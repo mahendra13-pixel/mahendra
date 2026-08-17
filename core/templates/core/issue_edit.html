@@ -170,6 +170,9 @@
                                         <i class="fas fa-check-circle" style="color: #16a34a; font-size: 0.8rem;"></i>
                                         <span style="font-size: 0.7rem; font-weight: 500; color: #374151;">
                                             {{ stored_files|length }} file{{ stored_files|length|pluralize }} attached
+                                            {% if has_legacy_file %}
+                                            <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy file)</span>
+                                            {% endif %}
                                         </span>
                                     </div>
                                     <button type="button" class="eye-btn" onclick='openFileViewer([
@@ -243,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const editFileInput = document.getElementById('edit_multiple_files');
     const editFileStatus = document.getElementById('editFileStatus');
     const editFileList = document.getElementById('editFileList');
-    const MAX_SIZE = 500 * 1024 * 1024;
+    const MAX_SIZE = 1024 * 1024 * 1024;
     let editSelectedFiles = [];
 
     if (editFileInput) {
@@ -253,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const oversizedFiles = newFiles.filter(f => f.size > MAX_SIZE);
             if (oversizedFiles.length > 0) {
                 const names = oversizedFiles.map(f => f.name).join(', ');
-                alert('❌ File(s) too large: ' + names + '\n\nMaximum file size is 500 MB.');
+                alert('❌ File(s) too large: ' + names + '\n\nMaximum file size is 1 GB.');
                 this.value = '';
                 return;
             }
