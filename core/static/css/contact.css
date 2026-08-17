@@ -980,3 +980,271 @@
     box-shadow: 0 3px 10px rgba(107, 114, 128, 0.25);
     color: white !important;
 }
+
+/* ============================================
+   COMPACT EYE BUTTON - ADD TO contact.css
+   ============================================ */
+
+/* Eye Button - Compact Grey */
+.eye-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.55rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    text-decoration: none;
+    line-height: 1.4;
+}
+
+.eye-btn:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.25);
+    color: white;
+}
+
+.eye-btn i {
+    font-size: 0.55rem;
+}
+
+.eye-btn .badge-count {
+    background: rgba(255,255,255,0.25);
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 0.5rem;
+    margin-left: 2px;
+}
+
+/* File Viewer Modal */
+.file-viewer-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 100000;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+}
+
+.file-viewer-modal.show {
+    display: flex;
+}
+
+.file-viewer-content {
+    background: white;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+    animation: modalSlideIn 0.25s ease;
+}
+
+.file-viewer-header {
+    padding: 10px 16px;
+    background: #6b7280;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-viewer-header h5 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.file-viewer-header h5 i {
+    margin-right: 6px;
+}
+
+.file-viewer-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.file-viewer-close:hover {
+    color: #fca5a5;
+}
+
+.file-viewer-body {
+    padding: 12px 16px;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+.file-viewer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.file-viewer-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f9fafb;
+}
+
+.file-viewer-item .file-icon {
+    font-size: 2rem;
+    text-align: center;
+    padding: 6px 0 2px 0;
+}
+
+.file-viewer-item .file-name {
+    font-size: 0.55rem;
+    padding: 0 4px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #374151;
+}
+
+.file-viewer-item .file-size {
+    font-size: 0.45rem;
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 2px;
+}
+
+.file-viewer-item .file-actions {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+}
+
+.file-viewer-item .file-actions a {
+    flex: 1;
+    text-align: center;
+    font-size: 0.45rem;
+    padding: 2px 2px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.file-viewer-item .file-actions .view-btn {
+    background: #22c55e;
+    color: white;
+}
+
+.file-viewer-item .file-actions .view-btn:hover {
+    background: #16a34a;
+}
+
+.file-viewer-item .file-actions .download-btn {
+    background: #6b7280;
+    color: white;
+}
+
+.file-viewer-item .file-actions .download-btn:hover {
+    background: #4b5563;
+}
+
+.file-viewer-footer {
+    padding: 8px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.file-viewer-footer .info-text {
+    font-size: 0.55rem;
+    color: #6b7280;
+}
+
+.file-viewer-footer .btn-done {
+    padding: 4px 16px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.file-viewer-footer .btn-done:hover {
+    background: #4b5563;
+}
+
+.file-viewer-footer .btn-download-all {
+    padding: 4px 12px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.file-viewer-footer .btn-download-all:hover {
+    background: #1d4ed8;
+}
+
+@keyframes modalSlideIn {
+    from { transform: translateY(-30px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .file-viewer-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    }
+    
+    .file-viewer-item .file-icon {
+        font-size: 1.5rem;
+    }
+    
+    .file-viewer-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+}
+
+/* Scrollbar */
+.file-viewer-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.file-viewer-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.file-viewer-body::-webkit-scrollbar-thumb {
+    background: #6b7280;
+    border-radius: 4px;
+}
+
+.file-viewer-body::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}

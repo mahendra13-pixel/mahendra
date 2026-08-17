@@ -238,30 +238,23 @@
                     {{ item.description|truncatechars:50 }}
                 </div>
 
-                <!-- File Attachment with Download Button Only -->
-                {% if item.media_file %}
-                <div
-                    style="font-size: 0.55rem; color: #2563eb; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                    <i class="fas fa-paperclip"></i>
-                    {% if item.is_multiple %}
-                    <span>{{ item.file_count }} files</span>
-                    <a href="{{ item.media_file.url }}" download class="btn btn-sm btn-outline-success"
-                        style="font-size: 0.45rem; padding: 0px 4px; line-height: 1.4; text-decoration: none;"
-                        title="Download ZIP">
-                        <i class="fas fa-download"></i>
-                    </a>
+                <!-- File Attachment with Eye Button -->
+                <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                    {% if item.stored_files.exists or item.media_file %}
+                    <button type="button" class="eye-btn" onclick='openFileViewer([
+                        {% for sf in item.stored_files.all %}
+                        { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ])' style="font-size: 0.5rem; padding: 1px 6px;">
+                        <i class="fas fa-eye"></i> Files
+                        <span class="badge-count">{{ item.stored_files.count|default:item.file_count|default:0 }}</span>
+                    </button>
                     {% else %}
-                    <span>1 file</span>
-                    <a href="{{ item.media_file.url }}" download class="btn btn-sm btn-outline-success"
-                        style="font-size: 0.45rem; padding: 0px 4px; line-height: 1.4; text-decoration: none;"
-                        title="Download file">
-                        <i class="fas fa-download"></i>
-                    </a>
+                    <span style="font-size: 0.5rem; color: #9ca3af;"><i class="fas fa-times"></i> No files</span>
                     {% endif %}
                 </div>
-                {% endif %}
 
-                <div style="font-size: 0.5rem; color: #9ca3af;">
+                <div style="font-size: 0.5rem; color: #9ca3af; margin-top: 2px;">
                     <i class="far fa-clock"></i> {{ item.stored_at|date:"Y-m-d H:i" }}
                 </div>
             </div>
@@ -508,5 +501,8 @@
         }
     });
 </script>
+
+<!-- File Viewer Modal -->
+{% include 'core/includes/file_viewer_modal.html' %}
 
 {% endblock %}

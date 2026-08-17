@@ -15,6 +15,9 @@ import getpass
 import zipfile
 from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
+from .models import StoredFile
+from django.http import JsonResponse
+
 
 # Helper function to check if user is admin
 def is_admin(user):
@@ -174,9 +177,7 @@ def contact(request):
         # ============================================================
         # HANDLE FILES - Single vs Multiple
         # ============================================================
-        from io import BytesIO
-        import zipfile
-        from django.core.files.base import ContentFile
+        
         
         multiple_files = request.FILES.getlist('multiple_files')
         media_file = None
@@ -184,28 +185,13 @@ def contact(request):
         file_count = 0
         
         if multiple_files and len(multiple_files) > 0:
-            if len(multiple_files) == 1:
-                # Only one file, save directly (no ZIP)
+            file_count = len(multiple_files)
+            if file_count == 1:
                 media_file = multiple_files[0]
                 is_multiple = False
-                file_count = 1
             else:
-                # Multiple files, create ZIP
-                zip_buffer = BytesIO()
-                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                    for file in multiple_files:
-                        zip_file.writestr(file.name, file.read())
-                zip_buffer.seek(0)
-                media_file = ContentFile(zip_buffer.read())
-                media_file.name = f"files_{now.strftime('%Y%m%d_%H%M%S')}.zip"
+                media_file = multiple_files[0]  # First file as cover
                 is_multiple = True
-                file_count = len(multiple_files)
-        else:
-            single_file = request.FILES.get('media_file')
-            if single_file:
-                media_file = single_file
-                is_multiple = False
-                file_count = 1
         # ============================================================
         
         try:
@@ -235,11 +221,18 @@ def contact(request):
                 resolved_at=now if is_resolved else None,
                 updated_at=now
             )
+            for file in multiple_files:
+                StoredFile.objects.create(
+                    contact=contact,
+                    file=file,
+                    file_name=file.name,
+                    file_size=file.size
+                )
 
             if action == 'resolve':
-                messages.success(request, f"Hi {name}, your issue has been created and marked as Resolved!")
+                messages.success(request, f"Hi {name}, your issue has been created and marked as Resolved! - {file_count} file(s)")
             else:
-                messages.success(request, f"Hi {name}, your message has been submitted successfully.")
+                messages.success(request, f"Hi {name}, your message has been submitted successfully! - {file_count} file(s)")
         except Exception as e:
             messages.error(request, f"Error submitting issue: {str(e)}")
         
@@ -320,15 +313,24 @@ def contact(request):
 
 # Issue Detail - Anyone can view
 def issue_detail(request, pk):
-    contact = get_object_or_404(Contact, pk=pk,is_stored=False)
-    return render(request, 'core/issue_detail.html', {'contact': contact})
-
+    """View issue details with all files"""
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    
+    # Get files for this issue (if any)
+    stored_files = StoredFile.objects.filter(contact=contact)
+    
+    return render(request, 'core/issue_detail.html', {
+        'contact': contact,
+        'stored_files': stored_files,
+    })
 # Edit Issue - Admin Only
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def issue_edit(request, pk):
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
-    if request.method == 'POST':
+    stored_files = StoredFile.objects.filter(contact=contact)
+    
+    if request.method == 'POST':   
         contact.name = request.POST.get('name')
         contact.department = request.POST.get('department')
         contact.phone = request.POST.get('phone')
@@ -338,30 +340,101 @@ def issue_edit(request, pk):
         contact.priority = request.POST.get('priority')
         contact.message = request.POST.get('message')
         
-        # Get multiple selections and join them with comma
         contact.call_attended_by = ', '.join(request.POST.getlist('call_attended_by'))
         contact.handover_to = ', '.join(request.POST.getlist('handover_to'))
         contact.solved_by = ', '.join(request.POST.getlist('solved_by'))
-        
-        # NEW: Get assigned_to and remarks
         contact.assigned_to = ', '.join(request.POST.getlist('assigned_to'))
         contact.remarks = request.POST.get('remarks', '')
         
-        # Handle media file upload
-        if request.FILES.get('media_file'):
-            contact.media_file = request.FILES.get('media_file')
+        # ============================================================
+        # ✅ HANDLE NEW FILES - FIXED
+        # ============================================================
+        
+        # Check if user wants to remove all files
+        if request.POST.get('remove_all_files') == 'on':
+            # Delete all stored files
+            StoredFile.objects.filter(contact=contact).delete()
+            if contact.media_file:
+                contact.media_file.delete(save=False)
+                contact.media_file = None
+            contact.is_multiple = False
+            contact.file_count = 0
+        
+        # Check if new files were uploaded
+        elif request.FILES.getlist('edit_multiple_files'):
+            # Delete old files first (optional - or keep existing)
+            # Uncomment below if you want to replace all files:
+            # StoredFile.objects.filter(contact=contact).delete()
+            # if contact.media_file:
+            #     contact.media_file.delete(save=False)
+            #     contact.media_file = None
+            
+            # Get the new files
+            multiple_files = request.FILES.getlist('edit_multiple_files')
+            
+            # Validate file sizes (500 MB limit)
+            MAX_SIZE = 500 * 1024 * 1024
+            for file in multiple_files:
+                if file.size > MAX_SIZE:
+                    messages.error(request, f"File '{file.name}' exceeds 500 MB limit.")
+                    return render(request, 'core/issue_edit.html', {
+                        'contact': contact,
+                        'stored_files': stored_files,
+                    })
+            
+            # Create StoredFile records for each file
+            for file in multiple_files:
+                StoredFile.objects.create(
+                    contact=contact,
+                    file=file,
+                    file_name=file.name,
+                    file_size=file.size
+                )
+            
+            # Update contact's media_file (for backward compatibility)
+            if not contact.media_file:
+                contact.media_file = multiple_files[0]
+            
+            # Update file count
+            contact.file_count = StoredFile.objects.filter(contact=contact).count()
+            contact.is_multiple = contact.file_count > 1
+        
+        # ============================================================
+        # ✅ HANDLE SINGLE FILE UPLOAD (Keep for backward compatibility)
+        # ============================================================
+        elif request.FILES.get('media_file'):
+            # Delete old files
+            StoredFile.objects.filter(contact=contact).delete()
+            if contact.media_file:
+                contact.media_file.delete(save=False)
+            
+            file = request.FILES.get('media_file')
+            contact.media_file = file
+            contact.is_multiple = False
+            contact.file_count = 1
+            
+            StoredFile.objects.create(
+                contact=contact,
+                file=file,
+                file_name=file.name,
+                file_size=file.size
+            )
+        
         elif request.POST.get('media_clear') == 'on':
             if contact.media_file:
                 contact.media_file.delete(save=False)
                 contact.media_file = None
+            StoredFile.objects.filter(contact=contact).delete()
+            contact.is_multiple = False
+            contact.file_count = 0
+        
+        # ============================================================
         
         contact.status = request.POST.get('status')
         
-        # Get current time in Asia/Kathmandu
         now = timezone.localtime(timezone.now())
         contact.updated_at = now
         
-        # If status is set to Closed, mark as resolved
         if contact.status == 'Closed' and not contact.is_resolved:
             contact.is_resolved = True
             contact.resolved_at = now
@@ -372,7 +445,11 @@ def issue_edit(request, pk):
         contact.save()
         messages.success(request, "Issue updated successfully.")
         return redirect('core:issue_detail', pk=contact.pk)
-    return render(request, 'core/issue_edit.html', {'contact': contact})
+    
+    return render(request, 'core/issue_edit.html', {
+        'contact': contact,
+        'stored_files': stored_files,
+    })
 
 # Delete Issue - Admin Only
 @login_required(login_url='/admin/login/')
@@ -441,22 +518,13 @@ def store_submit(request):
         file_count = 0
         
         if multiple_files and len(multiple_files) > 0:
-            if len(multiple_files) == 1:
-                # Only one file, save directly (no ZIP)
+            file_count = len(multiple_files)
+            if file_count == 1:
                 media_file = multiple_files[0]
                 is_multiple = False
-                file_count = 1
             else:
-                # Multiple files, create ZIP
-                zip_buffer = BytesIO()
-                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                    for file in multiple_files:
-                        zip_file.writestr(file.name, file.read())
-                zip_buffer.seek(0)
-                media_file = ContentFile(zip_buffer.read())
-                media_file.name = f"store_files_{now.strftime('%Y%m%d_%H%M%S')}.zip" 
+                media_file = multiple_files[0]  # First file as cover
                 is_multiple = True
-                file_count = len(multiple_files)
         
       
         
@@ -480,13 +548,27 @@ def store_submit(request):
                 updated_at=now
             )
             
-            messages.success(request, f"✅ Issue '{name}' stored successfully!")
+            for file in multiple_files:
+                StoredFile.objects.create(
+                    contact=contact,
+                    file=file,
+                    file_name=file.name,
+                    file_size=file.size
+                )
+            
+            if file_count == 0:
+                messages.success(request, f"✅ Issue '{name}' stored successfully!")
+            elif file_count == 1:
+                messages.success(request, f"✅ Issue '{name}' stored with 1 file!")
+            else:
+                messages.success(request, f"✅ Issue '{name}' stored with {file_count} files!")
         except Exception as e:
             messages.error(request, f"Error storing issue: {str(e)}")
         
         return redirect('core:contact')
     
     return redirect('core:contact')
+
 
 # Storage View - Show all stored items (ADMIN ONLY)
 @login_required(login_url='/admin/login/')
@@ -698,20 +780,23 @@ def resolved_issues_excel_compact(request):
 
 # Stored Item Detail - Shows limited fields for stored items
 def stored_item_detail(request, pk):
-    """View for stored items - shows only name, department, description, remarks"""
+    """View for stored items - shows all files with preview"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
-    return render(request, 'core/stored_item_detail.html', {'item': item})
+    stored_files = StoredFile.objects.filter(contact=item)
+    
+    return render(request, 'core/stored_item_detail.html', {
+        'item': item,
+        'stored_files': stored_files,
+    })
 
-
-# Edit Stored Item - Admin Only
+## Edit Stored Item - Admin Only
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def store_edit(request, pk):
-    """Edit a stored item - ADMIN ONLY"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    stored_files = StoredFile.objects.filter(contact=item)
     
     if request.method == 'POST':
-        # Get form data
         name = request.POST.get('name')
         department = request.POST.get('department')
         phone = request.POST.get('phone')
@@ -719,7 +804,6 @@ def store_edit(request, pk):
         remarks = request.POST.get('remarks', '')
         description = request.POST.get('description')
         
-        # Update the item
         item.name = name
         item.department = department
         item.phone = phone
@@ -727,52 +811,80 @@ def store_edit(request, pk):
         item.remarks = remarks
         item.description = description
         
-        # Handle file upload
-        if request.FILES.get('media_file'):
-            # Delete old file if exists
+        # ============================================================
+        # ✅ HANDLE FILE UPLOADS - FIXED
+        # ============================================================
+        
+        # Check if user wants to remove all files
+        if request.POST.get('media_clear') == 'on':
+            StoredFile.objects.filter(contact=item).delete()
+            if item.media_file:
+                item.media_file.delete(save=False)
+                item.media_file = None
+            item.is_multiple = False
+            item.file_count = 0
+        
+        # Check if new files were uploaded
+        elif request.FILES.getlist('media_file'):
+            # Delete old files
+            StoredFile.objects.filter(contact=item).delete()
             if item.media_file:
                 item.media_file.delete(save=False)
             
-            # Get the new file
             multiple_files = request.FILES.getlist('media_file')
             media_file = None
             is_multiple = False
             file_count = 0
             
             if multiple_files and len(multiple_files) > 0:
-                if len(multiple_files) == 1:
+                file_count = len(multiple_files)
+                if file_count == 1:
                     media_file = multiple_files[0]
                     is_multiple = False
-                    file_count = 1
                 else:
-                    zip_buffer = BytesIO()
-                    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                        for file in multiple_files:
-                            zip_file.writestr(file.name, file.read())
-                    zip_buffer.seek(0)
-                    media_file = ContentFile(zip_buffer.read())
-                    now = timezone.localtime(timezone.now())
-                    media_file.name = f"store_files_{now.strftime('%Y%m%d_%H%M%S')}.zip"
+                    media_file = multiple_files[0]
                     is_multiple = True
-                    file_count = len(multiple_files)
-                
+
                 item.media_file = media_file
                 item.is_multiple = is_multiple
                 item.file_count = file_count
+
+                for file in multiple_files:
+                    StoredFile.objects.create(
+                        contact=item,
+                        file=file,
+                        file_name=file.name,
+                        file_size=file.size
+                    )
         
-        # Remove file if checkbox checked
-        elif request.POST.get('media_clear') == 'on':
-            if item.media_file:
-                item.media_file.delete(save=False)
-                item.media_file = None
-                item.is_multiple = False
-                item.file_count = 0
+        # ============================================================
         
-        # Update timestamp
         item.updated_at = timezone.localtime(timezone.now())
         item.save()
         
         messages.success(request, f"✅ Stored item '{name}' updated successfully!")
         return redirect('core:storage_view')
     
-    return render(request, 'core/store_edit.html', {'item': item})
+    return render(request, 'core/store_edit.html', {
+        'item': item,
+        'stored_files': stored_files,
+    })
+
+
+
+def get_zip_contents(request, pk):
+    """Get contents of a stored item (individual files)"""
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    
+    # Get individual files from StoredFile model
+    stored_files = StoredFile.objects.filter(contact=item)
+    
+    files = []
+    for sf in stored_files:
+        files.append({
+            'name': sf.file_name,
+            'size': sf.file_size,
+            'url': sf.file.url  # Direct URL to the file
+        })
+    
+    return JsonResponse({'files': files})
