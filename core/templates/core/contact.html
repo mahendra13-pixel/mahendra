@@ -19,7 +19,17 @@
 
         <div class="pending-modal-title">
             <i class="fas fa-exclamation-triangle"></i>
-            Pending & In Progress Issues
+            Plz check
+            <a href="https://mail.grandehospital.com/?_task=mail&_action=compose&_to=itteam@grandehospital.com"
+                target="_blank" style="color: #dc2626; text-decoration: none; font-size: 0.7rem;">
+                <i class="fas fa-envelope"></i>
+            </a>
+            &
+            <a href="https://wa.me/9779742386629" target="_blank"
+                style="color: #25D366; text-decoration: none; font-size: 0.7rem;">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+            for daily update
             <span class="count-badge">
                 {{ pending_page_obj.paginator.count }} issue{{ pending_page_obj.paginator.count|pluralize }} require
                 attention
@@ -422,7 +432,7 @@
                             <p style="margin:2px 0;"><strong>Date:</strong> {{ contact.created_at|date:"Y-m-d" }}</p>
                             <p style="margin:2px 0;"><strong>Time:</strong> {{ contact.created_at|time:"H:i:s" }}</p>
                             <p style="margin:2px 0;"><strong>Issue:</strong> {{ contact.message|truncatechars:50 }}</p>
-                            
+
                             <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;">
                                 <!-- EYE BUTTON - View Files -->
                                 {% if contact.stored_files.exists or contact.media_file %}
@@ -435,9 +445,10 @@
                                     <span class="badge-count">{{ contact.stored_files.count }}</span>
                                 </button>
                                 {% endif %}
-                                
+
                                 <a href="{% url 'core:issue_detail' contact.id %}" target="_blank"
-                                    class="btn btn-sm btn-outline-dark flex-fill" style="font-size: 0.5rem; padding: 2px 6px;">
+                                    class="btn btn-sm btn-outline-dark flex-fill"
+                                    style="font-size: 0.5rem; padding: 2px 6px;">
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
                             </div>
@@ -571,7 +582,7 @@
                     <span class="badge-count">{{ contact.stored_files.count }}</span>
                 </button>
                 {% endif %}
-                
+
                 <!-- View Details -->
                 <a href="{% url 'core:issue_detail' contact.id %}" target="_blank"
                     class="btn btn-sm btn-outline-dark flex-fill" style="font-size: 0.55rem; padding: 2px 6px;">
