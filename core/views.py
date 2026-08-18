@@ -846,7 +846,7 @@ def stored_item_detail(request, pk):
         'stored_files': stored_files,
     })
 
-## Edit Stored Item - Admin Only
+### Edit Stored Item - Admin Only
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
 def store_edit(request, pk):
@@ -904,7 +904,7 @@ def store_edit(request, pk):
         item.description = description
         
         # ============================================================
-        # ✅ HANDLE FILE UPLOADS
+        # ✅ HANDLE FILE OPERATIONS (ADD/REPLACE/DELETE)
         # ============================================================
         
         # Check if user wants to remove all files
@@ -916,19 +916,20 @@ def store_edit(request, pk):
             item.is_multiple = False
             item.file_count = 0
         
-        # Check if new files were uploaded
-        elif request.FILES.getlist('media_file'):
-            # Delete old files
+        # REPLACE: Delete ALL existing files and upload new ones
+        elif request.FILES.getlist('media_file') and request.POST.get('replace_files') == 'on':
+            # Delete all existing files
             StoredFile.objects.filter(contact=item).delete()
             if item.media_file:
                 item.media_file.delete(save=False)
+                item.media_file = None
             
             multiple_files = request.FILES.getlist('media_file')
             media_file = None
             is_multiple = False
             file_count = 0
             
-            # Validate file sizes (500 MB limit)
+            # Validate file sizes
             MAX_SIZE = 1024 * 1024 * 1024
             for file in multiple_files:
                 if file.size > MAX_SIZE:
@@ -962,13 +963,89 @@ def store_edit(request, pk):
                         file_size=file.size
                     )
         
+        # ADD: Keep existing files and upload new ones
+        elif request.FILES.getlist('media_file') and request.POST.get('add_files') == 'on':
+            multiple_files = request.FILES.getlist('media_file')
+            
+            # Validate file sizes
+            MAX_SIZE = 1024 * 1024 * 1024
+            for file in multiple_files:
+                if file.size > MAX_SIZE:
+                    messages.error(request, f"File '{file.name}' exceeds 1 GB limit.")
+                    return render(request, 'core/store_edit.html', {
+                        'item': item,
+                        'stored_files': stored_files,
+                        'total_files': total_files,
+                        'has_legacy_file': has_legacy_file,
+                        'legacy_file': legacy_file,
+                    })
+            
+            # Migrate legacy media_file to StoredFile if exists
+            if item.media_file:
+                file_name = item.media_file.name.split('/')[-1]
+                existing = StoredFile.objects.filter(
+                    contact=item,
+                    file_name=file_name
+                )
+                if not existing.exists():
+                    StoredFile.objects.create(
+                        contact=item,
+                        file=item.media_file,
+                        file_name=file_name,
+                        file_size=item.media_file.size
+                    )
+            
+            # Create StoredFile records for each new file
+            for file in multiple_files:
+                StoredFile.objects.create(
+                    contact=item,
+                    file=file,
+                    file_name=file.name,
+                    file_size=file.size
+                )
+            
+            # Update contact's media_file (point to first file)
+            all_files = StoredFile.objects.filter(contact=item)
+            if all_files.exists():
+                item.media_file = all_files.first().file
+            
+            # Update file count
+            item.file_count = StoredFile.objects.filter(contact=item).count()
+            item.is_multiple = item.file_count > 1
+        
+        # Single file upload (backward compatibility - REPLACE)
+        elif request.FILES.get('media_file'):
+            # Delete all existing files
+            StoredFile.objects.filter(contact=item).delete()
+            if item.media_file:
+                item.media_file.delete(save=False)
+                item.media_file = None
+            
+            file = request.FILES.get('media_file')
+            item.media_file = file
+            item.is_multiple = False
+            item.file_count = 1
+            
+            StoredFile.objects.create(
+                contact=item,
+                file=file,
+                file_name=file.name,
+                file_size=file.size
+            )
+        
         # ============================================================
         # ✅ SAVE AND REDIRECT
         # ============================================================
         item.updated_at = timezone.localtime(timezone.now())
         item.save()
         
-        messages.success(request, f"✅ Stored item '{name}' updated successfully!")
+        # Get final file count for success message
+        final_count = StoredFile.objects.filter(contact=item).count()
+        if final_count > 0:
+            messages.success(request, f"✅ Stored item '{name}' updated successfully! ({final_count} file(s))")
+        else:
+            messages.success(request, f"✅ Stored item '{name}' updated successfully!")
+        
         return redirect('core:storage_view')
     
     return render(request, 'core/store_edit.html', {

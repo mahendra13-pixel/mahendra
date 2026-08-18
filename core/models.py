@@ -35,7 +35,6 @@ class Contact(models.Model):
     date = models.DateField(auto_now_add=True, null=True, blank=True)
     time = models.TimeField(auto_now_add=True, null=True, blank=True)
     message = models.TextField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
     media_file = models.FileField(upload_to='media_files/', null=True, blank=True, verbose_name="Media File (Image/Video)")
     is_public = models.BooleanField(default=False)
     

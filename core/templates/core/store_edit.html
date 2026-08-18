@@ -20,7 +20,8 @@
 
                     {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-primary" role="alert" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
+                    <div class="alert alert-primary" role="alert"
+                        style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -34,17 +35,18 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name" style="font-size: 0.7rem; font-weight: 600;">Full Name</label>
-                                    <input type="text" id="name" name="name" class="form-control" 
-                                           style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
-                                           value="{{ item.name }}" required>
+                                    <input type="text" id="name" name="name" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                        value="{{ item.name }}" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="department" style="font-size: 0.7rem; font-weight: 600;">Department</label>
-                                    <input type="text" id="department" name="department" class="form-control" 
-                                           style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
-                                           value="{{ item.department }}">
+                                    <label for="department"
+                                        style="font-size: 0.7rem; font-weight: 600;">Department</label>
+                                    <input type="text" id="department" name="department" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                        value="{{ item.department }}">
                                 </div>
                             </div>
                         </div>
@@ -54,20 +56,24 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="phone" style="font-size: 0.7rem; font-weight: 600;">Phone</label>
-                                    <input type="text" id="phone" name="phone" class="form-control" 
-                                           style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
-                                           value="{{ item.phone }}">
+                                    <input type="text" id="phone" name="phone" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                        value="{{ item.phone }}">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="priority" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
-                                    <select id="priority" name="priority" class="form-select" 
-                                            style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High</option>
-                                        <option value="Critical" {% if item.priority == 'Critical' %}selected{% endif %}>Critical</option>
+                                    <select id="priority" name="priority" class="form-select"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low
+                                        </option>
+                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>
+                                            Medium</option>
+                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High
+                                        </option>
+                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>
+                                            Critical</option>
                                     </select>
                                 </div>
                             </div>
@@ -77,13 +83,16 @@
                         <div class="row g-2 mt-1">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description *</label>
-                                    <textarea id="description" name="description" rows="5" class="form-control" 
-                                              style="font-size: 0.75rem; padding: 4px 8px; min-height: 80px;" 
-                                              required placeholder="Describe the issue in detail..." 
-                                              maxlength="5000">{{ item.description }}</textarea>
-                                    <div style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
-                                        <span id="charCount">{{ item.description|length|default:"0" }}</span> / 5000 characters
+                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description
+                                        *</label>
+                                    <textarea id="description" name="description" rows="5" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 80px;" required
+                                        placeholder="Describe the issue in detail..."
+                                        maxlength="5000">{{ item.description }}</textarea>
+                                    <div
+                                        style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
+                                        <span id="charCount">{{ item.description|length|default:"0" }}</span> / 5000
+                                        characters
                                     </div>
                                 </div>
                             </div>
@@ -94,9 +103,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="remarks" style="font-size: 0.7rem; font-weight: 600;">Remarks</label>
-                                    <textarea id="remarks" name="remarks" rows="2" class="form-control" 
-                                              style="font-size: 0.75rem; padding: 4px 8px; min-height: 40px;" 
-                                              placeholder="Additional remarks...">{{ item.remarks }}</textarea>
+                                    <textarea id="remarks" name="remarks" rows="2" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 40px;"
+                                        placeholder="Additional remarks...">{{ item.remarks }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -113,13 +122,17 @@
 
                                     <!-- Existing Files Display -->
                                     {% if stored_files %}
-                                    <div style="margin-bottom: 4px; padding: 4px 10px; background: #f0fdf4; border-radius: 6px; border: 1px solid #86efac; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                                    <div
+                                        style="margin-bottom: 4px; padding: 4px 10px; background: #f0fdf4; border-radius: 6px; border: 1px solid #86efac; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
-                                            <i class="fas fa-check-circle" style="color: #16a34a; font-size: 0.8rem;"></i>
+                                            <i class="fas fa-check-circle"
+                                                style="color: #16a34a; font-size: 0.8rem;"></i>
                                             <span style="font-size: 0.7rem; font-weight: 500; color: #374151;">
-                                                {{ stored_files|length }} file{{ stored_files|length|pluralize }} attached
+                                                {{ stored_files|length }} file{{ stored_files|length|pluralize }}
+                                                attached
                                                 {% if has_legacy_file %}
-                                                <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy file)</span>
+                                                <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy
+                                                    file)</span>
                                                 {% endif %}
                                             </span>
                                         </div>
@@ -134,29 +147,55 @@
                                     </div>
                                     <div style="margin-top: 4px;">
                                         <label style="font-size: 0.65rem; color: #dc2626; cursor: pointer;">
-                                            <input type="checkbox" name="media_clear" value="on" style="cursor: pointer;">
+                                            <input type="checkbox" name="media_clear" value="on"
+                                                style="cursor: pointer;">
                                             <i class="fas fa-trash-alt"></i> Remove all attached files
                                         </label>
                                     </div>
                                     {% else %}
-                                    <div style="padding: 4px 10px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; font-size: 0.7rem; color: #6b7280;">
+                                    <div
+                                        style="padding: 4px 10px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; font-size: 0.7rem; color: #6b7280;">
                                         <i class="fas fa-info-circle"></i> No files attached
                                     </div>
                                     {% endif %}
 
                                     <!-- Add/Replace Files -->
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                                        <label for="store_media_upload" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
-                                               padding: 3px 10px; background: #6b7280; color: white; border-radius: 4px; 
-                                               font-size: 0.65rem; font-weight: 500; transition: all 0.2s ease; font-family: inherit;">
-                                            <i class="fas fa-plus" style="font-size: 0.6rem;"></i>
-                                            <span>{% if stored_files %}Replace Files{% else %}Add Files{% endif %}</span>
+                                    <div
+                                        style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                                        <!-- REPLACE Button -->
+                                        <label for="replace_files_upload" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
+           padding: 3px 10px; background: #dc2626; color: white; border-radius: 4px; 
+           font-size: 0.65rem; font-weight: 500; transition: all 0.2s ease; font-family: inherit;">
+                                            <i class="fas fa-upload" style="font-size: 0.6rem;"></i>
+                                            <span>Replace Files</span>
                                         </label>
-                                        <input type="file" id="store_media_upload" name="media_file" multiple style="display: none;" onchange="updateStoreFileLabel(this)">
-                                        <span id="storeFileName" style="font-size: 0.6rem; color: #9ca3af;">No files selected</span>
+                                        <input type="file" id="replace_files_upload" name="media_file" multiple
+                                            style="display: none;" onchange="updateStoreFileLabel(this, 'replace')">
+
+                                        <!-- ADD Button -->
+                                        <label for="add_files_upload" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
+           padding: 3px 10px; background: #059669; color: white; border-radius: 4px; 
+           font-size: 0.65rem; font-weight: 500; transition: all 0.2s ease; font-family: inherit;">
+                                            <i class="fas fa-plus" style="font-size: 0.6rem;"></i>
+                                            <span>Add Files</span>
+                                        </label>
+                                        <input type="file" id="add_files_upload" name="media_file" multiple
+                                            style="display: none;" onchange="updateStoreFileLabel(this, 'add')">
+
+                                        <span id="storeFileName" style="font-size: 0.6rem; color: #9ca3af;">No files
+                                            selected</span>
                                     </div>
+
+                                    <!-- Hidden inputs to detect which action -->
+                                    <!-- Hidden inputs to detect which action -->
+                                    <input type="hidden" id="replace_action" name="replace_files" value="">
+                                    <input type="hidden" id="add_action" name="add_files" value="">
+
                                     <small style="font-size: 0.5rem; color: #6b7280; display: block; margin-top: 2px;">
-                                        <i class="fas fa-info-circle"></i> Max 500 MB per file. Select new files to replace all existing files.
+                                        <i class="fas fa-info-circle"></i> Max 1 GB per file.
+                                        <strong>Replace:</strong> Deletes all existing files and uploads new ones
+                                        &nbsp;|&nbsp;
+                                        <strong>Add:</strong> Keeps existing files and adds new ones
                                     </small>
                                 </div>
                             </div>
@@ -167,7 +206,8 @@
                             <button type="submit" class="btn btn-primary" style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-save"></i> Update
                             </button>
-                            <a href="{% url 'core:storage_view' %}" class="btn btn-outline-secondary" style="font-size: 0.7rem; padding: 4px 12px;">
+                            <a href="{% url 'core:storage_view' %}" class="btn btn-outline-secondary"
+                                style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         </div>
@@ -182,41 +222,58 @@
 </div>
 
 <script>
-// Character counter for description
-document.addEventListener('DOMContentLoaded', function() {
-    const descriptionField = document.getElementById('description');
-    const charCountSpan = document.getElementById('charCount');
-    
-    if (descriptionField && charCountSpan) {
-        descriptionField.addEventListener('input', function() {
-            const count = this.value.length;
-            charCountSpan.textContent = count;
-            
-            if (count > 4500) {
-                charCountSpan.style.color = '#dc2626';
-            } else if (count > 3500) {
-                charCountSpan.style.color = '#f59e0b';
-            } else {
-                charCountSpan.style.color = '#6b7280';
-            }
-        });
-    }
-});
+    // Character counter for description
+    document.addEventListener('DOMContentLoaded', function () {
+        const descriptionField = document.getElementById('description');
+        const charCountSpan = document.getElementById('charCount');
 
-function updateStoreFileLabel(input) {
+        if (descriptionField && charCountSpan) {
+            descriptionField.addEventListener('input', function () {
+                const count = this.value.length;
+                charCountSpan.textContent = count;
+
+                if (count > 4500) {
+                    charCountSpan.style.color = '#dc2626';
+                } else if (count > 3500) {
+                    charCountSpan.style.color = '#f59e0b';
+                } else {
+                    charCountSpan.style.color = '#6b7280';
+                }
+            });
+        }
+    });
+
+    function updateStoreFileLabel(input, action) {
     const fileNameSpan = document.getElementById('storeFileName');
+    const replaceAction = document.getElementById('replace_action');
+    const addAction = document.getElementById('add_action');
+    
+    // Clear both actions first
+    replaceAction.value = '';
+    addAction.value = '';
+    
     if (input.files && input.files.length > 0) {
         const count = input.files.length;
+        const actionName = action === 'replace' ? 'Replace' : 'Add';
+        
         if (count === 1) {
-            const file = input.files[0];
-            fileNameSpan.textContent = '📎 ' + file.name;
+            fileNameSpan.textContent = '📎 ' + actionName + ': ' + input.files[0].name;
         } else {
-            fileNameSpan.textContent = '📎 ' + count + ' files selected';
+            fileNameSpan.textContent = '📎 ' + actionName + ': ' + count + ' files selected';
         }
         fileNameSpan.style.color = '#065f46';
+        
+        // Set the appropriate action
+        if (action === 'replace') {
+            replaceAction.value = 'on';
+        } else if (action === 'add') {
+            addAction.value = 'on';
+        }
     } else {
         fileNameSpan.textContent = 'No files selected';
         fileNameSpan.style.color = '#6b7280';
+        replaceAction.value = '';
+        addAction.value = '';
     }
 }
 </script>
