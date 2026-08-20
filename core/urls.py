@@ -20,4 +20,12 @@ urlpatterns = [
     path('stored-item/<int:pk>/', views.stored_item_detail, name='stored_item_detail'),
     # Store edit (admin only)
     path('store/edit/<int:pk>/', views.store_edit, name='store_edit'),
+    path('storage/<int:pk>/file/delete/<int:file_index>/', 
+         views.delete_stored_file, name='delete_stored_file'),
+    path('storage/<int:pk>/files/delete-all/', 
+         views.delete_stored_all_files, name='delete_stored_all_files'),
+    path('issue/<int:pk>/file/delete/<int:file_index>/', 
+         views.delete_issue_file, name='delete_issue_file'),
+    path('issue/<int:pk>/files/delete-all/', 
+         views.delete_issue_all_files, name='delete_issue_all_files'),
 ]
