@@ -1073,3 +1073,125 @@ def get_zip_contents(request, pk):
         })
     
     return JsonResponse({'files': files})
+
+
+
+  # core/views.py - Add these functions
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def delete_stored_file(request, pk, file_index):
+    """
+    Delete a specific file from a stored item
+    - Deletes from database (StoredFile)
+    - Deletes physical file from storage
+    """
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    stored_files = StoredFile.objects.filter(contact=item)
+    
+    if file_index < len(stored_files):
+        file_to_delete = stored_files[file_index]
+        file_name = file_to_delete.file_name
+        
+        # Delete from database (this also removes the physical file)
+        file_to_delete.delete()
+        
+        # Update file count
+        item.file_count = StoredFile.objects.filter(contact=item).count()
+        item.is_multiple = item.file_count > 1
+        item.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Deleted: {file_name}',
+            'file_count': item.file_count
+        })
+    
+    return JsonResponse({'status': 'error', 'message': 'File not found'}, status=404)
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def delete_stored_all_files(request, pk):
+    """
+    Delete ALL files from a stored item
+    - Deletes all StoredFile records from database
+    - Deletes all physical files from storage
+    """
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    
+    # Delete all StoredFile records
+    StoredFile.objects.filter(contact=item).delete()
+    
+    # Delete legacy media_file
+    if item.media_file:
+        item.media_file.delete(save=False)
+        item.media_file = None
+    
+    # Update flags
+    item.is_multiple = False
+    item.file_count = 0
+    item.save()
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': 'All files deleted successfully!'
+    })
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def delete_issue_file(request, pk, file_index):
+    """
+    Delete a specific file from a regular issue
+    - Deletes from database (StoredFile)
+    - Deletes physical file from storage
+    """
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    stored_files = StoredFile.objects.filter(contact=contact)
+    
+    if file_index < len(stored_files):
+        file_to_delete = stored_files[file_index]
+        file_name = file_to_delete.file_name
+        
+        # Delete from database (this also removes the physical file)
+        file_to_delete.delete()
+        
+        # Update file count
+        contact.file_count = StoredFile.objects.filter(contact=contact).count()
+        contact.is_multiple = contact.file_count > 1
+        contact.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Deleted: {file_name}',
+            'file_count': contact.file_count
+        })
+    
+    return JsonResponse({'status': 'error', 'message': 'File not found'}, status=404)
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def delete_issue_all_files(request, pk):
+    """
+    Delete ALL files from a regular issue
+    - Deletes all StoredFile records from database
+    - Deletes all physical files from storage
+    """
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    
+    # Delete all StoredFile records
+    StoredFile.objects.filter(contact=contact).delete()
+    
+    # Delete legacy media_file
+    if contact.media_file:
+        contact.media_file.delete(save=False)
+        contact.media_file = None
+    
+    # Update flags
+    contact.is_multiple = False
+    contact.file_count = 0
+    contact.save()
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': 'All files deleted successfully!'
+    })  

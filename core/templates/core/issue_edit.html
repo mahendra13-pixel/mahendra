@@ -17,7 +17,8 @@
 
                     {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-primary" role="alert" style="padding: 4px 10px; margin-bottom: 4px; font-size: 0.8rem;">
+                    <div class="alert alert-primary" role="alert"
+                        style="padding: 4px 10px; margin-bottom: 4px; font-size: 0.8rem;">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -28,28 +29,36 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <label for="name" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Full Name</label>
-                                <input type="text" id="name" name="name" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                <label for="name" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Full
+                                    Name</label>
+                                <input type="text" id="name" name="name" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.name }}">
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <label for="department" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Department</label>
-                                <input type="text" id="department" name="department" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                <label for="department" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Department</label>
+                                <input type="text" id="department" name="department" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.department }}">
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <label for="phone" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Extension Number</label>
-                                <input type="text" id="phone" name="phone" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                <label for="phone" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Extension Number</label>
+                                <input type="text" id="phone" name="phone" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.phone }}">
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <label for="ip_address" class="form-label" style="font-size: 0.7rem; font-weight: 600;">IP Address</label>
-                                <input type="text" id="ip_address" name="ip_address" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                <label for="ip_address" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">IP Address</label>
+                                <input type="text" id="ip_address" name="ip_address" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.ip_address|default:'' }}">
                             </div>
                         </div>
@@ -57,22 +66,29 @@
                         <!-- Hostname and Username Row -->
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <label for="hostname" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Hostname</label>
-                                <input type="text" id="hostname" name="hostname" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                <label for="hostname" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Hostname</label>
+                                <input type="text" id="hostname" name="hostname" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.hostname|default:'' }}">
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <label for="username" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Username</label>
-                                <input type="text" id="username" name="username" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                <label for="username" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Username</label>
+                                <input type="text" id="username" name="username" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                     value="{{ contact.username|default:'' }}">
                             </div>
                         </div>
 
+                        <!-- Priority and Status -->
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <label for="priority" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
-                                <select id="priority" name="priority" class="form-select" style="font-size: 0.75rem; padding: 3px 8px; min-height: 30px;">
+                                <label for="priority" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Priority</label>
+                                <select id="priority" name="priority" class="form-select"
+                                    style="font-size: 0.75rem; padding: 3px 8px; min-height: 30px;">
                                     <option value="Low" {% if contact.priority == 'Low' %}selected{% endif %}>Low</option>
                                     <option value="Medium" {% if contact.priority == 'Medium' %}selected{% endif %}>Medium</option>
                                     <option value="High" {% if contact.priority == 'High' %}selected{% endif %}>High</option>
@@ -81,8 +97,10 @@
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <label for="status" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Status</label>
-                                <select id="status" name="status" class="form-select" style="font-size: 0.75rem; padding: 3px 8px; min-height: 30px;">
+                                <label for="status" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Status</label>
+                                <select id="status" name="status" class="form-select"
+                                    style="font-size: 0.75rem; padding: 3px 8px; min-height: 30px;">
                                     <option value="Pending" {% if contact.status == 'Pending' %}selected{% endif %}>Pending</option>
                                     <option value="In Progress" {% if contact.status == 'In Progress' %}selected{% endif %}>In Progress</option>
                                     <option value="Closed" {% if contact.status == 'Closed' %}selected{% endif %}>Closed</option>
@@ -92,9 +110,12 @@
 
                         <!-- Admin Only Fields with CTRL+Click Multi-Select -->
                         <div class="row">
+                            <!-- Call Attended By -->
                             <div class="col-md-3 mb-2">
-                                <label for="call_attended_by" style="font-size: 0.7rem; font-weight: 600;">Call Attended By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="call_attended_by" name="call_attended_by" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
+                                <label for="call_attended_by" style="font-size: 0.7rem; font-weight: 600;">Call Attended
+                                    By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
+                                <select id="call_attended_by" name="call_attended_by" multiple
+                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.call_attended_by %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.call_attended_by %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.call_attended_by %}selected{% endif %}>Binaya Kunwar</option>
@@ -104,9 +125,11 @@
                                 <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
 
+                            <!-- Assigned To -->
                             <div class="col-md-3 mb-2">
                                 <label for="assigned_to" style="font-size: 0.7rem; font-weight: 600;">Assigned To <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="assigned_to" name="assigned_to" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
+                                <select id="assigned_to" name="assigned_to" multiple
+                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.assigned_to %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.assigned_to %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.assigned_to %}selected{% endif %}>Binaya Kunwar</option>
@@ -116,9 +139,11 @@
                                 <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
 
+                            <!-- Handover To -->
                             <div class="col-md-3 mb-2">
                                 <label for="handover_to" style="font-size: 0.7rem; font-weight: 600;">Handover To <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="handover_to" name="handover_to" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
+                                <select id="handover_to" name="handover_to" multiple
+                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.handover_to %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.handover_to %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.handover_to %}selected{% endif %}>Binaya Kunwar</option>
@@ -128,9 +153,11 @@
                                 <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
                             </div>
 
+                            <!-- Solved By -->
                             <div class="col-md-3 mb-2">
                                 <label for="solved_by" style="font-size: 0.7rem; font-weight: 600;">Solved By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="solved_by" name="solved_by" multiple style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
+                                <select id="solved_by" name="solved_by" multiple
+                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
                                     <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.solved_by %}selected{% endif %}>Mahendra Kunwar</option>
                                     <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.solved_by %}selected{% endif %}>Ram Kumar Badal</option>
                                     <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.solved_by %}selected{% endif %}>Binaya Kunwar</option>
@@ -144,14 +171,18 @@
                         <!-- Remarks -->
                         <div class="row">
                             <div class="col-md-12 mb-2">
-                                <label for="remarks" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Remarks</label>
-                                <textarea id="remarks" name="remarks" rows="2" class="form-control" style="font-size: 0.75rem; padding: 3px 8px; min-height: 40px;">{{ contact.remarks|default:"" }}</textarea>
+                                <label for="remarks" class="form-label"
+                                    style="font-size: 0.7rem; font-weight: 600;">Remarks</label>
+                                <textarea id="remarks" name="remarks" rows="2" class="form-control"
+                                    style="font-size: 0.75rem; padding: 3px 8px; min-height: 40px;">{{ contact.remarks|default:"" }}</textarea>
                             </div>
                         </div>
 
                         <div class="mb-2">
-                            <label for="message" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Issue or Message</label>
-                            <textarea id="message" name="message" rows="3" class="form-control" style="font-size: 0.75rem; padding: 3px 8px; min-height: 50px;">{{ contact.message }}</textarea>
+                            <label for="message" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Issue
+                                or Message</label>
+                            <textarea id="message" name="message" rows="3" class="form-control"
+                                style="font-size: 0.75rem; padding: 3px 8px; min-height: 50px;">{{ contact.message }}</textarea>
                         </div>
 
                         <!-- ============================================ -->
@@ -165,21 +196,23 @@
 
                                 <!-- Existing Files Display -->
                                 {% if stored_files %}
-                                <div style="margin-bottom: 6px; padding: 4px 10px; background: #f0fdf4; border-radius: 6px; border: 1px solid #86efac; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                                <div
+                                    style="margin-bottom: 6px; padding: 4px 10px; background: #f0fdf4; border-radius: 6px; border: 1px solid #86efac; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
                                     <div style="display: flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-check-circle" style="color: #16a34a; font-size: 0.8rem;"></i>
                                         <span style="font-size: 0.7rem; font-weight: 500; color: #374151;">
                                             {{ stored_files|length }} file{{ stored_files|length|pluralize }} attached
                                             {% if has_legacy_file %}
-                                            <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy file)</span>
+                                            <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy
+                                                file)</span>
                                             {% endif %}
                                         </span>
                                     </div>
                                     <button type="button" class="eye-btn" onclick='openFileViewer([
-                                        {% for sf in stored_files %}
-                                        { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
-                                        {% endfor %}
-                                    ])' style="font-size: 0.6rem; padding: 2px 10px;">
+    {% for sf in stored_files %}
+    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+], {{ contact.id }}, false)' style="font-size: 0.6rem; padding: 2px 10px;">
                                         <i class="fas fa-eye"></i> View Files
                                         <span class="badge-count">{{ stored_files|length }}</span>
                                     </button>
@@ -188,40 +221,49 @@
                                 <!-- Remove all files checkbox -->
                                 <div style="margin-top: 4px;">
                                     <label style="font-size: 0.65rem; color: #dc2626; cursor: pointer;">
-                                        <input type="checkbox" name="remove_all_files" value="on" style="cursor: pointer;">
+                                        <input type="checkbox" name="remove_all_files" value="on"
+                                            style="cursor: pointer;">
                                         <i class="fas fa-trash-alt"></i> Remove all attached files
                                     </label>
                                 </div>
                                 {% else %}
-                                <div style="padding: 4px 10px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; font-size: 0.7rem; color: #6b7280;">
+                                <div
+                                    style="padding: 4px 10px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; font-size: 0.7rem; color: #6b7280;">
                                     <i class="fas fa-info-circle"></i> No files attached
                                 </div>
                                 {% endif %}
 
                                 <!-- Add new files -->
-                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                                    <label for="edit_multiple_files" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
+                                <div
+                                    style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                                    <label for="edit_multiple_files"
+                                        style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
                                            padding: 3px 10px; background: #6b7280; color: white; border-radius: 4px; 
                                            font-size: 0.65rem; font-weight: 500; transition: all 0.2s ease; font-family: inherit;">
                                         <i class="fas fa-plus" style="font-size: 0.6rem;"></i>
                                         <span>Add More Files</span>
                                     </label>
-                                    <input type="file" id="edit_multiple_files" name="edit_multiple_files" multiple 
-                                           style="position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1;">
-                                    <span id="editFileStatus" style="font-size: 0.6rem; color: #9ca3af;">No new files selected</span>
+                                    <input type="file" id="edit_multiple_files" name="edit_multiple_files" multiple
+                                        style="position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1;">
+                                    <span id="editFileStatus" style="font-size: 0.6rem; color: #9ca3af;">No new files
+                                        selected</span>
                                 </div>
 
                                 <!-- File list for new files -->
-                                <div id="editFileList" style="display: none; margin-top: 4px; padding: 4px 8px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; font-size: 0.65rem; max-height: 80px; overflow-y: auto;"></div>
+                                <div id="editFileList"
+                                    style="display: none; margin-top: 4px; padding: 4px 8px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; font-size: 0.65rem; max-height: 80px; overflow-y: auto;">
+                                </div>
 
                                 <small style="font-size: 0.5rem; color: #6b7280; display: block; margin-top: 2px;">
-                                    <i class="fas fa-info-circle"></i> Max 500 MB per file. New files will be added to existing ones.
+                                    <i class="fas fa-info-circle"></i> Max 500 MB per file. New files will be added to
+                                    existing ones.
                                 </small>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-end gap-1">
-                            <a href="{% url 'core:issue_detail' contact.id %}" class="btn btn-secondary" style="font-size: 0.7rem; padding: 4px 12px;">
+                            <a href="{% url 'core:issue_detail' contact.id %}" class="btn btn-secondary"
+                                style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary" style="font-size: 0.7rem; padding: 4px 12px;">
@@ -239,78 +281,78 @@
 </div>
 
 <script>
-// ============================================
-// EDIT PAGE - FILE MANAGEMENT
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    const editFileInput = document.getElementById('edit_multiple_files');
-    const editFileStatus = document.getElementById('editFileStatus');
-    const editFileList = document.getElementById('editFileList');
-    const MAX_SIZE = 1024 * 1024 * 1024;
-    let editSelectedFiles = [];
+    // ============================================
+    // EDIT PAGE - FILE MANAGEMENT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function () {
+        const editFileInput = document.getElementById('edit_multiple_files');
+        const editFileStatus = document.getElementById('editFileStatus');
+        const editFileList = document.getElementById('editFileList');
+        const MAX_SIZE = 1024 * 1024 * 1024;
+        let editSelectedFiles = [];
 
-    if (editFileInput) {
-        editFileInput.addEventListener('change', function(e) {
-            const newFiles = Array.from(this.files);
+        if (editFileInput) {
+            editFileInput.addEventListener('change', function (e) {
+                const newFiles = Array.from(this.files);
 
-            const oversizedFiles = newFiles.filter(f => f.size > MAX_SIZE);
-            if (oversizedFiles.length > 0) {
-                const names = oversizedFiles.map(f => f.name).join(', ');
-                alert('❌ File(s) too large: ' + names + '\n\nMaximum file size is 1 GB.');
-                this.value = '';
-                return;
-            }
-
-            newFiles.forEach(file => {
-                const isDuplicate = editSelectedFiles.some(f => f.name === file.name && f.size === file.size);
-                if (!isDuplicate) {
-                    editSelectedFiles.push(file);
+                const oversizedFiles = newFiles.filter(f => f.size > MAX_SIZE);
+                if (oversizedFiles.length > 0) {
+                    const names = oversizedFiles.map(f => f.name).join(', ');
+                    alert('❌ File(s) too large: ' + names + '\n\nMaximum file size is 1 GB.');
+                    this.value = '';
+                    return;
                 }
+
+                newFiles.forEach(file => {
+                    const isDuplicate = editSelectedFiles.some(f => f.name === file.name && f.size === file.size);
+                    if (!isDuplicate) {
+                        editSelectedFiles.push(file);
+                    }
+                });
+
+                updateEditFileUI();
+                this.value = '';
             });
+        }
 
-            updateEditFileUI();
-            this.value = '';
-        });
-    }
+        function updateEditFileUI() {
+            const count = editSelectedFiles.length;
 
-    function updateEditFileUI() {
-        const count = editSelectedFiles.length;
+            if (count > 0) {
+                editFileStatus.textContent = count + ' new file' + (count > 1 ? 's' : '') + ' selected';
+                editFileStatus.style.color = '#16a34a';
 
-        if (count > 0) {
-            editFileStatus.textContent = count + ' new file' + (count > 1 ? 's' : '') + ' selected';
-            editFileStatus.style.color = '#16a34a';
-
-            let html = '';
-            editSelectedFiles.forEach((file) => {
-                const size = (file.size / 1024 / 1024).toFixed(2);
-                html += `
+                let html = '';
+                editSelectedFiles.forEach((file) => {
+                    const size = (file.size / 1024 / 1024).toFixed(2);
+                    html += `
                     <div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f3f4f6;">
                         <span><i class="fas fa-file" style="color: #6b7280; margin-right: 4px;"></i> ${file.name}</span>
                         <span style="color: #9ca3af; font-size: 0.55rem;">${size} MB</span>
                     </div>
                 `;
-            });
-            editFileList.innerHTML = html;
-            editFileList.style.display = 'block';
-        } else {
-            editFileStatus.textContent = 'No new files selected';
-            editFileStatus.style.color = '#9ca3af';
-            editFileList.style.display = 'none';
+                });
+                editFileList.innerHTML = html;
+                editFileList.style.display = 'block';
+            } else {
+                editFileStatus.textContent = 'No new files selected';
+                editFileStatus.style.color = '#9ca3af';
+                editFileList.style.display = 'none';
+            }
         }
-    }
 
-    // Update form submission
-    const editForm = document.querySelector('form[enctype="multipart/form-data"]');
-    if (editForm) {
-        editForm.addEventListener('submit', function(e) {
-            const dataTransfer = new DataTransfer();
-            editSelectedFiles.forEach(file => {
-                dataTransfer.items.add(file);
+        // Update form submission
+        const editForm = document.querySelector('form[enctype="multipart/form-data"]');
+        if (editForm) {
+            editForm.addEventListener('submit', function (e) {
+                const dataTransfer = new DataTransfer();
+                editSelectedFiles.forEach(file => {
+                    dataTransfer.items.add(file);
+                });
+                editFileInput.files = dataTransfer.files;
             });
-            editFileInput.files = dataTransfer.files;
-        });
-    }
-});
+        }
+    });
 </script>
 
 <!-- File Viewer Modal -->

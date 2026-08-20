@@ -66,14 +66,10 @@
                                     <label for="priority" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
                                     <select id="priority" name="priority" class="form-select"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low
-                                        </option>
-                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>
-                                            Medium</option>
-                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High
-                                        </option>
-                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>
-                                            Critical</option>
+                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High</option>
+                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>Critical</option>
                                     </select>
                                 </div>
                             </div>
@@ -137,10 +133,10 @@
                                             </span>
                                         </div>
                                         <button type="button" class="eye-btn" onclick='openFileViewer([
-                                            {% for sf in stored_files %}
-                                            { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
-                                            {% endfor %}
-                                        ])' style="font-size: 0.6rem; padding: 2px 10px;">
+    {% for sf in stored_files %}
+    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+], {{ item.id }}, true)' style="font-size: 0.6rem; padding: 2px 10px;">
                                             <i class="fas fa-eye"></i> View Files
                                             <span class="badge-count">{{ stored_files|length }}</span>
                                         </button>
@@ -244,38 +240,38 @@
     });
 
     function updateStoreFileLabel(input, action) {
-    const fileNameSpan = document.getElementById('storeFileName');
-    const replaceAction = document.getElementById('replace_action');
-    const addAction = document.getElementById('add_action');
-    
-    // Clear both actions first
-    replaceAction.value = '';
-    addAction.value = '';
-    
-    if (input.files && input.files.length > 0) {
-        const count = input.files.length;
-        const actionName = action === 'replace' ? 'Replace' : 'Add';
-        
-        if (count === 1) {
-            fileNameSpan.textContent = '📎 ' + actionName + ': ' + input.files[0].name;
-        } else {
-            fileNameSpan.textContent = '📎 ' + actionName + ': ' + count + ' files selected';
-        }
-        fileNameSpan.style.color = '#065f46';
-        
-        // Set the appropriate action
-        if (action === 'replace') {
-            replaceAction.value = 'on';
-        } else if (action === 'add') {
-            addAction.value = 'on';
-        }
-    } else {
-        fileNameSpan.textContent = 'No files selected';
-        fileNameSpan.style.color = '#6b7280';
+        const fileNameSpan = document.getElementById('storeFileName');
+        const replaceAction = document.getElementById('replace_action');
+        const addAction = document.getElementById('add_action');
+
+        // Clear both actions first
         replaceAction.value = '';
         addAction.value = '';
+
+        if (input.files && input.files.length > 0) {
+            const count = input.files.length;
+            const actionName = action === 'replace' ? 'Replace' : 'Add';
+
+            if (count === 1) {
+                fileNameSpan.textContent = '📎 ' + actionName + ': ' + input.files[0].name;
+            } else {
+                fileNameSpan.textContent = '📎 ' + actionName + ': ' + count + ' files selected';
+            }
+            fileNameSpan.style.color = '#065f46';
+
+            // Set the appropriate action
+            if (action === 'replace') {
+                replaceAction.value = 'on';
+            } else if (action === 'add') {
+                addAction.value = 'on';
+            }
+        } else {
+            fileNameSpan.textContent = 'No files selected';
+            fileNameSpan.style.color = '#6b7280';
+            replaceAction.value = '';
+            addAction.value = '';
+        }
     }
-}
 </script>
 
 <!-- File Viewer Modal -->

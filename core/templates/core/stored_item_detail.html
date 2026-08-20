@@ -8,16 +8,17 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-3 py-2 d-flex justify-content-between align-items-center">
+                <div
+                    class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-3 py-2 d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-archive"></i> Stored Item Details</span>
                     <div class="d-flex align-items-center gap-2">
                         <!-- EYE BUTTON - Compact -->
                         {% if stored_files %}
                         <button type="button" class="eye-btn" onclick='openFileViewer([
-                            {% for sf in stored_files %}
-                            { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
-                            {% endfor %}
-                        ])' style="font-size: 0.6rem; padding: 2px 10px;">
+    {% for sf in stored_files %}
+    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+], {{ item.id }}, true)' style="font-size: 0.6rem; padding: 2px 10px;">
                             <i class="fas fa-eye"></i> Files
                             <span class="badge-count">{{ stored_files|length }}</span>
                         </button>
@@ -29,32 +30,40 @@
                 <div class="card-body p-4">
                     <!-- Name -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Name</label>
-                        <div style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Name</label>
+                        <div
+                            style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {{ item.name }}
                         </div>
                     </div>
 
                     <!-- Department -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Department</label>
-                        <div style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Department</label>
+                        <div
+                            style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {{ item.department }}
                         </div>
                     </div>
 
                     <!-- Description -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Description</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap; word-wrap: break-word;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Description</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap; word-wrap: break-word;">
                             {{ item.description|linebreaks }}
                         </div>
                     </div>
 
                     <!-- Remarks -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Remarks</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap; word-wrap: break-word;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Remarks</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap; word-wrap: break-word;">
                             {{ item.remarks|default:"No remarks"|linebreaks }}
                         </div>
                     </div>
@@ -62,8 +71,10 @@
                     <!-- Phone (Optional - show if exists) -->
                     {% if item.phone %}
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Extension</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Extension</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {{ item.phone }}
                         </div>
                     </div>
@@ -72,9 +83,12 @@
                     <!-- Priority (Optional - show if exists) -->
                     {% if item.priority %}
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Priority</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
-                            <span class="badge {% if item.priority == 'Urgent' %}bg-danger{% elif item.priority == 'High' %}bg-warning{% elif item.priority == 'Medium' %}bg-info{% else %}bg-secondary{% endif %}">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Priority</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                            <span
+                                class="badge {% if item.priority == 'Urgent' %}bg-danger{% elif item.priority == 'High' %}bg-warning{% elif item.priority == 'Medium' %}bg-info{% else %}bg-secondary{% endif %}">
                                 {{ item.priority }}
                             </span>
                         </div>
@@ -83,20 +97,26 @@
 
                     <!-- Stored At -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Stored At</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Stored
+                            At</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {{ item.stored_at|date:"Y-m-d H:i:s" }}
                         </div>
                     </div>
 
                     <!-- Buttons -->
                     <div class="d-flex gap-2 mt-4 flex-wrap align-items-center">
-                        <a href="{% url 'core:storage_view' %}" class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem; padding: 4px 14px;">
+                        <a href="{% url 'core:storage_view' %}" class="btn btn-sm btn-outline-secondary"
+                            style="font-size: 0.7rem; padding: 4px 14px;">
                             <i class="fas fa-arrow-left"></i> Back to Storage
                         </a>
-                        <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline;" onsubmit="return confirm('Delete this stored item?');">
+                        <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline;"
+                            onsubmit="return confirm('Delete this stored item?');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem; padding: 4px 14px;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                style="font-size: 0.7rem; padding: 4px 14px;">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </form>
@@ -108,11 +128,11 @@
 </div>
 
 <style>
-.file-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+    .file-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 
 <!-- File Viewer Modal -->
