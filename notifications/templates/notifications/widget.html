@@ -1,0 +1,385 @@
+<!-- notifications/templates/notifications/widget.html -->
+
+{% load static %}
+
+<style>
+    .notif-widget {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .notif-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #dc2626;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.55rem;
+        min-width: 18px;
+        text-align: center;
+        display: none;
+        font-weight: bold;
+    }
+    
+    .notif-badge.show {
+        display: block;
+        animation: pulse-badge 1s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-badge {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    
+    .notif-icon {
+        font-size: 0.85rem;
+        color: #6b7280;
+        transition: color 0.3s ease;
+    }
+    
+    .notif-icon:hover {
+        color: #2563eb;
+    }
+    
+    .notif-icon.has-pending {
+        color: #dc2626;
+    }
+</style>
+
+<!-- Bell Widget -->
+<div class="notif-widget" id="notifWidget" title="Pending Issues Notification">
+    <i class="fas fa-bell notif-icon" id="notifIcon"></i>
+    <span class="notif-badge" id="notifBadge">0</span>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================================
+    // STATE
+    // ============================================================
+    
+    let isPageVisible = true;
+    let lastPendingData = [];
+    let isFirstCheck = true;
+    let notificationInterval = null;
+    let isSpeaking = false;
+    let isSpeechReady = false;
+    let soundUnlocked = false;
+    
+    const badge = document.getElementById('notifBadge');
+    const icon = document.getElementById('notifIcon');
+    
+    // ============================================================
+    // SOUND UNLOCKER - Click handler to enable sound
+    // ============================================================
+    
+    function unlockSound() {
+        if (soundUnlocked) return true;
+        
+        try {
+            // Try to play silent audio to unlock
+            const audio = new Audio();
+            audio.volume = 0;
+            const promise = audio.play();
+            
+            if (promise !== undefined) {
+                promise.then(() => {
+                    soundUnlocked = true;
+                    console.log('🔊 Sound unlocked by user interaction!');
+                    // Now check for pending issues
+                    setTimeout(checkPendingIssues, 500);
+                }).catch(() => {
+                    console.log('⚠️ Sound unlock failed');
+                });
+                return true;
+            }
+        } catch(e) {
+            console.log('⚠️ Sound unlock error:', e);
+        }
+        return false;
+    }
+    
+    // ============================================================
+    // CLICK HANDLER - Unlock sound on any user interaction
+    // ============================================================
+    
+    document.addEventListener('click', function() {
+        if (!soundUnlocked) {
+            unlockSound();
+        }
+    });
+    
+    document.addEventListener('touchstart', function() {
+        if (!soundUnlocked) {
+            unlockSound();
+        }
+    });
+    
+    document.addEventListener('keydown', function() {
+        if (!soundUnlocked) {
+            unlockSound();
+        }
+    });
+    
+    // ============================================================
+    // PRIORITY ORDER (Urgent → High → Medium → Low)
+    // ============================================================
+    
+    const priorityOrder = {
+        'Urgent': 0,
+        'High': 1,
+        'Medium': 2,
+        'Low': 3
+    };
+    
+    // ============================================================
+    // SORT ISSUES: Priority ONLY
+    // ============================================================
+    
+    function sortIssues(issues) {
+        const urgent = issues.filter(i => i.priority === 'Urgent');
+        const high = issues.filter(i => i.priority === 'High');
+        const medium = issues.filter(i => i.priority === 'Medium');
+        const low = issues.filter(i => i.priority === 'Low');
+        return [...urgent, ...high, ...medium, ...low];
+    }
+    
+    // ============================================================
+    // PAGE VISIBILITY
+    // ============================================================
+    
+    document.addEventListener('visibilitychange', function() {
+        isPageVisible = !document.hidden;
+        if (isPageVisible) {
+            console.log('👁️ Page visible - checking issues...');
+            setTimeout(checkPendingIssues, 2000);
+        } else {
+            console.log('👁️ Page hidden - notifications paused');
+        }
+    });
+    
+    // ============================================================
+    // CHECK PENDING ISSUES
+    // ============================================================
+    
+    function checkPendingIssues() {
+        if (!isPageVisible || document.hidden) {
+            console.log('⏸️ Page not visible - skipping check');
+            return;
+        }
+        
+        if (isSpeaking) {
+            console.log('⏸️ Already speaking - skipping check');
+            return;
+        }
+        
+        console.log('🔍 Checking pending issues...');
+        
+        fetch('/notifications/api/pending/')
+            .then(response => response.json())
+            .then(data => {
+                console.log(`📊 Pending: ${data.count} issues`);
+                updateBadge(data);
+                
+                if (data.count > 0 && data.issues && data.issues.length > 0) {
+                    const sortedIssues = sortIssues(data.issues);
+                    const currentIds = sortedIssues.map(i => i.id).join(',');
+                    const lastIds = lastPendingData.map(i => i.id).join(',');
+                    
+                    if (isFirstCheck || currentIds !== lastIds) {
+                        console.log('🔊 New/updated issues detected - speaking...');
+                        
+                        // If sound is not unlocked, try to unlock
+                        if (!soundUnlocked) {
+                            unlockSound();
+                        }
+                        
+                        // Speak with a small delay
+                        setTimeout(() => {
+                            scheduleSpeech(sortedIssues);
+                        }, 500);
+                        
+                        isFirstCheck = false;
+                    }
+                    lastPendingData = sortedIssues;
+                } else {
+                    lastPendingData = [];
+                    isFirstCheck = true;
+                }
+            })
+            .catch(error => console.error('❌ Error checking pending:', error));
+    }
+    
+    // ============================================================
+    // RELIABLE SPEECH SCHEDULER
+    // ============================================================
+    
+    function scheduleSpeech(issues) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        
+        if (!isSpeechReady) {
+            console.log('⏳ Waiting for voices to load...');
+            let attempts = 0;
+            const checkVoices = setInterval(function() {
+                attempts++;
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0 || attempts > 20) {
+                    clearInterval(checkVoices);
+                    isSpeechReady = true;
+                    console.log('✅ Voices ready, speaking...');
+                    speakIssuesSequentially(issues);
+                }
+            }, 500);
+        } else {
+            setTimeout(function() {
+                speakIssuesSequentially(issues);
+            }, 1000);
+        }
+    }
+    
+    // ============================================================
+    // UPDATE BADGE
+    // ============================================================
+    
+    function updateBadge(data) {
+        if (data.count > 0) {
+            badge.textContent = data.count;
+            badge.className = 'notif-badge show';
+            icon.className = 'fas fa-bell notif-icon has-pending';
+        } else {
+            badge.className = 'notif-badge';
+            icon.className = 'fas fa-bell notif-icon';
+        }
+    }
+    
+    // ============================================================
+    // SPEAK ISSUES SEQUENTIALLY
+    // ============================================================
+    
+    function speakIssuesSequentially(issues) {
+        if (!issues || issues.length === 0) {
+            console.log('📭 No issues to speak');
+            return;
+        }
+        
+        if (!('speechSynthesis' in window)) {
+            console.log('❌ Speech synthesis not supported');
+            return;
+        }
+        
+        try {
+            window.speechSynthesis.cancel();
+        } catch(e) {}
+        
+        setTimeout(function() {
+            isSpeaking = true;
+            let currentIndex = 0;
+            
+            function speakNextIssue() {
+                if (currentIndex >= issues.length) {
+                    console.log('✅ All issues spoken');
+                    isSpeaking = false;
+                    return;
+                }
+                
+                const issue = issues[currentIndex];
+                const priorityLabel = issue.priority || 'Medium';
+                
+                let message = `Issue ${currentIndex + 1}.`;
+                message += ` ${issue.department || 'Unknown'} department.`;
+                message += ` ${issue.name}.`;
+                message += ` ${issue.message || 'No description'}.`;
+                message += ` Priority: ${priorityLabel}.`;
+                
+                console.log(`🔊 Speaking (${currentIndex + 1}/${issues.length}):`, message);
+                
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.rate = 0.85;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                try {
+                    const voices = window.speechSynthesis.getVoices();
+                    const femaleVoice = voices.find(v => 
+                        v.name.includes('Female') || 
+                        v.name.includes('Zira') || 
+                        v.name.includes('Google UK') ||
+                        v.lang === 'en-US'
+                    );
+                    if (femaleVoice) {
+                        utterance.voice = femaleVoice;
+                    }
+                } catch(e) {}
+                
+                utterance.onend = function() {
+                    currentIndex++;
+                    setTimeout(speakNextIssue, 500);
+                };
+                
+                utterance.onerror = function() {
+                    console.log(`⚠️ Error speaking issue ${currentIndex + 1}, skipping...`);
+                    currentIndex++;
+                    setTimeout(speakNextIssue, 500);
+                };
+                
+                try {
+                    window.speechSynthesis.speak(utterance);
+                } catch(e) {
+                    console.log('❌ Speech error:', e);
+                    currentIndex++;
+                    setTimeout(speakNextIssue, 500);
+                }
+            }
+            
+            speakNextIssue();
+        }, 500);
+    }
+    
+    // ============================================================
+    // LOAD VOICES
+    // ============================================================
+    
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = function() {
+            const voices = window.speechSynthesis.getVoices();
+            console.log(`🎤 ${voices.length} voices loaded`);
+            if (voices.length > 0) {
+                isSpeechReady = true;
+            }
+        };
+        
+        setTimeout(function() {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                isSpeechReady = true;
+                console.log(`🎤 ${voices.length} voices loaded (forced check)`);
+            }
+        }, 2000);
+    }
+    
+    // ============================================================
+    // INITIALIZE
+    // ============================================================
+    
+    // Check after 5 seconds (allowing time for sound unlock)
+    setTimeout(checkPendingIssues, 5000);
+    
+    // Check every 30 minutes
+    const CHECK_INTERVAL = 30 * 60 * 1000;
+    notificationInterval = setInterval(checkPendingIssues, CHECK_INTERVAL);
+    
+    console.log('🔔 Notification System Ready!');
+    console.log(`📌 Checks every ${CHECK_INTERVAL / 60000} minutes`);
+    console.log('📌 Sorted by: Urgent → High → Medium → Low');
+    console.log('📌 Reads one issue at a time');
+    console.log('🔊 Sound unlocks on any click/tap/keypress');
+});
+</script>
