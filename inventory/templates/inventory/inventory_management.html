@@ -1,0 +1,940 @@
+<!-- templates/inventory/inventory_management.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inventory Management{% endblock %}
+
+{% block content %}
+<style>
+/* SUPER COMPACT STYLES - Preserves all original functionality */
+.container-fluid { padding: 0.15rem 0.25rem !important; }
+.mt-4 { margin-top: 0.25rem !important; }
+.mb-4 { margin-bottom: 0.25rem !important; }
+.mb-3 { margin-bottom: 0.15rem !important; }
+.mb-2 { margin-bottom: 0.1rem !important; }
+.mt-2 { margin-top: 0.1rem !important; }
+.mt-1 { margin-top: 0.05rem !important; }
+.py-3 { padding-top: 0.15rem !important; padding-bottom: 0.15rem !important; }
+.py-1 { padding-top: 0.05rem !important; padding-bottom: 0.05rem !important; }
+.p-1 { padding: 0.1rem !important; }
+.pt-3 { padding-top: 0.15rem !important; }
+.pb-3 { padding-bottom: 0.15rem !important; }
+.g-3 { gap: 0.15rem !important; }
+.row > * { padding-left: 0.1rem !important; padding-right: 0.1rem !important; }
+.card { margin-bottom: 0.15rem !important; }
+.card-body { padding: 0.2rem 0.3rem !important; }
+.card-header { padding: 0.15rem 0.3rem !important; }
+.card-footer { padding: 0.1rem 0.3rem !important; }
+.table-sm th, .table-sm td { padding: 0.1rem 0.15rem !important; font-size: 0.7rem !important; }
+.btn { padding: 0.05rem 0.2rem !important; font-size: 0.65rem !important; }
+.btn-sm { padding: 0.05rem 0.15rem !important; font-size: 0.6rem !important; }
+.btn-group-sm > .btn { padding: 0.05rem 0.15rem !important; font-size: 0.6rem !important; }
+.form-control { padding: 0.1rem 0.15rem !important; font-size: 0.65rem !important; height: auto !important; min-height: 1.5rem !important; }
+.form-select { padding: 0.1rem 0.15rem !important; font-size: 0.65rem !important; height: auto !important; min-height: 1.5rem !important; }
+.form-label { font-size: 0.6rem !important; margin-bottom: 0.05rem !important; }
+.nav-tabs .nav-link { padding: 0.15rem 0.3rem !important; font-size: 0.65rem !important; }
+.alert { padding: 0.2rem 0.3rem !important; font-size: 0.65rem !important; margin-bottom: 0.15rem !important; }
+.badge { font-size: 0.55rem !important; padding: 0.05rem 0.2rem !important; }
+h4 { font-size: 0.75rem !important; margin-bottom: 0.1rem !important; }
+h5 { font-size: 0.7rem !important; margin-bottom: 0.05rem !important; }
+small, .small { font-size: 0.55rem !important; }
+.text-muted { font-size: 0.55rem !important; }
+.table-responsive { margin-bottom: 0.1rem !important; }
+.pagination { margin-bottom: 0.1rem !important; }
+.pagination .page-link { padding: 0.1rem 0.2rem !important; font-size: 0.6rem !important; }
+.modal-body { padding: 0.2rem !important; }
+.modal-header { padding: 0.2rem 0.3rem !important; }
+.modal-footer { padding: 0.15rem 0.3rem !important; }
+.modal-title { font-size: 0.75rem !important; }
+.alert-dismissible .btn-close { padding: 0.2rem !important; font-size: 0.5rem !important; }
+.btn-group { gap: 0.05rem !important; }
+.me-1 { margin-right: 0.1rem !important; }
+.me-2 { margin-right: 0.15rem !important; }
+.ms-1 { margin-left: 0.1rem !important; }
+.ms-2 { margin-left: 0.15rem !important; }
+.w-100 { width: 100% !important; }
+.col-md-3, .col-md-4, .col-md-6, .col-md-2 { padding: 0 0.1rem !important; }
+.mb-3 { margin-bottom: 0.1rem !important; }
+#mediaPreview video, #mediaPreview img { max-width: 150px !important; max-height: 100px !important; }
+#currentMediaContainer video, #currentMediaContainer img { max-width: 150px !important; max-height: 100px !important; }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="inventoryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">
+                <i class="fas fa-boxes"></i> Items
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab">
+                <i class="fas fa-tags"></i> Categories
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab">
+                <i class="fas fa-plus-circle text-success"></i> Add Item
+            </button>
+        </li>
+    </ul>
+
+   <div class="tab-content" id="inventoryTabsContent">
+    <!-- TAB 1: Items List -->
+    <div class="tab-pane fade show active" id="items" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>📋 Inventory Items</h4>
+            <div class="d-flex gap-1">
+                <!-- ✅ Opens Add Item Form -->
+                <button class="btn btn-success" type="button" onclick="document.querySelector('[data-bs-target=\'#add\']').click();">
+                    <i class="fas fa-plus"></i> Add New
+                </button>
+                <button class="btn btn-primary" onclick="exportInventory()">
+                    <i class="fas fa-file-excel"></i> Export
+                </button>
+            </div>
+        </div>
+
+            <!-- Filters -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}" {% if category_filter|add:"0" == cat.id %}selected{% endif %}>
+                                        {{ cat.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="working" {% if status_filter == 'working' %}selected{% endif %}>✅ Working</option>
+                                <option value="not_working" {% if status_filter == 'not_working' %}selected{% endif %}>❌ Not Working</option>
+                                <option value="repair" {% if status_filter == 'repair' %}selected{% endif %}>🔧 Repair</option>
+                                <option value="disposed" {% if status_filter == 'disposed' %}selected{% endif %}>🗑️ Disposed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="search" class="form-control" placeholder="🔍 Search items..." value="{{ search_query|default:'' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Media</th>
+                            <th>Category</th>
+                            <th>Name</th>
+                            <th>Model</th>
+                            <th>Status</th>
+                            <th>Qty</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        <tr>
+                            <td>
+                                {% if item.image %}
+                                    {% with item.image.url as media_url %}
+                                        {% if media_url|lower|slice:"-3:" == "mp4" or media_url|lower|slice:"-4:" == "webm" or media_url|lower|slice:"-3:" == "ogg" or media_url|lower|slice:"-3:" == "mov" or media_url|lower|slice:"-3:" == "avi" %}
+                                            <video style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;" muted>
+                                                <source src="{{ media_url }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        {% else %}
+                                            <img src="{{ media_url }}" alt="{{ item.name }}" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">📷</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-info">{{ item.category.name }}</span></td>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>{{ item.model|default:"-" }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if item.status == 'working' %}bg-success
+                                    {% elif item.status == 'not_working' %}bg-danger
+                                    {% elif item.status == 'repair' %}bg-warning text-dark
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ item.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ item.quantity }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-info" onclick="viewItem({{ item.id }})" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-warning" onclick="editItem({{ item.id }})" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteItem({{ item.id }}, '{{ item.name }}')" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-3">No items found. <a href="{% url 'inventory:inventory_create' %}">Add one</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">«</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">‹</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">›</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">»</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+
+        <!-- TAB 2: Categories -->
+        <div class="tab-pane fade" id="categories" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>🏷️ Categories</h4>
+                <button class="btn btn-primary" onclick="showCategoryForm()">
+                    <i class="fas fa-plus"></i> Add Category
+                </button>
+            </div>
+
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="card-text text-muted small">{{ category.description|default:"No description" }}</p>
+                            <p class="card-text">
+                                <span class="badge bg-secondary">{{ category.items.count }} items</span>
+                            </p>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-warning" onclick="editCategory({{ category.id }}, '{{ category.name }}', '{{ category.description|escapejs }}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCategory({{ category.id }}, '{{ category.name }}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">No categories yet. <a href="#" onclick="showCategoryForm()">Create one</a></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- TAB 3: Add/Edit Form -->
+        <div class="tab-pane fade" id="add" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h4 id="formTitle"><i class="fas fa-plus-circle"></i> Add Inventory Item</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="itemForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="item_id" id="item_id" value="">
+                        <input type="hidden" name="action" id="formAction" value="create">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Category *</label>
+                                <select class="form-select" name="category" id="formCategory" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small><a href="#" onclick="showCategoryForm()">+ Add new category</a></small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Item Name *</label>
+                                <input type="text" class="form-control" name="name" id="formName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Model</label>
+                                <input type="text" class="form-control" name="model" id="formModel">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Status *</label>
+                                <select class="form-select" name="status" id="formStatus" required>
+                                    <option value="working">✅ Working</option>
+                                    <option value="not_working">❌ Not Working</option>
+                                    <option value="repair">🔧 Under Repair</option>
+                                    <option value="disposed">🗑️ Disposed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" id="formQuantity" value="1" min="1">
+                            </div>
+                        </div>
+                        
+                        <!-- Media Upload Section -->
+                        <div class="mb-3">
+                            <label class="form-label">Media (Image/Video) <span class="text-muted">Max 50MB</span></label>
+                            <input type="file" class="form-control" name="image" id="formImage" 
+                                   accept="image/*,video/*,audio/*" 
+                                   onchange="validateMediaSize(this)">
+                            <div id="mediaPreview" class="mt-2"></div>
+                            <div id="currentImagePreview" class="mt-2" style="display:none;">
+                                <div id="currentMediaContainer">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                                <small class="text-muted d-block">Current media</small>
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">Supported formats: Images (jpg, png, gif, webp), Videos (mp4, webm, ogg, mov, avi)</small>
+                            </div>
+                            <div id="fileSizeWarning" class="text-danger mt-1" style="display:none;">
+                                <i class="fas fa-exclamation-circle"></i> File size exceeds 50MB limit!
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Specifications</label>
+                            <textarea class="form-control" name="specification" id="formSpecification" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control" name="remarks" id="formRemarks" rows="1"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success" id="formSubmitBtn">
+                            <i class="fas fa-save"></i> Save Item
+                        </button>
+                        <button type="reset" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📦 Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <!-- Loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Form Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryModalTitle">Add Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm" method="post" action="{% url 'inventory:category_create' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="category_id" id="categoryId" value="">
+                    <input type="hidden" name="action" id="categoryAction" value="create">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" name="name" id="categoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="categoryDescription" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Category
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">⚠️ Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Are you sure you want to delete this item?</p>
+                <form id="deleteForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Yes, Delete
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validate media file size (max 50MB)
+function validateMediaSize(input) {
+    const file = input.files[0];
+    const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+    const warning = document.getElementById('fileSizeWarning');
+    const preview = document.getElementById('mediaPreview');
+    
+    if (file) {
+        if (file.size > maxSize) {
+            warning.style.display = 'block';
+            input.value = ''; // Clear the file input
+            preview.innerHTML = '';
+            return false;
+        } else {
+            warning.style.display = 'none';
+            previewMedia(file, preview);
+        }
+    }
+    return true;
+}
+
+// Preview media (image or video)
+function previewMedia(file, container) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const url = e.target.result;
+        let html = '';
+        
+        if (file.type.startsWith('video/')) {
+            html = `
+                <video controls style="max-width: 200px; max-height: 120px; border-radius: 4px;">
+                    <source src="${url}" type="${file.type}">
+                    Your browser does not support the video tag.
+                </video>
+                <br><small class="text-muted">${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</small>
+            `;
+        } else if (file.type.startsWith('image/')) {
+            html = `
+                <img src="${url}" alt="Preview" style="max-width: 200px; max-height: 120px; border-radius: 4px; object-fit: contain;">
+                <br><small class="text-muted">${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</small>
+            `;
+        } else if (file.type.startsWith('audio/')) {
+            html = `
+                <audio controls style="width: 100%; max-width: 200px;">
+                    <source src="${url}" type="${file.type}">
+                    Your browser does not support the audio tag.
+                </audio>
+                <br><small class="text-muted">${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</small>
+            `;
+        } else {
+            html = `<div class="alert alert-info">File: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</div>`;
+        }
+        
+        container.innerHTML = html;
+    };
+    reader.readAsDataURL(file);
+}
+
+// View Item Details - BIG SCREEN with full size image/video
+function viewItem(id) {
+    // ✅ ADD THE HEADER!
+    fetch(`/inventory/${id}/`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'  // ← THIS IS THE FIX!
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            const item = data.data;
+            let mediaHtml = '';
+            
+            // Build media display based on type
+            if (item.image_url) {
+                if (item.media_type === 'video') {
+                    mediaHtml = `
+                        <div class="text-center">
+                            <video controls autoplay style="width: 100%; max-height: 500px; border-radius: 8px; background: #000;">
+                                <source src="${item.image_url}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <p class="text-muted mt-1 small">${item.original_filename || 'Video'}</p>
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <div class="text-center">
+                            <img src="${item.image_url}" alt="${item.name}" style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 8px; background: #f8f9fa;">
+                            <p class="text-muted mt-1 small">${item.original_filename || 'Image'}</p>
+                        </div>
+                    `;
+                }
+            } else {
+                mediaHtml = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-image fa-5x text-muted"></i>
+                        <p class="text-muted mt-2">No media</p>
+                    </div>
+                `;
+            }
+            
+            // Display in modal
+            document.getElementById('viewModalBody').innerHTML = `
+                <div class="row">
+                    <div class="col-12">
+                        ${mediaHtml}
+                    </div>
+                    <div class="col-12 mt-2">
+                        <table class="table table-bordered table-sm">
+                            <tr><th>Name</th><td>${item.name}</td></tr>
+                            <tr><th>Category</th><td>${item.category}</td></tr>
+                            <tr><th>Model</th><td>${item.model || '-'}</td></tr>
+                            <tr><th>Status</th><td><span class="badge bg-${item.status === 'working' ? 'success' : item.status === 'not_working' ? 'danger' : item.status === 'repair' ? 'warning' : 'secondary'}">${item.status_display}</span></td></tr>
+                            <tr><th>Quantity</th><td>${item.quantity}</td></tr>
+                            <tr><th>Specifications</th><td>${item.specification || '-'}</td></tr>
+                            <tr><th>Remarks</th><td>${item.remarks || '-'}</td></tr>
+                            <tr><th>Created By</th><td>${item.created_by || '-'}</td></tr>
+                            <tr><th>Created At</th><td>${item.created_at}</td></tr>
+                            <tr><th>Updated At</th><td>${item.updated_at}</td></tr>
+                            <tr><th>File Size</th><td>${item.file_size || '-'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('viewModal')).show();
+        } else {
+            document.getElementById('viewModalBody').innerHTML = `
+                <div class="alert alert-danger">${data.message || 'Unable to load details.'}</div>
+            `;
+            new bootstrap.Modal(document.getElementById('viewModal')).show();
+        }
+    })
+    .catch((error) => {
+        console.error('Error loading item:', error);
+        document.getElementById('viewModalBody').innerHTML = `
+            <div class="alert alert-danger">Unable to load details. Please try again.</div>
+        `;
+        new bootstrap.Modal(document.getElementById('viewModal')).show();
+    });
+}
+
+// Edit Item - Load data into form and switch to add tab
+function editItem(id) {
+    fetch(`/inventory/${id}/`)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const table = doc.querySelector('table');
+            if (table) {
+                const rows = table.querySelectorAll('tr');
+                let data = {};
+                rows.forEach(row => {
+                    const th = row.querySelector('th');
+                    const td = row.querySelector('td');
+                    if (th && td) {
+                        const key = th.textContent.trim().toLowerCase();
+                        data[key] = td.textContent.trim();
+                    }
+                });
+                
+                // Fill form
+                document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Inventory Item';
+                document.getElementById('formAction').value = 'update';
+                document.getElementById('item_id').value = id;
+                document.getElementById('formName').value = data['name'] || '';
+                document.getElementById('formModel').value = data['model'] || '';
+                document.getElementById('formQuantity').value = data['quantity'] || 1;
+                document.getElementById('formSpecification').value = data['specifications'] || '';
+                document.getElementById('formRemarks').value = data['remarks'] || '';
+                document.getElementById('formSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Update Item';
+                
+                // Set category
+                const catSelect = document.getElementById('formCategory');
+                const catText = data['category'] || '';
+                for (let option of catSelect.options) {
+                    if (option.text === catText) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+                
+                // Set status
+                const statusSelect = document.getElementById('formStatus');
+                const statusText = data['status'] || '';
+                for (let option of statusSelect.options) {
+                    if (option.text.trim() === statusText) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+                
+                // Handle media (image/video)
+                const media = doc.querySelector('img[src*="media"], video[src*="media"]');
+                if (media) {
+                    const container = document.getElementById('currentMediaContainer');
+                    const url = media.src || media.querySelector('source')?.src;
+                    if (url) {
+                        let html = '';
+                        if (media.tagName === 'VIDEO' || media.tagName === 'video') {
+                            html = `
+                                <video controls style="max-width: 200px; max-height: 120px; border-radius: 4px;">
+                                    <source src="${url}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            `;
+                        } else {
+                            html = `
+                                <img src="${url}" alt="Current" style="max-width: 200px; max-height: 120px; border-radius: 4px; object-fit: contain;">
+                            `;
+                        }
+                        container.innerHTML = html;
+                        document.getElementById('currentImagePreview').style.display = 'block';
+                    }
+                }
+            }
+            
+            document.querySelector('[data-bs-target="#add"]').click();
+        })
+        .catch(err => {
+            alert('Error loading item data: ' + err);
+        });
+}
+
+// Delete Item
+function deleteItem(id, name) {
+    document.getElementById('deleteMessage').innerHTML = `
+        <strong>⚠️ Are you sure you want to delete "${name}"?</strong>
+        <br><small class="text-muted">This action cannot be undone.</small>
+    `;
+    document.getElementById('deleteForm').action = `/inventory/${id}/delete/`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Delete Category
+function deleteCategory(id, name) {
+    document.getElementById('deleteMessage').innerHTML = `
+        <strong>⚠️ Are you sure you want to delete category "${name}"?</strong>
+        <br><small class="text-muted">This will also delete all items in this category.</small>
+    `;
+    document.getElementById('deleteForm').action = `/inventory/categories/${id}/delete/`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Show Category Form
+function showCategoryForm(data) {
+    const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    if (data) {
+        document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+        document.getElementById('categoryAction').value = 'update';
+        document.getElementById('categoryId').value = data.id;
+        document.getElementById('categoryName').value = data.name;
+        document.getElementById('categoryDescription').value = data.description;
+        document.getElementById('categoryForm').action = `/inventory/categories/${data.id}/edit/`;
+    } else {
+        document.getElementById('categoryModalTitle').textContent = 'Add Category';
+        document.getElementById('categoryAction').value = 'create';
+        document.getElementById('categoryId').value = '';
+        document.getElementById('categoryName').value = '';
+        document.getElementById('categoryDescription').value = '';
+        document.getElementById('categoryForm').action = "{% url 'inventory:category_create' %}";
+    }
+    modal.show();
+}
+
+function editCategory(id, name, description) {
+    showCategoryForm({id: id, name: name, description: description});
+}
+
+// Reset Form
+function resetForm() {
+    document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Add Inventory Item';
+    document.getElementById('formAction').value = 'create';
+    document.getElementById('item_id').value = '';
+    document.getElementById('formName').value = '';
+    document.getElementById('formModel').value = '';
+    document.getElementById('formQuantity').value = 1;
+    document.getElementById('formSpecification').value = '';
+    document.getElementById('formRemarks').value = '';
+    document.getElementById('formSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Save Item';
+    document.getElementById('currentImagePreview').style.display = 'none';
+    document.getElementById('formImage').value = '';
+    document.getElementById('mediaPreview').innerHTML = '';
+    document.getElementById('fileSizeWarning').style.display = 'none';
+    
+    document.getElementById('formCategory').selectedIndex = 0;
+    document.getElementById('formStatus').selectedIndex = 0;
+}
+
+// Handle form submission with AJAX
+document.getElementById('itemForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate file size before submitting
+    const fileInput = document.getElementById('formImage');
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const maxSize = 50 * 1024 * 1024;
+        if (file.size > maxSize) {
+            document.getElementById('fileSizeWarning').style.display = 'block';
+            return;
+        }
+    }
+    
+    const formData = new FormData(this);
+    const id = document.getElementById('item_id').value;
+    const action = document.getElementById('formAction').value;
+    let url = '/inventory/create/';
+    if (action === 'update' && id) {
+        url = `/inventory/${id}/edit/`;
+    }
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(err => {
+        // Fallback: submit normally
+        this.submit();
+    });
+});
+
+// Handle category form submission with AJAX
+document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(err => {
+        // Fallback: submit normally
+        this.submit();
+    });
+});
+
+// Export Inventory to Excel
+function exportInventory() {
+    // Get current filter values
+    const category = document.querySelector('select[name="category"]').value;
+    const status = document.querySelector('select[name="status"]').value;
+    const search = document.querySelector('input[name="search"]').value;
+    
+    // Build export URL with current filters
+    let url = '/inventory/export/';
+    const params = new URLSearchParams();
+    if (category) params.append('category', category);
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
+    if (params.toString()) url += '?' + params.toString();
+    
+    // Redirect to download
+    window.location.href = url;
+}
+</script>
+
+<style>
+/* Custom styles - SUPER COMPACT */
+.nav-tabs .nav-link {
+    color: #495057;
+    font-weight: 500;
+    font-size: 0.65rem !important;
+    padding: 0.15rem 0.3rem !important;
+}
+.nav-tabs .nav-link.active {
+    border-bottom: 3px solid #0d6efd;
+    color: #0d6efd;
+}
+.table-sm td, .table-sm th {
+    vertical-align: middle;
+}
+.card {
+    transition: all 0.2s;
+}
+.card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+#mediaPreview video, #mediaPreview img {
+    max-width: 200px;
+    max-height: 120px;
+    border-radius: 4px;
+    object-fit: contain;
+    background: #f8f9fa;
+}
+#currentMediaContainer video, #currentMediaContainer img {
+    max-width: 200px;
+    max-height: 120px;
+    border-radius: 4px;
+    object-fit: contain;
+    background: #f8f9fa;
+}
+/* Ensure compact textarea */
+textarea.form-control {
+    min-height: 1.5rem !important;
+    font-size: 0.65rem !important;
+}
+/* Compact table cells */
+.table-sm td, .table-sm th {
+    font-size: 0.65rem !important;
+    padding: 0.1rem 0.15rem !important;
+}
+/* Compact buttons */
+.btn {
+    font-size: 0.6rem !important;
+    padding: 0.05rem 0.2rem !important;
+}
+/* Compact form controls */
+.form-control, .form-select {
+    font-size: 0.6rem !important;
+    padding: 0.05rem 0.15rem !important;
+    height: auto !important;
+    min-height: 1.2rem !important;
+}
+/* Compact labels */
+.form-label {
+    font-size: 0.55rem !important;
+    margin-bottom: 0.05rem !important;
+}
+/* Compact badges */
+.badge {
+    font-size: 0.55rem !important;
+    padding: 0.05rem 0.15rem !important;
+}
+/* Compact headings */
+h4 {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.1rem !important;
+}
+h5 {
+    font-size: 0.65rem !important;
+    margin-bottom: 0.05rem !important;
+}
+/* Compact alerts */
+.alert {
+    padding: 0.15rem 0.25rem !important;
+    font-size: 0.6rem !important;
+    margin-bottom: 0.1rem !important;
+}
+/* Compact modal */
+.modal-body {
+    padding: 0.2rem !important;
+}
+.modal-header {
+    padding: 0.15rem 0.25rem !important;
+}
+.modal-title {
+    font-size: 0.7rem !important;
+}
+/* Compact pagination */
+.pagination .page-link {
+    padding: 0.05rem 0.15rem !important;
+    font-size: 0.55rem !important;
+}
+/* Compact card */
+.card-body {
+    padding: 0.15rem 0.2rem !important;
+}
+.card-header {
+    padding: 0.1rem 0.2rem !important;
+}
+/* Compact spacing */
+.mb-3 {
+    margin-bottom: 0.1rem !important;
+}
+.mt-4 {
+    margin-top: 0.15rem !important;
+}
+/* Compact media preview */
+#mediaPreview video, #mediaPreview img {
+    max-width: 150px !important;
+    max-height: 100px !important;
+}
+#currentMediaContainer video, #currentMediaContainer img {
+    max-width: 150px !important;
+    max-height: 100px !important;
+}
+</style>
+
+{% endblock %}
