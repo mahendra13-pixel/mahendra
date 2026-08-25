@@ -4,11 +4,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from .models import Category, InventoryItem, MAX_UPLOAD_SIZE, validate_file_size
+import csv
 
 def is_admin(user):
     return user.is_staff or user.is_superuser
@@ -469,3 +471,73 @@ def inventory_bulk_action(request):
         return json_response(True, f'✅ {count} items marked as {action.replace("_", " ").title()}!')
     
     return json_response(False, 'Invalid action')
+
+# ============================================================
+# EXPORT
+# ============================================================
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def export_inventory(request):
+    """Export inventory items to CSV (Excel compatible)"""
+    
+    # Get all items with filters
+    items = InventoryItem.objects.select_related('category').all().order_by('category__name', 'name')
+    
+    # Filter by category
+    category_filter = request.GET.get('category')
+    if category_filter:
+        items = items.filter(category__id=category_filter)
+    
+    # Filter by status
+    status_filter = request.GET.get('status')
+    if status_filter:
+        items = items.filter(status=status_filter)
+    
+    # Filter by media type
+    media_filter = request.GET.get('media_type')
+    if media_filter:
+        items = items.filter(media_type=media_filter)
+    
+    # Search
+    search_query = request.GET.get('search')
+    if search_query:
+        items = items.filter(
+            models.Q(name__icontains=search_query) |
+            models.Q(model__icontains=search_query) |
+            models.Q(specification__icontains=search_query) |
+            models.Q(remarks__icontains=search_query) |
+            models.Q(original_filename__icontains=search_query)
+        )
+    
+    # Create response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="inventory_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+    
+    writer = csv.writer(response)
+    
+    # Header
+    writer.writerow([
+        'Category', 'Name', 'Model', 'Status', 'Quantity',
+        'Specifications', 'Remarks', 'Media Type', 'File Size',
+        'Created By', 'Created At', 'Updated At'
+    ])
+    
+    # Data
+    for item in items:
+        writer.writerow([
+            item.category.name,
+            item.name,
+            item.model or '',
+            item.get_status_display(),
+            item.quantity,
+            item.specification or '',
+            item.remarks or '',
+            item.media_type or 'none',
+            item.get_file_size_display() if hasattr(item, 'get_file_size_display') else '',
+            item.created_by or '',
+            item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '',
+            item.updated_at.strftime('%Y-%m-%d %H:%M') if item.updated_at else '',
+        ])
+    
+    return response

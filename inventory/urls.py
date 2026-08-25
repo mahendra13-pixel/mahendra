@@ -46,6 +46,11 @@ urlpatterns = [
     # BULK OPERATIONS
     # ============================================================
     path('bulk-action/', views.inventory_bulk_action, name='bulk_action'),
+    
+    # ============================================================
+    # EXPORT
+    # ============================================================
+    path('export/', views.export_inventory, name='export_inventory'),
 ]
 
 # ============================================================
