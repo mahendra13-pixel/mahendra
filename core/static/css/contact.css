@@ -1248,3 +1248,137 @@
 .file-viewer-body::-webkit-scrollbar-thumb:hover {
     background: #4b5563;
 }
+
+
+
+
+/* new thick css you can remove from below if dont like or issue occur  */
+/* ============================================
+   ISSUE FORM - VERY DARK & THICK TEXT
+   Same style as Inventory Form
+   ============================================ */
+
+/* All labels - dark and bold */
+.contact-form-card .form-group label {
+    color: #0a0a0a !important;
+    font-weight: 700 !important;
+    font-size: 0.78rem !important;
+}
+
+/* All input text, select text, textarea text - very dark */
+.contact-form-card .form-group input,
+.contact-form-card .form-group select,
+.contact-form-card .form-group textarea {
+    color: #0a0a0a !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+}
+
+/* Placeholder text - darker for readability */
+.contact-form-card .form-group input::placeholder,
+.contact-form-card .form-group textarea::placeholder {
+    color: #4a4a4a !important;
+    font-weight: 500 !important;
+}
+
+/* Select dropdown options - dark and bold */
+.contact-form-card .form-group select option {
+    color: #0a0a0a !important;
+    font-weight: 600 !important;
+}
+
+/* Small helper text (like "(Ctrl+Click)") - dark */
+.contact-form-card .form-group small,
+.contact-form-card .form-group .text-muted {
+    color: #2a2a2a !important;
+    font-weight: 600 !important;
+    font-size: 0.7rem !important;
+}
+
+/* All text inside the form - very dark */
+.contact-form-card,
+.contact-form-card * {
+    color: #1a1a1a !important;
+}
+
+/* Buttons - make text bold (override grey theme) */
+.contact-form-card .btn-primary,
+.contact-form-card .btn-success {
+    font-weight: 700 !important;
+    color: #ffffff !important;
+}
+
+/* Keep the grey background on buttons */
+.contact-form-card .btn-primary,
+.contact-form-card .btn-success {
+    background: #6b7280 !important;
+    border-color: #6b7280 !important;
+}
+
+.contact-form-card .btn-primary:hover,
+.contact-form-card .btn-success:hover {
+    background: #4b5563 !important;
+    border-color: #4b5563 !important;
+}
+
+/* Override specific elements that need their own colors */
+.contact-form-card .text-muted {
+    color: #4a4a4a !important;
+}
+
+/* Keep file upload label text readable */
+.contact-form-card label[for="multiple_files"] span {
+    color: #374151 !important;
+}
+
+/* Keep icons their original colors */
+.contact-form-card .input-icon i {
+    color: #6b7280 !important;
+}
+
+.contact-form-card .fas.fa-check-circle.text-success {
+    color: #16a34a !important;
+}
+
+/* Alert messages - keep their colors */
+.contact-form-card .alert {
+    color: #1f2937 !important;
+}
+
+.contact-form-card .alert-primary {
+    color: #084298 !important;
+}
+
+/* Keep the "Add Files" label text readable */
+.contact-form-card label[for="multiple_files"] {
+    color: #374151 !important;
+}
+
+.contact-form-card label[for="multiple_files"] i {
+    color: #6b7280 !important;
+}
+
+/* Make sure radio/checkbox labels stay readable if any */
+.contact-form-card .form-check-label {
+    color: #1a1a1a !important;
+    font-weight: 500 !important;
+}
+
+/* Small text in pending modal - keep white */
+.pending-modal-box * {
+    color: #ffffff !important;
+}
+
+.pending-modal-box .text-muted,
+.pending-modal-box small {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Keep badge colors in pending modal */
+.pending-modal-box .badge-pending {
+    color: #000000 !important;
+}
+
+.pending-modal-box .badge-inprogress {
+    color: #ffffff !important;
+}
