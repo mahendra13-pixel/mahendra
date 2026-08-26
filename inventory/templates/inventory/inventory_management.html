@@ -307,6 +307,25 @@ textarea.form-control {
 #add .text-danger {
     font-weight: 600 !important;
 }
+/* ============================================
+   ADD ITEM FORM - REDUCE HORIZONTAL PADDING
+   ============================================ */
+
+/* Reduce left/right padding only for Add Item form */
+#add .card-body {
+    padding: 0.5rem 0.3rem !important;  /* vertical 0.5rem, horizontal 0.3rem */
+}
+
+/* Reduce gap between form rows in Add Item */
+#add .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+#add .row > [class*="col-"] {
+    padding-left: 0.15rem !important;
+    padding-right: 0.15rem !important;
+}
 
 </style>
 
@@ -356,44 +375,43 @@ textarea.form-control {
             </div>
         </div>
 
-            <!-- Filters -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
-                                <option value="">All Categories</option>
-                                {% for cat in categories %}
-                                    <option value="{{ cat.id }}" {% if category_filter|add:"0" == cat.id %}selected{% endif %}>
-                                        {{ cat.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="">All Status</option>
-                                <option value="working" {% if status_filter == 'working' %}selected{% endif %}>✅ Working</option>
-                                <option value="not_working" {% if status_filter == 'not_working' %}selected{% endif %}>❌ Not Working</option>
-                                <option value="repair" {% if status_filter == 'repair' %}selected{% endif %}>🔧 Repair</option>
-                                <option value="disposed" {% if status_filter == 'disposed' %}selected{% endif %}>🗑️ Disposed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Search</label>
-                            <input type="text" name="search" class="form-control" placeholder="🔍 Search items..." value="{{ search_query|default:'' }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-filter"></i> Filter
-                            </button>
-                        </div>
-                    </form>
-                </div>
+           <!-- Filters - COMPACT -->
+<div class="card mb-2">
+    <div class="card-body" style="padding: 0.3rem 0.5rem !important;">
+        <form method="get" class="row g-1 align-items-end">
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label" style="font-size: 0.55rem !important; margin-bottom: 0 !important;">Category</label>
+                <select name="category" class="form-select" style="font-size: 0.6rem !important; padding: 0.1rem 0.2rem !important; min-height: 1.5rem !important;">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if category_filter|add:"0" == cat.id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label" style="font-size: 0.55rem !important; margin-bottom: 0 !important;">Status</label>
+                <select name="status" class="form-select" style="font-size: 0.6rem !important; padding: 0.1rem 0.2rem !important; min-height: 1.5rem !important;">
+                    <option value="">All Status</option>
+                    <option value="working" {% if status_filter == 'working' %}selected{% endif %}>✅ Working</option>
+                    <option value="not_working" {% if status_filter == 'not_working' %}selected{% endif %}>❌ Not Working</option>
+                    <option value="repair" {% if status_filter == 'repair' %}selected{% endif %}>🔧 Repair</option>
+                    <option value="disposed" {% if status_filter == 'disposed' %}selected{% endif %}>🗑️ Disposed</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-sm-8">
+                <label class="form-label" style="font-size: 0.55rem !important; margin-bottom: 0 !important;">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="🔍 Search..." value="{{ search_query|default:'' }}" style="font-size: 0.6rem !important; padding: 0.1rem 0.2rem !important; min-height: 1.5rem !important;">
+            </div>
+            <div class="col-md-2 col-sm-4">
+                <button type="submit" class="btn btn-primary w-100" style="font-size: 0.55rem !important; padding: 0.1rem 0.15rem !important; min-height: 1.5rem !important;">
+                    <i class="fas fa-filter" style="font-size: 0.55rem;"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
             <!-- Items Table -->
             <div class="table-responsive">
