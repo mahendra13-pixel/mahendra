@@ -6,57 +6,308 @@
 
 {% block content %}
 <style>
-/* SUPER COMPACT STYLES - Preserves all original functionality */
-.container-fluid { padding: 0.15rem 0.25rem !important; }
-.mt-4 { margin-top: 0.25rem !important; }
-.mb-4 { margin-bottom: 0.25rem !important; }
-.mb-3 { margin-bottom: 0.15rem !important; }
-.mb-2 { margin-bottom: 0.1rem !important; }
-.mt-2 { margin-top: 0.1rem !important; }
-.mt-1 { margin-top: 0.05rem !important; }
-.py-3 { padding-top: 0.15rem !important; padding-bottom: 0.15rem !important; }
-.py-1 { padding-top: 0.05rem !important; padding-bottom: 0.05rem !important; }
-.p-1 { padding: 0.1rem !important; }
-.pt-3 { padding-top: 0.15rem !important; }
-.pb-3 { padding-bottom: 0.15rem !important; }
-.g-3 { gap: 0.15rem !important; }
-.row > * { padding-left: 0.1rem !important; padding-right: 0.1rem !important; }
-.card { margin-bottom: 0.15rem !important; }
-.card-body { padding: 0.2rem 0.3rem !important; }
-.card-header { padding: 0.15rem 0.3rem !important; }
-.card-footer { padding: 0.1rem 0.3rem !important; }
-.table-sm th, .table-sm td { padding: 0.1rem 0.15rem !important; font-size: 0.7rem !important; }
-.btn { padding: 0.05rem 0.2rem !important; font-size: 0.65rem !important; }
-.btn-sm { padding: 0.05rem 0.15rem !important; font-size: 0.6rem !important; }
-.btn-group-sm > .btn { padding: 0.05rem 0.15rem !important; font-size: 0.6rem !important; }
-.form-control { padding: 0.1rem 0.15rem !important; font-size: 0.65rem !important; height: auto !important; min-height: 1.5rem !important; }
-.form-select { padding: 0.1rem 0.15rem !important; font-size: 0.65rem !important; height: auto !important; min-height: 1.5rem !important; }
-.form-label { font-size: 0.6rem !important; margin-bottom: 0.05rem !important; }
-.nav-tabs .nav-link { padding: 0.15rem 0.3rem !important; font-size: 0.65rem !important; }
-.alert { padding: 0.2rem 0.3rem !important; font-size: 0.65rem !important; margin-bottom: 0.15rem !important; }
-.badge { font-size: 0.55rem !important; padding: 0.05rem 0.2rem !important; }
-h4 { font-size: 0.75rem !important; margin-bottom: 0.1rem !important; }
-h5 { font-size: 0.7rem !important; margin-bottom: 0.05rem !important; }
-small, .small { font-size: 0.55rem !important; }
-.text-muted { font-size: 0.55rem !important; }
-.table-responsive { margin-bottom: 0.1rem !important; }
-.pagination { margin-bottom: 0.1rem !important; }
-.pagination .page-link { padding: 0.1rem 0.2rem !important; font-size: 0.6rem !important; }
-.modal-body { padding: 0.2rem !important; }
-.modal-header { padding: 0.2rem 0.3rem !important; }
-.modal-footer { padding: 0.15rem 0.3rem !important; }
-.modal-title { font-size: 0.75rem !important; }
-.alert-dismissible .btn-close { padding: 0.2rem !important; font-size: 0.5rem !important; }
-.btn-group { gap: 0.05rem !important; }
-.me-1 { margin-right: 0.1rem !important; }
-.me-2 { margin-right: 0.15rem !important; }
-.ms-1 { margin-left: 0.1rem !important; }
-.ms-2 { margin-left: 0.15rem !important; }
-.w-100 { width: 100% !important; }
-.col-md-3, .col-md-4, .col-md-6, .col-md-2 { padding: 0 0.1rem !important; }
-.mb-3 { margin-bottom: 0.1rem !important; }
-#mediaPreview video, #mediaPreview img { max-width: 150px !important; max-height: 100px !important; }
-#currentMediaContainer video, #currentMediaContainer img { max-width: 150px !important; max-height: 100px !important; }
+/* ============================================
+   BALANCED INVENTORY STYLES
+   More readable, slightly larger, better spacing
+   All original functionality preserved
+   ============================================ */
+
+/* Container - more breathing room */
+.container-fluid { 
+    padding: 0.5rem 1rem !important; 
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Spacing - increased for readability */
+.mt-4 { margin-top: 0.75rem !important; }
+.mb-4 { margin-bottom: 0.75rem !important; }
+.mb-3 { margin-bottom: 0.5rem !important; }
+.mb-2 { margin-bottom: 0.3rem !important; }
+.mt-2 { margin-top: 0.3rem !important; }
+.mt-1 { margin-top: 0.15rem !important; }
+.py-3 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+.py-1 { padding-top: 0.15rem !important; padding-bottom: 0.15rem !important; }
+.p-1 { padding: 0.3rem !important; }
+.pt-3 { padding-top: 0.5rem !important; }
+.pb-3 { padding-bottom: 0.5rem !important; }
+
+/* Grid gaps - better spacing */
+.g-3 { gap: 0.5rem !important; }
+.row > * { 
+    padding-left: 0.3rem !important; 
+    padding-right: 0.3rem !important; 
+}
+
+/* Cards - better padding */
+.card { 
+    margin-bottom: 0.5rem !important;
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+}
+.card-body { 
+    padding: 0.5rem 0.75rem !important; 
+}
+.card-header { 
+    padding: 0.4rem 0.75rem !important; 
+    background: #f8f9fa !important;
+    font-weight: 600 !important;
+}
+.card-footer { 
+    padding: 0.3rem 0.75rem !important; 
+}
+
+/* Table - readable and clean */
+.table-sm th, .table-sm td { 
+    padding: 0.3rem 0.4rem !important; 
+    font-size: 0.75rem !important; 
+    vertical-align: middle;
+}
+.table thead th {
+    background: #1f2937 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid #374151 !important;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.02);
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(37, 99, 235, 0.04);
+}
+
+/* Buttons - slightly larger and more clickable */
+.btn { 
+    padding: 0.2rem 0.6rem !important; 
+    font-size: 0.7rem !important; 
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+}
+.btn-sm { 
+    padding: 0.15rem 0.4rem !important; 
+    font-size: 0.65rem !important; 
+}
+.btn-group-sm > .btn { 
+    padding: 0.15rem 0.4rem !important; 
+    font-size: 0.65rem !important; 
+}
+.btn-primary { background: #2563eb !important; border-color: #2563eb !important; }
+.btn-success { background: #16a34a !important; border-color: #16a34a !important; }
+.btn-warning { background: #f59e0b !important; border-color: #f59e0b !important; color: #1f2937 !important; }
+.btn-danger { background: #dc2626 !important; border-color: #dc2626 !important; }
+.btn-info { background: #06b6d4 !important; border-color: #06b6d4 !important; color: #ffffff !important; }
+
+/* Form controls - readable and comfortable */
+.form-control, .form-select { 
+    padding: 0.3rem 0.5rem !important; 
+    font-size: 0.75rem !important; 
+    height: auto !important; 
+    min-height: 2rem !important;
+    border: 1.5px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    background: #f9fafb !important;
+    color: #1f2937 !important;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    background: #ffffff !important;
+}
+.form-label { 
+    font-size: 0.7rem !important; 
+    margin-bottom: 0.1rem !important; 
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+}
+
+/* Nav tabs - clean and readable */
+.nav-tabs .nav-link { 
+    padding: 0.3rem 0.6rem !important; 
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+}
+.nav-tabs .nav-link.active {
+    color: #2563eb !important;
+    font-weight: 600 !important;
+    border-bottom: 3px solid #2563eb !important;
+}
+
+/* Alerts - readable */
+.alert { 
+    padding: 0.4rem 0.6rem !important; 
+    font-size: 0.75rem !important; 
+    margin-bottom: 0.3rem !important;
+    border-radius: 6px !important;
+}
+
+/* Badges - clear and readable */
+.badge { 
+    font-size: 0.65rem !important; 
+    padding: 0.15rem 0.4rem !important; 
+    font-weight: 500 !important;
+    border-radius: 4px !important;
+}
+
+/* Headings - dark and readable */
+h4 { 
+    font-size: 0.9rem !important; 
+    margin-bottom: 0.2rem !important; 
+    color: #1f2937 !important;
+    font-weight: 700 !important;
+}
+h5 { 
+    font-size: 0.8rem !important; 
+    margin-bottom: 0.1rem !important; 
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+}
+
+/* Text - dark and readable */
+small, .small { font-size: 0.65rem !important; color: #4b5563 !important; }
+.text-muted { font-size: 0.65rem !important; color: #6b7280 !important; }
+.table td, .table th { color: #1f2937 !important; }
+
+/* Table responsive */
+.table-responsive { margin-bottom: 0.3rem !important; }
+
+/* Pagination - readable */
+.pagination { margin-bottom: 0.3rem !important; }
+.pagination .page-link { 
+    padding: 0.2rem 0.4rem !important; 
+    font-size: 0.7rem !important;
+    color: #1f2937 !important;
+    border-radius: 4px !important;
+}
+.pagination .page-item.active .page-link {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* Modal - readable */
+.modal-body { padding: 0.75rem !important; }
+.modal-header { 
+    padding: 0.5rem 0.75rem !important; 
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+.modal-footer { padding: 0.5rem 0.75rem !important; }
+.modal-title { 
+    font-size: 0.9rem !important; 
+    color: #1f2937 !important;
+    font-weight: 700 !important;
+}
+
+/* Media preview - slightly larger */
+#mediaPreview video, #mediaPreview img { 
+    max-width: 180px !important; 
+    max-height: 120px !important; 
+    border-radius: 6px !important;
+    border: 1px solid #e5e7eb !important;
+}
+#currentMediaContainer video, #currentMediaContainer img { 
+    max-width: 180px !important; 
+    max-height: 120px !important;
+    border-radius: 6px !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+/* Textareas - readable */
+textarea.form-control {
+    min-height: 2.5rem !important;
+    font-size: 0.75rem !important;
+    resize: vertical;
+}
+
+/* Layout spacing */
+.col-md-3, .col-md-4, .col-md-6, .col-md-2 { 
+    padding: 0 0.3rem !important; 
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container-fluid { padding: 0.3rem 0.5rem !important; }
+    .card-body { padding: 0.3rem 0.4rem !important; }
+    .table-sm th, .table-sm td { font-size: 0.65rem !important; padding: 0.15rem 0.2rem !important; }
+    .btn { font-size: 0.6rem !important; padding: 0.1rem 0.3rem !important; }
+    .form-control, .form-select { font-size: 0.65rem !important; padding: 0.15rem 0.3rem !important; }
+    h4 { font-size: 0.75rem !important; }
+    .nav-tabs .nav-link { font-size: 0.6rem !important; padding: 0.15rem 0.3rem !important; }
+}
+
+/* ============================================
+   ADD ITEM FORM - VERY DARK & THICK TEXT
+   ============================================ */
+
+/* All labels inside the add form - dark and bold */
+#add .form-label {
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+}
+
+/* All input text, select text, textarea text - very dark */
+#add .form-control,
+#add .form-select {
+    color: #0a0a0a !important;
+    font-weight: 600 !important;
+    font-size: 0.78rem !important;
+}
+
+/* Placeholder text - slightly lighter but still readable */
+#add .form-control::placeholder {
+    color: #4a4a4a !important;
+    font-weight: 500 !important;
+}
+
+/* Select dropdown options - dark and bold */
+#add .form-select option {
+    color: #0a0a0a !important;
+    font-weight: 600 !important;
+}
+
+/* Small helper text (like "Add new category" link) - dark */
+#add small,
+#add .text-muted {
+    color: #2a2a2a !important;
+    font-weight: 600 !important;
+}
+
+/* Form card header - dark and bold */
+#add .card-header h4 {
+    color: #0a0a0a !important;
+    font-weight: 800 !important;
+}
+
+/* Form labels with asterisk (*) - emphasize required fields */
+#add .form-label:contains("*") {
+    color: #000000 !important;
+}
+
+/* All text inside the add form card */
+#add .card-body {
+    color: #1a1a1a !important;
+}
+
+/* Submit and Reset buttons - keep their colors but make text bold */
+#add .btn-success,
+#add .btn-secondary {
+    font-weight: 700 !important;
+}
+
+/* File input text - dark and bold */
+#add input[type="file"] {
+    color: #1a1a1a !important;
+    font-weight: 600 !important;
+}
+
+/* Media preview labels */
+#add .mt-1 small,
+#add .text-danger {
+    font-weight: 600 !important;
+}
+
 </style>
 
 <div class="container-fluid mt-4">
@@ -110,6 +361,7 @@ small, .small { font-size: 0.55rem !important; }
                 <div class="card-body">
                     <form method="get" class="row g-3">
                         <div class="col-md-3">
+                            <label class="form-label">Category</label>
                             <select name="category" class="form-select">
                                 <option value="">All Categories</option>
                                 {% for cat in categories %}
@@ -120,6 +372,7 @@ small, .small { font-size: 0.55rem !important; }
                             </select>
                         </div>
                         <div class="col-md-3">
+                            <label class="form-label">Status</label>
                             <select name="status" class="form-select">
                                 <option value="">All Status</option>
                                 <option value="working" {% if status_filter == 'working' %}selected{% endif %}>✅ Working</option>
@@ -129,9 +382,11 @@ small, .small { font-size: 0.55rem !important; }
                             </select>
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label">Search</label>
                             <input type="text" name="search" class="form-control" placeholder="🔍 Search items..." value="{{ search_query|default:'' }}">
                         </div>
                         <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-filter"></i> Filter
                             </button>
@@ -814,127 +1069,5 @@ function exportInventory() {
     window.location.href = url;
 }
 </script>
-
-<style>
-/* Custom styles - SUPER COMPACT */
-.nav-tabs .nav-link {
-    color: #495057;
-    font-weight: 500;
-    font-size: 0.65rem !important;
-    padding: 0.15rem 0.3rem !important;
-}
-.nav-tabs .nav-link.active {
-    border-bottom: 3px solid #0d6efd;
-    color: #0d6efd;
-}
-.table-sm td, .table-sm th {
-    vertical-align: middle;
-}
-.card {
-    transition: all 0.2s;
-}
-.card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-#mediaPreview video, #mediaPreview img {
-    max-width: 200px;
-    max-height: 120px;
-    border-radius: 4px;
-    object-fit: contain;
-    background: #f8f9fa;
-}
-#currentMediaContainer video, #currentMediaContainer img {
-    max-width: 200px;
-    max-height: 120px;
-    border-radius: 4px;
-    object-fit: contain;
-    background: #f8f9fa;
-}
-/* Ensure compact textarea */
-textarea.form-control {
-    min-height: 1.5rem !important;
-    font-size: 0.65rem !important;
-}
-/* Compact table cells */
-.table-sm td, .table-sm th {
-    font-size: 0.65rem !important;
-    padding: 0.1rem 0.15rem !important;
-}
-/* Compact buttons */
-.btn {
-    font-size: 0.6rem !important;
-    padding: 0.05rem 0.2rem !important;
-}
-/* Compact form controls */
-.form-control, .form-select {
-    font-size: 0.6rem !important;
-    padding: 0.05rem 0.15rem !important;
-    height: auto !important;
-    min-height: 1.2rem !important;
-}
-/* Compact labels */
-.form-label {
-    font-size: 0.55rem !important;
-    margin-bottom: 0.05rem !important;
-}
-/* Compact badges */
-.badge {
-    font-size: 0.55rem !important;
-    padding: 0.05rem 0.15rem !important;
-}
-/* Compact headings */
-h4 {
-    font-size: 0.7rem !important;
-    margin-bottom: 0.1rem !important;
-}
-h5 {
-    font-size: 0.65rem !important;
-    margin-bottom: 0.05rem !important;
-}
-/* Compact alerts */
-.alert {
-    padding: 0.15rem 0.25rem !important;
-    font-size: 0.6rem !important;
-    margin-bottom: 0.1rem !important;
-}
-/* Compact modal */
-.modal-body {
-    padding: 0.2rem !important;
-}
-.modal-header {
-    padding: 0.15rem 0.25rem !important;
-}
-.modal-title {
-    font-size: 0.7rem !important;
-}
-/* Compact pagination */
-.pagination .page-link {
-    padding: 0.05rem 0.15rem !important;
-    font-size: 0.55rem !important;
-}
-/* Compact card */
-.card-body {
-    padding: 0.15rem 0.2rem !important;
-}
-.card-header {
-    padding: 0.1rem 0.2rem !important;
-}
-/* Compact spacing */
-.mb-3 {
-    margin-bottom: 0.1rem !important;
-}
-.mt-4 {
-    margin-top: 0.15rem !important;
-}
-/* Compact media preview */
-#mediaPreview video, #mediaPreview img {
-    max-width: 150px !important;
-    max-height: 100px !important;
-}
-#currentMediaContainer video, #currentMediaContainer img {
-    max-width: 150px !important;
-    max-height: 100px !important;
-}
-</style>
 
 {% endblock %}
