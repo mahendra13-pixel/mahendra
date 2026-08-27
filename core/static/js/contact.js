@@ -892,3 +892,101 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
+
+
+
+
+
+
+
+// ============================================
+// AUTOCOMPLETE - Message & Remarks Fields
+// Only shows top 3 suggestions
+// ============================================
+
+let suggestionTimeout;
+
+function showAutoSuggest(input, suggestionId, fieldName) {
+    const value = input.value.trim();
+    const suggestionsDiv = document.getElementById(suggestionId);
+    
+    if (!suggestionsDiv) return;
+    
+    clearTimeout(suggestionTimeout);
+    
+    if (value.length < 1) {
+        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.innerHTML = '';
+        return;
+    }
+    
+    suggestionTimeout = setTimeout(function() {
+        fetchAutoSuggestions(value, suggestionsDiv, fieldName);
+    }, 300);
+}
+
+function fetchAutoSuggestions(query, suggestionsDiv, fieldName) {
+   fetch(`/autocomplete/?field=${fieldName}&q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.suggestions.length > 0) {
+                // Show only top 3 suggestions
+                const suggestions = data.suggestions.slice(0, 3);
+                let html = '';
+                suggestions.forEach(function(item) {
+                    const safeItem = item.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    html += `<div class="suggestion-item" onclick="selectSuggestion('${fieldName}', '${safeItem}')">
+                                <i class="fas fa-history"></i>
+                                ${highlightMatch(item, query)}
+                            </div>`;
+                });
+                suggestionsDiv.innerHTML = html;
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+                suggestionsDiv.innerHTML = '';
+            }
+        })
+        .catch(() => {
+            suggestionsDiv.style.display = 'none';
+            suggestionsDiv.innerHTML = '';
+        });
+}
+
+function selectSuggestion(fieldName, value) {
+    const textarea = document.getElementById(fieldName);
+    if (textarea) {
+        textarea.value = value;
+        textarea.dispatchEvent(new Event('input'));
+        const suggestionsDiv = document.getElementById(fieldName + '-suggestions');
+        if (suggestionsDiv) {
+            suggestionsDiv.style.display = 'none';
+            suggestionsDiv.innerHTML = '';
+        }
+        // Trigger change event for any listeners
+        textarea.dispatchEvent(new Event('change'));
+    }
+}
+
+function highlightMatch(text, query) {
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<strong>$1</strong>');
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
+        if (!div.contains(e.target)) {
+            div.style.display = 'none';
+        }
+    });
+});
+
+// Close suggestions with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
+            div.style.display = 'none';
+        });
+    }
+});

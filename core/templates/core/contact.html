@@ -255,22 +255,27 @@
 
                 <div class="form-group">
                     <label for="remarks">Remarks</label>
-                    <div class="input-icon textarea-icon">
+                    <div class="input-icon textarea-icon autocomplete-wrapper">
                         <i class="fas fa-comment"></i>
                         <textarea id="remarks" name="remarks" rows="3"
-                            style="padding: 6px 10px 6px 32px; min-height: 60px; resize: vertical; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: var(--dark); font-family: inherit;"
-                            placeholder="Any additional remarks or notes..."></textarea>
+                            style="padding: 6px 10px 6px 32px; min-height: 60px; resize: vertical; width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; background: #f9fafb; color: #0a0a0a; font-family: inherit; font-weight: 600;"
+                            placeholder="Any additional remarks or notes..."
+                            onkeyup="showAutoSuggest(this, 'remarks-suggestions', 'remarks')"></textarea>
+                        <div id="remarks-suggestions" class="autocomplete-suggestions"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Full Width: Message -->
+            <!-- Full Width: Message -->
             <div class="form-group">
                 <label for="message">Issue or Message *</label>
-                <div class="input-icon textarea-icon">
+                <div class="input-icon textarea-icon autocomplete-wrapper">
                     <i class="fas fa-comment"></i>
                     <textarea id="message" name="message" rows="3"
-                        placeholder="Please describe your issue or request..." required></textarea>
+                        placeholder="Please describe your issue or request..." required
+                        onkeyup="showAutoSuggest(this, 'message-suggestions', 'message')"></textarea>
+                    <div id="message-suggestions" class="autocomplete-suggestions"></div>
                 </div>
             </div>
 
