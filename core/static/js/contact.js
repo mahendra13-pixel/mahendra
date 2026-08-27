@@ -902,9 +902,13 @@ function formatFileSize(bytes) {
 // ============================================
 // AUTOCOMPLETE - Message & Remarks Fields
 // Only shows top 3 suggestions
+// With RIGHT SIDE positioning & KEYBOARD navigation
 // ============================================
 
 let suggestionTimeout;
+let currentSuggestionIndex = -1;
+let currentSuggestionsList = [];
+let currentFieldName = '';
 
 function showAutoSuggest(input, suggestionId, fieldName) {
     const value = input.value.trim();
@@ -912,11 +916,16 @@ function showAutoSuggest(input, suggestionId, fieldName) {
     
     if (!suggestionsDiv) return;
     
+    // Reset keyboard index
+    currentSuggestionIndex = -1;
+    currentFieldName = fieldName;
+    
     clearTimeout(suggestionTimeout);
     
     if (value.length < 1) {
         suggestionsDiv.style.display = 'none';
         suggestionsDiv.innerHTML = '';
+        currentSuggestionsList = [];
         return;
     }
     
@@ -926,44 +935,56 @@ function showAutoSuggest(input, suggestionId, fieldName) {
 }
 
 function fetchAutoSuggestions(query, suggestionsDiv, fieldName) {
-   fetch(`/autocomplete/?field=${fieldName}&q=${encodeURIComponent(query)}`)
+    fetch(`/autocomplete/?field=${fieldName}&q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.suggestions.length > 0) {
-                // Show only top 3 suggestions
                 const suggestions = data.suggestions.slice(0, 3);
+                currentSuggestionsList = suggestions;
+                
                 let html = '';
-                suggestions.forEach(function(item) {
+                suggestions.forEach(function(item, index) {
                     const safeItem = item.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    html += `<div class="suggestion-item" onclick="selectSuggestion('${fieldName}', '${safeItem}')">
+                    html += `<div class="suggestion-item" data-index="${index}" onclick="selectSuggestion('${fieldName}', '${safeItem}', ${index})">
                                 <i class="fas fa-history"></i>
-                                ${highlightMatch(item, query)}
+                                <span class="suggestion-text">${highlightMatch(item, query)}</span>
                             </div>`;
                 });
                 suggestionsDiv.innerHTML = html;
                 suggestionsDiv.style.display = 'block';
+                currentSuggestionIndex = -1;
+                currentFieldName = fieldName;
             } else {
                 suggestionsDiv.style.display = 'none';
                 suggestionsDiv.innerHTML = '';
+                currentSuggestionsList = [];
+                currentSuggestionIndex = -1;
             }
         })
         .catch(() => {
             suggestionsDiv.style.display = 'none';
             suggestionsDiv.innerHTML = '';
+            currentSuggestionsList = [];
+            currentSuggestionIndex = -1;
         });
 }
 
-function selectSuggestion(fieldName, value) {
+function selectSuggestion(fieldName, value, index) {
     const textarea = document.getElementById(fieldName);
     if (textarea) {
         textarea.value = value;
         textarea.dispatchEvent(new Event('input'));
+        textarea.dispatchEvent(new Event('change'));
+        
         const suggestionsDiv = document.getElementById(fieldName + '-suggestions');
         if (suggestionsDiv) {
             suggestionsDiv.style.display = 'none';
             suggestionsDiv.innerHTML = '';
         }
-        // Trigger change event for any listeners
+        currentSuggestionsList = [];
+        currentSuggestionIndex = -1;
+        currentFieldName = '';
+        
         textarea.dispatchEvent(new Event('change'));
     }
 }
@@ -973,20 +994,148 @@ function highlightMatch(text, query) {
     return text.replace(regex, '<strong>$1</strong>');
 }
 
-// Close suggestions when clicking outside
-document.addEventListener('click', function(e) {
-    document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
-        if (!div.contains(e.target)) {
-            div.style.display = 'none';
+// ============================================
+// KEYBOARD NAVIGATION - Up/Down/Left/Right + Enter
+// ============================================
+
+// ✅ Use a separate event listener with capture phase
+document.addEventListener('keydown', function(e) {
+    // Get the active element (textarea that triggered suggestions)
+    const activeElement = document.activeElement;
+    
+    // Check if the active element is the message or remarks textarea
+    const isMessageField = activeElement && activeElement.id === 'message';
+    const isRemarksField = activeElement && activeElement.id === 'remarks';
+    
+    // Only proceed if we're in the message or remarks field
+    if (!isMessageField && !isRemarksField) {
+        // Still handle Escape to close any open suggestions
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
+                div.style.display = 'none';
+                div.innerHTML = '';
+            });
+            currentSuggestionsList = [];
+            currentSuggestionIndex = -1;
         }
-    });
+        return;
+    }
+    
+    // Determine which field we're in
+    const fieldName = isMessageField ? 'message' : 'remarks';
+    const suggestionsDiv = document.getElementById(fieldName + '-suggestions');
+    
+    // If suggestions not visible, only handle Escape
+    if (!suggestionsDiv || suggestionsDiv.style.display !== 'block') {
+        if (e.key === 'Escape') {
+            suggestionsDiv.style.display = 'none';
+            suggestionsDiv.innerHTML = '';
+            currentSuggestionsList = [];
+            currentSuggestionIndex = -1;
+        }
+        return;
+    }
+    
+    const items = suggestionsDiv.querySelectorAll('.suggestion-item');
+    if (items.length === 0) return;
+    
+    // ✅ UP Arrow
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSuggestionIndex = (currentSuggestionIndex - 1 + items.length) % items.length;
+        updateActiveItem(items, suggestionsDiv);
+        return;
+    }
+    
+    // ✅ DOWN Arrow
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSuggestionIndex = (currentSuggestionIndex + 1) % items.length;
+        updateActiveItem(items, suggestionsDiv);
+        return;
+    }
+    
+    // ✅ LEFT Arrow - Cycle to previous (same as Up)
+    if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSuggestionIndex = (currentSuggestionIndex - 1 + items.length) % items.length;
+        updateActiveItem(items, suggestionsDiv);
+        return;
+    }
+    
+    // ✅ RIGHT Arrow - Cycle to next (same as Down)
+    if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSuggestionIndex = (currentSuggestionIndex + 1) % items.length;
+        updateActiveItem(items, suggestionsDiv);
+        return;
+    }
+    
+    // ✅ ENTER key - select current item
+    if (e.key === 'Enter' && currentSuggestionIndex >= 0 && currentSuggestionIndex < items.length) {
+        e.preventDefault();
+        e.stopPropagation();
+        const activeItem = items[currentSuggestionIndex];
+        if (activeItem) {
+            activeItem.click();
+        }
+        return;
+    }
+    
+    // ✅ ESCAPE key - close suggestions
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.innerHTML = '';
+        currentSuggestionsList = [];
+        currentSuggestionIndex = -1;
+        return;
+    }
 });
 
-// Close suggestions with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
-            div.style.display = 'none';
+function updateActiveItem(items, suggestionsDiv) {
+    // Remove active class from all items
+    items.forEach(item => item.classList.remove('active'));
+    
+    // Add active class to current item
+    if (currentSuggestionIndex >= 0 && currentSuggestionIndex < items.length) {
+        items[currentSuggestionIndex].classList.add('active');
+        
+        // Scroll to make sure the active item is visible
+        items[currentSuggestionIndex].scrollIntoView({
+            block: 'nearest',
+            behavior: 'smooth'
         });
     }
+    // ✅ NO TIMER - Blue stays permanently until user selects or closes
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    const isClickInside = e.target.closest('.autocomplete-wrapper') || 
+                          e.target.closest('.autocomplete-suggestions');
+    if (!isClickInside) {
+        document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
+            div.style.display = 'none';
+            div.innerHTML = '';
+        });
+        currentSuggestionsList = [];
+        currentSuggestionIndex = -1;
+        currentFieldName = '';
+    }
+});
+
+// Close suggestions on form submission
+document.addEventListener('submit', function(e) {
+    document.querySelectorAll('.autocomplete-suggestions').forEach(function(div) {
+        div.style.display = 'none';
+        div.innerHTML = '';
+    });
+    currentSuggestionsList = [];
+    currentSuggestionIndex = -1;
+    currentFieldName = '';
 });
