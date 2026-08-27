@@ -1394,7 +1394,8 @@
 
 /* this is for autosuggestion */
 /* ============================================
-   AUTOCOMPLETE SUGGESTIONS - Message & Remarks
+   AUTOCOMPLETE SUGGESTIONS - RIGHT SIDE
+   With perfect alignment & scroll
    ============================================ */
 
 .autocomplete-wrapper {
@@ -1404,34 +1405,48 @@
 
 .autocomplete-suggestions {
     position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    top: 0;
+    left: 100%;                    /* ← Positions to the RIGHT */
+    margin-left: 10px;             /* ← Gap between field and suggestions */
+    width: 320px;                  /* ← Fixed width for suggestions */
+    max-height: 180px;             /* ← Shows ~3-4 suggestions */
+    overflow-y: auto;
     background: white;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
-    max-height: 100px;
-    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     z-index: 9999;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     display: none;
-    margin-top: 2px;
+}
+
+/* For Remarks field - align to right */
+#remarks-suggestions {
+    left: 100%;
+    margin-left: 10px;
+    width: 320px;
+}
+
+/* For Message field - align to right */
+#message-suggestions {
+    left: 100%;
+    margin-left: 10px;
+    width: 320px;
 }
 
 .autocomplete-suggestions .suggestion-item {
-    padding: 4px 10px;
+    padding: 8px 12px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     border-bottom: 1px solid #f3f4f6;
     color: #1f2937;
     display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.autocomplete-suggestions .suggestion-item:hover {
-    background: #eff6ff;
-    color: #2563eb;
+    align-items: flex-start;
+    gap: 8px;
+    transition: all 0.15s ease;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 .autocomplete-suggestions .suggestion-item:last-child {
@@ -1441,14 +1456,49 @@
 .autocomplete-suggestions .suggestion-item i {
     color: #6b7280;
     font-size: 0.65rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.autocomplete-suggestions .suggestion-item .suggestion-text {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    max-height: 60px;
+    overflow-y: auto;
+    line-height: 1.4;
+}
+
+.autocomplete-suggestions .suggestion-item:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.autocomplete-suggestions .suggestion-item.active {
+    background: #2563eb;           /* ← Keyboard selection highlight */
+    color: white;
+}
+
+.autocomplete-suggestions .suggestion-item.active i {
+    color: white;
+}
+
+.autocomplete-suggestions .suggestion-item.active strong {
+    color: white;
+}
+
+.autocomplete-suggestions .suggestion-item.active .suggestion-text {
+    color: white;
 }
 
 .autocomplete-suggestions .suggestion-item strong {
     color: #2563eb;
 }
 
+/* Scrollbar styling */
 .autocomplete-suggestions::-webkit-scrollbar {
-    width: 3px;
+    width: 4px;
 }
 
 .autocomplete-suggestions::-webkit-scrollbar-track {
@@ -1459,4 +1509,28 @@
 .autocomplete-suggestions::-webkit-scrollbar-thumb {
     background: #6b7280;
     border-radius: 4px;
+}
+
+.autocomplete-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+/* Responsive - Stack below on mobile */
+@media (max-width: 768px) {
+    .autocomplete-suggestions {
+        left: 0;                   /* ← Reset to below on mobile */
+        top: 100%;
+        margin-left: 0;
+        margin-top: 4px;
+        width: 100%;
+        max-height: 140px;
+    }
+    
+    #remarks-suggestions,
+    #message-suggestions {
+        left: 0;
+        margin-left: 0;
+        top: 100%;
+        width: 100%;
+    }
 }
