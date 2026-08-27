@@ -849,86 +849,79 @@ function viewItem(id) {
 
 // Edit Item - Load data into form and switch to add tab
 function editItem(id) {
-    fetch(`/inventory/${id}/`)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
+    fetch(`/inventory/${id}/`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = data.data;
             
-            const table = doc.querySelector('table');
-            if (table) {
-                const rows = table.querySelectorAll('tr');
-                let data = {};
-                rows.forEach(row => {
-                    const th = row.querySelector('th');
-                    const td = row.querySelector('td');
-                    if (th && td) {
-                        const key = th.textContent.trim().toLowerCase();
-                        data[key] = td.textContent.trim();
-                    }
-                });
-                
-                // Fill form
-                document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Inventory Item';
-                document.getElementById('formAction').value = 'update';
-                document.getElementById('item_id').value = id;
-                document.getElementById('formName').value = data['name'] || '';
-                document.getElementById('formModel').value = data['model'] || '';
-                document.getElementById('formQuantity').value = data['quantity'] || 1;
-                document.getElementById('formSpecification').value = data['specifications'] || '';
-                document.getElementById('formRemarks').value = data['remarks'] || '';
-                document.getElementById('formSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Update Item';
-                
-                // Set category
-                const catSelect = document.getElementById('formCategory');
-                const catText = data['category'] || '';
-                for (let option of catSelect.options) {
-                    if (option.text === catText) {
-                        option.selected = true;
-                        break;
-                    }
-                }
-                
-                // Set status
-                const statusSelect = document.getElementById('formStatus');
-                const statusText = data['status'] || '';
-                for (let option of statusSelect.options) {
-                    if (option.text.trim() === statusText) {
-                        option.selected = true;
-                        break;
-                    }
-                }
-                
-                // Handle media (image/video)
-                const media = doc.querySelector('img[src*="media"], video[src*="media"]');
-                if (media) {
-                    const container = document.getElementById('currentMediaContainer');
-                    const url = media.src || media.querySelector('source')?.src;
-                    if (url) {
-                        let html = '';
-                        if (media.tagName === 'VIDEO' || media.tagName === 'video') {
-                            html = `
-                                <video controls style="max-width: 200px; max-height: 120px; border-radius: 4px;">
-                                    <source src="${url}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            `;
-                        } else {
-                            html = `
-                                <img src="${url}" alt="Current" style="max-width: 200px; max-height: 120px; border-radius: 4px; object-fit: contain;">
-                            `;
-                        }
-                        container.innerHTML = html;
-                        document.getElementById('currentImagePreview').style.display = 'block';
-                    }
+            // Fill form
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Inventory Item';
+            document.getElementById('formAction').value = 'update';
+            document.getElementById('item_id').value = id;
+            document.getElementById('formName').value = item.name || '';
+            document.getElementById('formModel').value = item.model || '';
+            document.getElementById('formQuantity').value = item.quantity || 1;
+            document.getElementById('formSpecification').value = item.specification || '';
+            document.getElementById('formRemarks').value = item.remarks || '';
+            document.getElementById('formSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Update Item';
+            
+            // Set category
+            const catSelect = document.getElementById('formCategory');
+            const catText = item.category || '';
+            for (let option of catSelect.options) {
+                if (option.text === catText) {
+                    option.selected = true;
+                    break;
                 }
             }
             
+            // Set status
+            const statusSelect = document.getElementById('formStatus');
+            const statusText = item.status_display || '';
+            for (let option of statusSelect.options) {
+                if (option.text.trim() === statusText) {
+                    option.selected = true;
+                    break;
+                }
+            }
+            
+            // Handle media (image/video)
+            if (item.image_url) {
+                const container = document.getElementById('currentMediaContainer');
+                let html = '';
+                if (item.media_type === 'video') {
+                    html = `
+                        <video controls style="max-width: 200px; max-height: 120px; border-radius: 4px;">
+                            <source src="${item.image_url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                } else {
+                    html = `
+                        <img src="${item.image_url}" alt="Current" style="max-width: 200px; max-height: 120px; border-radius: 4px; object-fit: contain;">
+                    `;
+                }
+                container.innerHTML = html;
+                document.getElementById('currentImagePreview').style.display = 'block';
+            } else {
+                document.getElementById('currentImagePreview').style.display = 'none';
+                document.getElementById('currentMediaContainer').innerHTML = '';
+            }
+            
             document.querySelector('[data-bs-target="#add"]').click();
-        })
-        .catch(err => {
-            alert('Error loading item data: ' + err);
-        });
+        } else {
+            alert('❌ ' + (data.message || 'Unable to load item data'));
+        }
+    })
+    .catch(err => {
+        console.error('Error loading item:', err);
+        alert('Error loading item data. Please try again.');
+    });
 }
 
 // Delete Item
