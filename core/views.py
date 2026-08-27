@@ -1195,3 +1195,52 @@ def delete_issue_all_files(request, pk):
         'status': 'success',
         'message': 'All files deleted successfully!'
     })  
+
+
+
+
+
+
+
+
+
+
+
+    # AUTOCOMPLETE SUGGESTION YOU CAN DELETE LATER
+def autocomplete_suggestions(request):
+    """
+    Return autocomplete suggestions for text fields - only 3 suggestions
+    Used for Message and Remarks fields
+    """
+    field = request.GET.get('field', '')
+    query = request.GET.get('q', '').strip()
+    
+    if not query or not field:
+        return JsonResponse({'success': False, 'suggestions': []})
+    
+    # Map field names to model fields
+    field_map = {
+        'message': 'message',
+        'remarks': 'remarks',
+        'name': 'name',
+        'department': 'department',
+        'phone': 'phone',
+    }
+    
+    model_field = field_map.get(field)
+    if not model_field:
+        return JsonResponse({'success': False, 'suggestions': []})
+    
+    # Get distinct values from database - limit to 3
+    suggestions = Contact.objects.filter(
+        **{f"{model_field}__icontains": query}
+    ).exclude(
+        **{f"{model_field}__isnull": True}
+    ).exclude(
+        **{f"{model_field}__exact": ''}
+    ).values_list(model_field, flat=True).distinct()[:3]
+    
+    return JsonResponse({
+        'success': True,
+        'suggestions': list(suggestions)
+    })    
