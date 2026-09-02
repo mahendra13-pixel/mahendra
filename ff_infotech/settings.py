@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 EXTERNAL_APPS = [
     'core',
+    'latest_export',
 ]
 
 INSTALLED_APPS.extend(EXTERNAL_APPS)

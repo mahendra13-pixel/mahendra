@@ -25,5 +25,6 @@ urlpatterns = [
     path("",include('core.urls')),
     path('notifications/', include('notifications.urls')),
     path('inventory/', include('inventory.urls')),  # ← Inventory URLs
+    path('latest-export/', include('latest_export.urls')),
 
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
