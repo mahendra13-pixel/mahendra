@@ -516,14 +516,13 @@ def export_inventory(request):
     
     writer = csv.writer(response)
     
-    # Header
+    # ✅ UPDATED HEADER - Removed: Media Type, File Size, Created By, Created At, Updated At
     writer.writerow([
         'Category', 'Name', 'Model', 'Status', 'Quantity',
-        'Specifications', 'Remarks', 'Media Type', 'File Size',
-        'Created By', 'Created At', 'Updated At'
+        'Specifications', 'Remarks'
     ])
     
-    # Data
+    # ✅ UPDATED DATA - Removed: media_type, file_size, created_by, created_at, updated_at
     for item in items:
         writer.writerow([
             item.category.name,
@@ -533,11 +532,6 @@ def export_inventory(request):
             item.quantity,
             item.specification or '',
             item.remarks or '',
-            item.media_type or 'none',
-            item.get_file_size_display() if hasattr(item, 'get_file_size_display') else '',
-            item.created_by or '',
-            item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '',
-            item.updated_at.strftime('%Y-%m-%d %H:%M') if item.updated_at else '',
         ])
     
     return response
