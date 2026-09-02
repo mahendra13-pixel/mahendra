@@ -372,6 +372,9 @@ textarea.form-control {
                 <button class="btn btn-primary" onclick="exportInventory()">
                     <i class="fas fa-file-excel"></i> Export
                 </button>
+                <button onclick="window.location.href='{% url 'inventory:export_compact' %}?{{ request.GET.urlencode }}'" class="btn btn-success">
+    <i class="fas fa-file-excel"></i> Compact
+</button>
             </div>
         </div>
 

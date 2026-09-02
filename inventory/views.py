@@ -535,3 +535,60 @@ def export_inventory(request):
         ])
     
     return response
+
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
+def export_inventory_compact(request):
+    """Export inventory items to CSV (Compact - without Model, Specifications, Remarks)"""
+    
+    # Get all items with filters
+    items = InventoryItem.objects.select_related('category').all().order_by('category__name', 'name')
+    
+    # Filter by category
+    category_filter = request.GET.get('category')
+    if category_filter:
+        items = items.filter(category__id=category_filter)
+    
+    # Filter by status
+    status_filter = request.GET.get('status')
+    if status_filter:
+        items = items.filter(status=status_filter)
+    
+    # Filter by media type
+    media_filter = request.GET.get('media_type')
+    if media_filter:
+        items = items.filter(media_type=media_filter)
+    
+    # Search
+    search_query = request.GET.get('search')
+    if search_query:
+        items = items.filter(
+            models.Q(name__icontains=search_query) |
+            models.Q(model__icontains=search_query) |
+            models.Q(specification__icontains=search_query) |
+            models.Q(remarks__icontains=search_query) |
+            models.Q(original_filename__icontains=search_query)
+        )
+    
+    # Create response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="inventory_compact_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+    
+    writer = csv.writer(response)
+    
+    # ✅ COMPACT HEADER - Only: Category, Name, Status, Quantity
+    writer.writerow([
+        'Category', 'Name', 'Status', 'Quantity'
+    ])
+    
+    # ✅ COMPACT DATA - Removed: Model, Specifications, Remarks
+    for item in items:
+        writer.writerow([
+            item.category.name,
+            item.name,
+            item.get_status_display(),
+            item.quantity,
+        ])
+    
+    return response
