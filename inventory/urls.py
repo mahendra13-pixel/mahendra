@@ -51,6 +51,7 @@ urlpatterns = [
     # EXPORT
     # ============================================================
     path('export/', views.export_inventory, name='export_inventory'),
+    path('export/compact/', views.export_inventory_compact, name='export_compact'),
 ]
 
 # ============================================================
