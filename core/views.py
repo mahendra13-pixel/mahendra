@@ -11,11 +11,7 @@ import pandas as pd
 from io import BytesIO
 from datetime import datetime
 import socket
-import os
-import re
 import getpass
-import zipfile
-from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from .models import StoredFile
 from django.http import JsonResponse
@@ -337,7 +333,7 @@ def issue_edit(request, pk):
     # ============================================================
     
     # Get new files from StoredFile model
-    stored_files_qs = StoredFile.objects.filter(contact=contact)
+    stored_files_qs = StoredFile.objects.filter(contact=contact).order_by('id')
     stored_files = list(stored_files_qs)
     
     # Check for old legacy file in media_file
@@ -859,7 +855,7 @@ def store_edit(request, pk):
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
     
     # ✅ Get ALL files - BOTH old and new
-    stored_files_qs = StoredFile.objects.filter(contact=item)
+    stored_files_qs = StoredFile.objects.filter(contact=item).order_by('id')
     stored_files = list(stored_files_qs)
     
     # Check for legacy media_file
@@ -1096,7 +1092,7 @@ def delete_stored_file(request, pk, file_index):
     - Deletes physical file from storage
     """
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
-    stored_files = StoredFile.objects.filter(contact=item)
+    stored_files = StoredFile.objects.filter(contact=item).order_by('id')
     
     if file_index < len(stored_files):
         file_to_delete = stored_files[file_index]
@@ -1129,7 +1125,7 @@ def delete_stored_all_files(request, pk):
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
     
     # Delete all StoredFile records
-    StoredFile.objects.filter(contact=item).delete()
+    StoredFile.objects.filter(contact=item).order_by('id').delete()
     
     # Delete legacy media_file
     if item.media_file:
@@ -1155,7 +1151,7 @@ def delete_issue_file(request, pk, file_index):
     - Deletes physical file from storage
     """
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
-    stored_files = StoredFile.objects.filter(contact=contact)
+    stored_files = StoredFile.objects.filter(contact=contact).order_by('id')
     
     if file_index < len(stored_files):
         file_to_delete = stored_files[file_index]
@@ -1188,7 +1184,7 @@ def delete_issue_all_files(request, pk):
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
     
     # Delete all StoredFile records
-    StoredFile.objects.filter(contact=contact).delete()
+    StoredFile.objects.filter(contact=contact).order_by('id').delete()
     
     # Delete legacy media_file
     if contact.media_file:
