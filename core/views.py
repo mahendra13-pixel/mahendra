@@ -837,7 +837,8 @@ def resolved_issues_excel_compact(request):
     return response
 
 
-# Stored Item Detail - Shows limited fields for stored items
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
 def stored_item_detail(request, pk):
     """View for stored items - shows all files with preview"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
@@ -1061,7 +1062,8 @@ def store_edit(request, pk):
         'legacy_file': legacy_file,
     })
 
-
+@login_required(login_url='/admin/login/')
+@user_passes_test(is_admin)
 def get_zip_contents(request, pk):
     """Get contents of a stored item (individual files)"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
