@@ -1,3 +1,4 @@
+from filemanager.utils import save_file_hybrid, sanitize_filename
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,7 @@ from io import BytesIO
 from datetime import datetime
 import socket
 import os
+import re
 import getpass
 import zipfile
 from django.core.files.base import ContentFile
@@ -222,10 +224,11 @@ def contact(request):
                 updated_at=now
             )
             for file in multiple_files:
+                saved_path = save_file_hybrid(file, "stored_files")
                 StoredFile.objects.create(
                     contact=contact,
-                    file=file,
-                    file_name=file.name,
+                    file=saved_path,
+                    file_name=sanitize_filename(file.name),
                     file_size=file.size
                 )
 
@@ -436,10 +439,11 @@ def issue_edit(request, pk):
             
             # Create StoredFile records for each new file
             for file in multiple_files:
+                saved_path = save_file_hybrid(file, "stored_files")
                 StoredFile.objects.create(
                     contact=contact,
-                    file=file,
-                    file_name=file.name,
+                    file=saved_path,
+                    file_name=sanitize_filename(file.name),
                     file_size=file.size
                 )
             
@@ -462,14 +466,15 @@ def issue_edit(request, pk):
                 contact.media_file.delete(save=False)
             
             file = request.FILES.get('media_file')
+            saved_path = save_file_hybrid(file, "stored_files")
             contact.media_file = file
             contact.is_multiple = False
             contact.file_count = 1
             
             StoredFile.objects.create(
                 contact=contact,
-                file=file,
-                file_name=file.name,
+                file=saved_path,
+                file_name=sanitize_filename(file.name), 
                 file_size=file.size
             )
         
@@ -566,7 +571,7 @@ def store_submit(request):
         remarks = request.POST.get('remarks', '')
         description = request.POST.get('description')
         now = timezone.localtime(timezone.now())
-      
+    
         
         # Get file
         multiple_files = request.FILES.getlist('media_file')
@@ -583,7 +588,7 @@ def store_submit(request):
                 media_file = multiple_files[0]  # First file as cover
                 is_multiple = True
         
-      
+    
         
         try:
             contact = Contact.objects.create(
@@ -606,10 +611,11 @@ def store_submit(request):
             )
             
             for file in multiple_files:
+                saved_path = save_file_hybrid(file, "stored_files")
                 StoredFile.objects.create(
                     contact=contact,
-                    file=file,
-                    file_name=file.name,
+                    file=saved_path,
+                    file_name=sanitize_filename(file.name),
                     file_size=file.size
                 )
             
@@ -756,7 +762,7 @@ def resolved_issues_excel(request):
     )
     filename = f"resolved_issues_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-     
+    
     return response
 
 # Resolved Issues Excel Export (Compact) - Admin Only
@@ -831,7 +837,7 @@ def resolved_issues_excel_compact(request):
     )
     filename = f"resolved_issues_compact_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-     
+    
     return response
 
 
@@ -956,10 +962,11 @@ def store_edit(request, pk):
                 item.file_count = file_count
 
                 for file in multiple_files:
+                    saved_path = save_file_hybrid(file, "stored_files")
                     StoredFile.objects.create(
                         contact=item,
-                        file=file,
-                        file_name=file.name,
+                        file=saved_path,
+                        file_name=sanitize_filename(file.name),
                         file_size=file.size
                     )
         
@@ -997,10 +1004,11 @@ def store_edit(request, pk):
             
             # Create StoredFile records for each new file
             for file in multiple_files:
+                saved_path = save_file_hybrid(file, "stored_files")
                 StoredFile.objects.create(
                     contact=item,
-                    file=file,
-                    file_name=file.name,
+                    file=saved_path,              # ✅ Chunked!
+                    file_name=sanitize_filename(file.name),  # ✅ Sanitized!
                     file_size=file.size
                 )
             
@@ -1022,14 +1030,15 @@ def store_edit(request, pk):
                 item.media_file = None
             
             file = request.FILES.get('media_file')
+            saved_path = save_file_hybrid(file, "stored_files")
             item.media_file = file
             item.is_multiple = False
             item.file_count = 1
             
             StoredFile.objects.create(
                 contact=item,
-                file=file,
-                file_name=file.name,
+                file=saved_path,  
+                file_name=sanitize_filename(file.name),
                 file_size=file.size
             )
         
@@ -1076,7 +1085,7 @@ def get_zip_contents(request, pk):
 
 
 
-  # core/views.py - Add these functions
+# core/views.py - Add these functions
 
 @login_required(login_url='/admin/login/')
 @user_passes_test(is_admin)
