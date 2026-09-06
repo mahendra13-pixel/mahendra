@@ -129,7 +129,9 @@ def generate_ticket_id(contact):
     return f"IT-{str(count).zfill(3)}"
 
 
-# Contact Page - Main Form (Landing Page - Public)
+## contact - Admin Only
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
 def contact(request):
     ip_address = get_client_ip(request)
 
@@ -338,7 +340,9 @@ def contact(request):
     )
 
 
-# Issue Detail - Anyone can view
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
 def issue_detail(request, pk):
     """View issue details with all files"""
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
@@ -602,13 +606,15 @@ def toggle_public_issue(request, pk):
     return redirect("core:contact")
 
 
-# Store Issue - Open Store Form (Anyone can access)
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
 def store_issue(request):
     """Open the store form page - Anyone can access"""
     return render(request, "core/store_form.html")
 
 
-# Submit Store Issue (Anyone can submit)
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
 def store_submit(request):
     """Submit an issue to storage - Anyone can submit"""
     if request.method == "POST":

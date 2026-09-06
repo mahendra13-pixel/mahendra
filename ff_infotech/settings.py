@@ -32,6 +32,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "172.31.100.19",
+    "192.168.18.87",
 ]
 
 # Application definition
@@ -92,8 +93,12 @@ WSGI_APPLICATION = 'ff_infotech.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME', default='ff_infotech'),
+        'USER': config('DB_USER', default='admin_user'),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='5432'),
     }
 }
 
@@ -137,8 +142,9 @@ STATIC_ROOT=os.path.join(BASE_DIR,'staticfiles')
 STATICFILES_DIRS=[
     os.path.join(BASE_DIR,'static')
 ]
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 MEDIA_URL='/media/'
+MEDIA_ROOT = os.environ.get('RENDER_MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
