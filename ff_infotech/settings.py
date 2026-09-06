@@ -147,3 +147,4 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
