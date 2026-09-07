@@ -9,9 +9,12 @@ def check_ffmpeg():
     """Check if FFmpeg is installed and available"""
     try:
         subprocess.run(['ffmpeg', '-version'], 
-                      capture_output=True, 
-                      check=True)
+                    capture_output=True, 
+                    check=True,
+                    timeout=10)
         return True
+    except subprocess.TimeoutExpired:
+        return False
     except Exception:
         return False
 
@@ -47,9 +50,12 @@ if __name__ == "__main__":
         try:
             result = subprocess.run(['ffmpeg', '-version'], 
                                 capture_output=True, 
-                                text=True)
+                                text=True,
+                                timeout=10)
             version_line = result.stdout.split('\n')[0]
             print(f"📦 Version: {version_line}")
+        except subprocess.TimeoutExpired:
+            pass
         except Exception:
             pass
     else:
