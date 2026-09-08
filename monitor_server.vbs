@@ -1,7 +1,7 @@
 Set WshShell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 projectPath = "C:\Users\GIH\Documents\Farwest-Freelance & InfoTech\ff-infotech"
-pyPath = "C:\Users\GIH\AppData\Local\Programs\Python\Launcher\py.exe"
+pyPath = "C:\Users\GIH\AppData\Local\Programs\Python\Python313\python.exe"
 logFile = projectPath & "\server_monitor.log"
 
 Sub WriteLog(message)
