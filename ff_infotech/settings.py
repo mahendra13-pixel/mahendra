@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "172.31.100.8",
     "192.168.18.87",
+    "100.94.171.17",
 ]
 
 # Application definition
@@ -144,3 +145,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
+
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://100.94.171.17:8000',
+]
