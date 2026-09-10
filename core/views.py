@@ -131,7 +131,7 @@ def generate_ticket_id(contact):
 
 
 # Contact Page - Main Form (Landing Page - Public)
-
+@login_required(login_url="/accounts/login/")
 def contact(request):
     ip_address = get_client_ip(request)
 

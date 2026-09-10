@@ -149,6 +149,7 @@
 </head>
 
 <body>
+
     <!-- Header (thin bar) -->
     <header class="site-header">
         <div class="container">
@@ -273,10 +274,34 @@
                 <!-- CENTER - Empty space (form stays centered) -->
                 <div class="header-center"></div>
 
-                <!-- RIGHT CORNER - Admin Link -->
-                <a href="{% url 'admin:index' %}" class="admin-icon-link" title="Admin Panel">
+                <!-- RIGHT CORNER - Login/Logout + Admin -->
+                {% if user.is_authenticated %}
+                <span title="{{ user.username }}"
+                    style="font-size:0.65rem; color:#6b7280; display:inline-flex; align-items:center; gap:2px;">
+                    <i class="fas fa-user" style="font-size:0.7rem;"></i>
+                    {{ user.username }}{% if user.is_staff or user.is_superuser %} (A){% endif %}
+                </span>
+
+                {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'admin:index' %}" title="Admin"
+                    style="font-size:0.7rem; color:#6b7280; padding:1px 4px; text-decoration:none;">
                     <i class="fas fa-gear"></i>
                 </a>
+                {% endif %}
+
+                <form method="post" action="{% url 'accounts:logout' %}" style="display:inline; margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" title="Logout"
+                        style="background:none; border:none; cursor:pointer; font-size:0.7rem; color:#6b7280; padding:1px 4px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" title="Login"
+                    style="font-size:0.7rem; color:#6b7280; padding:1px 4px; text-decoration:none;">
+                    <i class="fas fa-sign-in-alt"></i>
+                </a>
+                {% endif %}
             </div>
         </div>
     </header>
