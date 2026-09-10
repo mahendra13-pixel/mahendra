@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'notifications',
     'inventory',
+    'accounts',
 
 ]
 
@@ -145,6 +146,12 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
+
+
+# Authentication redirects
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 
 

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .login-container {
+        font-family: Arial;
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+    .login-container input {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+    }
+    .login-container button {
+        padding: 10px 20px;
+        background: #1f6f4a;
+        color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+    }
+    .login-container .error {
+        color: red;
+    }
+    .login-container p.help-text {
+        margin-top: 20px;
+        color: #666;
+    }
+</style>
+
+<div class="login-container">
+    <h2>Log In</h2>
+
+    {% if form.errors %}
+        <p class="error">Invalid username or password. Please try again.</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label>Username:</label>
+        {{ form.username }}<br><br>
+        <label>Password:</label>
+        {{ form.password }}<br><br>
+        <button type="submit">Log In</button>
+    </form>
+
+    <p class="help-text">
+        Contact your administrator if you don't have an account.
+    </p>
+</div>
+{% endblock %}
