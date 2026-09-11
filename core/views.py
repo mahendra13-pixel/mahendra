@@ -134,23 +134,7 @@ def generate_ticket_id(contact):
 @login_required(login_url="/accounts/login/")
 def contact(request):
     ip_address = get_client_ip(request)
-
-    # Try to get hostname from POST (client-side JavaScript via hidden input)
-    # Fallback to server-side method
-    if request.method == "POST":
-        hostname_from_hidden = request.POST.get("hostname_hidden", "")
-        if hostname_from_hidden and hostname_from_hidden not in [
-            "Unknown",
-            "localhost",
-            "127.0.0.1",
-            "",
-        ]:
-            hostname = hostname_from_hidden
-        else:
-            hostname = get_client_hostname(request)
-    else:
-        hostname = get_client_hostname(request)
-
+    hostname = request.user.username if request.user.is_authenticated else get_client_hostname(request)
     username = get_client_username(request)
     os_info = get_client_os(request)
     is_admin_user = request.user.is_authenticated and request.user.is_staff
