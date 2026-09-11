@@ -1,7 +1,6 @@
-from django.shortcuts import render
-
-# Create your views here.
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db import models
@@ -50,3 +49,12 @@ def visits_list(request):
             "filter_ip": filter_ip or "",
         },
     )
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+@require_POST
+def delete_all_visits(request):
+    """Hard-delete ALL visits — admin only, POST + confirm required"""
+    count = Visit.objects.count()
+    Visit.objects.all().delete()
+    messages.success(request, f"✅ Deleted {count} visit(s) successfully!")
+    return redirect("visits:visits_list")

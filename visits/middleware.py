@@ -47,6 +47,10 @@ class VisitTrackingMiddleware:
         )
         should_skip = any(path.startswith(p) for p in skip_prefixes)
 
+        # ✅ Skip logging for admins (staff / superuser)
+        if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+            return self.get_response(request)
+
         if not should_skip:
             try:
                 ip_address = get_client_ip(request)

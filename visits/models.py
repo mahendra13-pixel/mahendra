@@ -1,9 +1,5 @@
 from django.db import models
 
-# Create your models here.
-from django.db import models
-
-
 class Visit(models.Model):
     """Records every visit to the site"""
     ip_address = models.GenericIPAddressField(null=True, blank=True)

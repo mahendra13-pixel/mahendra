@@ -4,7 +4,20 @@
 
 {% block content %}
 <div class="container" style="padding: 20px;">
-    <h2>📊 Visit Logs</h2>
+
+    <!-- Header with Delete All button -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <h2>📊 Visit Logs</h2>
+
+        <form method="POST" action="{% url 'visits:delete_all_visits' %}"
+            onsubmit="return confirm('⚠️ Are you sure?\n\nThis will PERMANENTLY delete ALL visit records.\n\nThis cannot be undone!');"
+            style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash-alt"></i> Delete All Visits
+            </button>
+        </form>
+    </div>
 
     <form method="GET" style="display: flex; gap: 8px; margin: 15px 0; flex-wrap: wrap;">
         <input type="text" name="search" value="{{ search }}" placeholder="Search IP / user / path..."
