@@ -115,11 +115,14 @@
 
             <div id="ho">
                 {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-primary" role="alert">
-                    {{ message }}
+                <div
+                    style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 5px 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 0.75rem; color: #1e40af; margin-bottom: 8px;">
+                    {% for message in messages %}
+                    <span>
+                        <i class="fas fa-info-circle"></i> {{ message }}
+                    </span>
+                    {% endfor %}
                 </div>
-                {% endfor %}
                 {% endif %}
             </div>
 
