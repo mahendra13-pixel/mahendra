@@ -27,6 +27,7 @@
             background: #f8f9fa;
             border-bottom: 1px solid #e9ecef;
             padding: 1px 0;
+            position: relative;
         }
 
         .header-inner {
@@ -34,6 +35,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0px 0;
+            position: relative;
         }
 
         /* LEFT CORNER - Icons (Compact) */
@@ -62,17 +64,9 @@
             transform: translateY(-1px);
         }
 
-        .header-left-icons .icon-link.hospital:hover {
-            color: #3b82f6;
-        }
-
-        .header-left-icons .icon-link.email:hover {
-            color: #dc2626;
-        }
-
-        .header-left-icons .icon-link.whatsapp:hover {
-            color: #25D366;
-        }
+        .header-left-icons .icon-link.hospital:hover { color: #3b82f6; }
+        .header-left-icons .icon-link.email:hover { color: #dc2626; }
+        .header-left-icons .icon-link.whatsapp:hover { color: #25D366; }
 
         .header-left-icons .icon-link .brand-text {
             font-size: 0.65rem;
@@ -90,55 +84,138 @@
             margin: 0 1px;
         }
 
-        /* RIGHT CORNER - Admin Link (Compact) */
-        .admin-icon-link {
-            color: #6b7280;
-            text-decoration: none;
-            padding: 3px 6px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.85rem;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-
-        .admin-icon-link:hover {
-            background: rgba(0, 0, 0, 0.06);
-            color: #374151;
-            transform: rotate(90deg);
-        }
-
-        /* CENTER - Empty space for form (form stays centered) */
+        /* CENTER */
         .header-center {
             flex: 1;
         }
 
-        /* Responsive */
-        @media (max-width: 576px) {
-            .header-left-icons .icon-link .brand-text {
+        /* DESKTOP AUTH */
+        .desktop-auth {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        /* ============================================ */
+        /* HAMBURGER BUTTON - Hidden on desktop        */
+        /* ============================================ */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: #374151;
+            padding: 6px 10px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        /* MOBILE AUTH - Hidden on desktop */
+        .mobile-auth {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        /* ============================================ */
+        /* MOBILE RESPONSIVE                            */
+        /* ============================================ */
+        @media (max-width: 768px) {
+            .hamburger-btn {
+                display: inline-flex;
+                align-items: center;
+                order: 1;
+            }
+
+            .desktop-auth {
+                display: none !important;
+            }
+
+            .header-inner {
+                flex-wrap: wrap;
+                position: relative;
+            }
+
+            /* ✅ Overlapping menu — doesn't push form down */
+                       /* ✅ Overlapping menu — grid layout for icons */
+            .header-left-icons {
                 display: none;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                width: 100%;
+                padding: 10px;
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+                max-height: 70vh;
+                overflow-y: auto;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                order: 3;
+                /* ✅ OVERLAP: absolute so it doesn't push content */
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                margin-top: 0;
+            }
+
+            .header-left-icons.active {
+                display: grid;
+            }
+
+            .header-left-icons .icon-link {
+                font-size: 0.8rem !important;
+                padding: 8px 10px !important;
+                width: 100%;
+                border-radius: 6px;
+                background: #f9fafb;
+                justify-content: center;
+                text-align: center;
+                flex-direction: column;
+                gap: 4px;
+                min-height: 60px;
+            }
+
+            .header-left-icons .icon-link i {
+                font-size: 1.1rem !important;
+            }
+
+            /* Mobile auth + notification span full width */
+            .header-left-icons .mobile-auth,
+            .header-left-icons .notifications-widget {
+                grid-column: 1 / -1;
+            }
+
+            .header-left-icons .icon-link:hover {
+                background: #e5e7eb;
+                transform: none;
             }
 
             .header-left-icons .divider {
                 display: none;
             }
 
-            .header-left-icons .icon-link {
-                padding: 2px 4px;
-                font-size: 0.7rem;
+            .header-left-icons .icon-link .brand-text {
+                display: inline !important;
             }
 
-            .header-left-icons .icon-link i {
-                font-size: 0.75rem;
+            .mobile-auth {
+                display: flex;
             }
+        }
 
-            .admin-icon-link {
-                padding: 2px 4px;
-                font-size: 0.75rem;
-            }
-
+        /* Original 576px breakpoint (kept) */
+        @media (max-width: 576px) {
             .site-header {
                 padding: 2px 0;
             }
@@ -149,159 +226,206 @@
 </head>
 
 <body>
-
-    <!-- Header (thin bar) -->
     <header class="site-header">
         <div class="container">
             <div class="header-inner">
-                <a href="http://192.168.0.63:7000/#/login?_k=4z3xlh" target="_blank" rel="noopener noreferrer"
-                    class="icon-link" title="Open System Login">
-                    qms
-                </a>
-                <!-- LEFT CORNER - Icons (Yellow marked area) -->
-                <div class="header-left-icons">
+
+                <!-- HAMBURGER BUTTON (mobile only) -->
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- LEFT CORNER - ALL icons (including qms) -->
+                <div class="header-left-icons" id="mobileMenu">
+
+                    <!-- qms -->
+                    <a href="http://192.168.0.63:7000/#/login?_k=4z3xlh" target="_blank" rel="noopener noreferrer"
+                        class="icon-link" title="Open System Login">
+                        qms
+                    </a>
+
+                    <!-- pacs -->
                     <a href="http://192.168.0.48:8010/login?logout=success" target="_blank" rel="noopener noreferrer"
                         class="icon-link" title="Open Link">
                         pacs
                     </a>
-                    <!-- TEST System Icon -->
+
+                    <!-- uat -->
                     <a href="http://192.168.0.56/TEST/Forms/fm_Login.aspx" target="_blank" rel="noopener noreferrer"
                         class="icon-link test" title="TEST System">
                         uat
                     </a>
-                    <!-- Peaceful Boys Hostel Icon -->
+
+                    <!-- SHIMS -->
                     <a href="https://hims.grandehospital.com/SHIMS/forms/fm_login.aspx" class="icon-link hospital"
                         title="SHIMS - Hospital Management System" target="_blank" rel="noopener noreferrer">
                         <i class="fas fa-hospital"></i>
                         <span class="brand-text">SHIMS</span>
                     </a>
+
                     <span class="divider">|</span>
 
-                    <!-- Email Icon -->
+                    <!-- Email -->
                     <a href="https://mail.grandehospital.com/?_task=mail&_action=compose&_to=itteam@grandehospital.com"
-                        target="_blank">
+                        target="_blank" class="icon-link">
                         <i class="fas fa-envelope"></i>
                     </a>
 
-                    <!-- WhatsApp Icon -->
+                    <!-- WhatsApp -->
                     <a href="https://wa.me/9779742386629" target="_blank" class="icon-link whatsapp"
                         title="Chat on WhatsApp">
                         <i class="fab fa-whatsapp"></i>
                     </a>
 
+                    <!-- Sheets -->
                     <a href="https://docs.google.com/spreadsheets/d/1KRJYsfzWz8l4UYMevSEV39_FvLWStXavZw_UGkyukyo/edit?gid=0#gid=0"
                         target="_blank" rel="noopener noreferrer" class="icon-link sheets"
                         title="Open Google Sheets - IT Team">
                         <i class="fas fa-table"></i>
                     </a>
-                    <!-- Wevin Site Link -->
+
+                    <!-- W-EV -->
                     <a href="http://192.168.10.150:19850/wevinsite/" target="_blank" rel="noopener noreferrer"
                         class="icon-link" title="Open Wevin Site">
                         W-EV
                     </a>
-                    <!-- AI Tools - Claude -->
+
+                    <!-- Claude -->
                     <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="icon-link"
                         title="Claude AI">
                         <i class="fas fa-feather"></i>
                     </a>
-                    <!-- AI Tools - ChatGPT -->
+
+                    <!-- ChatGPT (image) -->
                     <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" class="icon-link"
                         title="ChatGPT">
                         <img src="https://chat.openai.com/favicon.ico" alt="ChatGPT" width="16" height="16">
                     </a>
-                    <!-- AI Tools - Gemini -->
+
+                    <!-- Gemini (image) -->
                     <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="icon-link"
                         title="Gemini AI">
                         <img src="https://www.gstatic.com/lamda/images/favicon_v1_150160cddff7f294ce30.svg"
                             alt="Gemini AI" width="16" height="16">
                     </a>
-                    <!-- AI Tools - DeepSeek -->
+
+                    <!-- DeepSeek -->
                     <a href="https://chat.deepseek.com" target="_blank" rel="noopener noreferrer" class="icon-link"
                         title="DeepSeek">
                         <i class="fas fa-microchip"></i>
                     </a>
+
+                    <!-- ChatGPT (robot icon) -->
                     <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" class="icon-link"
                         title="ChatGPT">
                         <i class="fas fa-robot"></i>
                     </a>
+
+                    <!-- Record (vercel) -->
                     <a href="https://free-screen-recorder.vercel.app/" target="_blank" rel="noopener noreferrer"
                         class="icon-link recorder" title="Open Screen Recorder - No installation needed">
                         <i class="fas fa-video"></i>
                         <span class="brand-text">Record</span>
                     </a>
-                    <!-- 🎥 Record (record.addy.ie) -->
+
+                    <!-- Record (addy.ie) -->
                     <a href="https://record.addy.ie" target="_blank" rel="noopener noreferrer"
                         class="icon-link recorder" title="Open Record - Screen Recorder">
                         <i class="fas fa-record-vinyl"></i>
                         <span class="brand-text">Record</span>
                     </a>
+
+                    <!-- Trim -->
                     <a href="https://videotrimmer.com/?_t=1787129731337" target="_blank" rel="noopener noreferrer"
                         class="icon-link trimmer" title="Open Video Trimmer - Cut Videos">
                         <i class="fas fa-cut"></i>
                         <span class="brand-text">Trim</span>
                     </a>
+
+                    <!-- Screenshot -->
                     <a href="https://www.image2url.com/en-AU/tools/screenshot-to-url" target="_blank"
                         rel="noopener noreferrer" class="icon-link" title="Take Screenshot - Capture & Share">
                         <i class="fas fa-camera"></i>
                     </a>
-                    <!-- Super Small Inventory Text Link -->
+
+                    <!-- INVENTORY -->
                     <a href="{% url 'inventory:management' %}" class="icon-link" title="Inventory"
                         style="font-size: 0.5rem; padding: 0.05rem 0.15rem !important; text-decoration: none; color: inherit; display: inline-block; line-height: 0.8; font-weight: 700; letter-spacing: 0.3px;">
                         INVENTORY
                     </a>
-                    <!-- Contact Page Link (Django) -->
+
+                    <!-- HOME -->
                     <a href="/contact/" class="icon-link" title="Contact Page">
                         <i class="fas fa-address-card"></i>
                         <span class="brand-text">HOME</span>
                     </a>
-                    <a href="https://hims.grandehospital.com/SHIMS/forms/fm_login.aspx" class="icon-link hospital"
-                        title="SHIMS - Hospital Management System" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-hospital"></i>
-                        <span class="brand-text">SHIMS</span>
-                    </a>
-                    <a href="https://mail.grandehospital.com/?_task=mail&_action=compose&_to=itteam@grandehospital.com"
-                        target="_blank">
-                        <i class="fas fa-envelope"></i>
-                    </a>
 
-                    <!-- In header-left-icons -->
                     <span class="divider">|</span>
 
                     <!-- Notification Widget -->
                     {% include 'notifications/widget.html' %}
-                </div>
 
-                <!-- CENTER - Empty space (form stays centered) -->
+                    <!-- MOBILE AUTH (inside hamburger menu) -->
+                    <div class="mobile-auth">
+                        {% if user.is_authenticated %}
+                            <span style="font-size:0.85rem; color:#6b7280; padding: 8px 12px;">
+                                <i class="fas fa-user"></i> {{ user.username }}{% if user.is_staff or user.is_superuser %} (A){% endif %}
+                            </span>
+                            {% if user.is_staff or user.is_superuser %}
+                                <a href="{% url 'admin:index' %}" class="icon-link">
+                                    <i class="fas fa-gear"></i> Admin
+                                </a>
+                            {% endif %}
+                            <form method="post" action="{% url 'accounts:logout' %}" style="margin:0; width:100%;">
+                                {% csrf_token %}
+                                <button type="submit" class="icon-link" style="background:#f9fafb; border:none; cursor:pointer; width:100%; text-align:left;">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" class="icon-link">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        {% endif %}
+                    </div>
+
+                </div>
+                <!-- END header-left-icons -->
+
+                <!-- CENTER -->
                 <div class="header-center"></div>
 
-                <!-- RIGHT CORNER - Login/Logout + Admin -->
-                {% if user.is_authenticated %}
-                <span title="{{ user.username }}"
-                    style="font-size:0.65rem; color:#6b7280; display:inline-flex; align-items:center; gap:2px;">
-                    <i class="fas fa-user" style="font-size:0.7rem;"></i>
-                    {{ user.username }}{% if user.is_staff or user.is_superuser %} (A){% endif %}
-                </span>
+                <!-- RIGHT CORNER - Desktop auth (hidden on mobile) -->
+                <div class="desktop-auth">
+                    {% if user.is_authenticated %}
+                    <span title="{{ user.username }}"
+                        style="font-size:0.65rem; color:#6b7280; display:inline-flex; align-items:center; gap:2px;">
+                        <i class="fas fa-user" style="font-size:0.7rem;"></i>
+                        {{ user.username }}{% if user.is_staff or user.is_superuser %} (A){% endif %}
+                    </span>
 
-                {% if user.is_staff or user.is_superuser %}
-                <a href="{% url 'admin:index' %}" title="Admin"
-                    style="font-size:0.7rem; color:#6b7280; padding:1px 4px; text-decoration:none;">
-                    <i class="fas fa-gear"></i>
-                </a>
-                {% endif %}
+                    {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'admin:index' %}" title="Admin"
+                        style="font-size:0.7rem; color:#6b7280; padding:1px 4px; text-decoration:none;">
+                        <i class="fas fa-gear"></i>
+                    </a>
+                    {% endif %}
 
-                <form method="post" action="{% url 'accounts:logout' %}" style="display:inline; margin:0;">
-                    {% csrf_token %}
-                    <button type="submit" title="Logout"
-                        style="background:none; border:none; cursor:pointer; font-size:0.7rem; color:#6b7280; padding:1px 4px;">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </form>
-                {% else %}
-                <a href="{% url 'accounts:login' %}" title="Login"
-                    style="font-size:0.7rem; color:#6b7280; padding:1px 4px; text-decoration:none;">
-                    <i class="fas fa-sign-in-alt"></i>
-                </a>
-                {% endif %}
+                    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline; margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" title="Logout"
+                            style="background:none; border:none; cursor:pointer; font-size:0.7rem; color:#6b7280; padding:1px 4px;">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}" title="Login"
+                        style="font-size:0.7rem; color:#6b7280; padding:1px 4px; text-decoration:none;">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </header>
@@ -319,6 +443,39 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+
+    <!-- Hamburger Menu Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+
+            if (hamburgerBtn && mobileMenu) {
+                hamburgerBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    mobileMenu.classList.toggle('active');
+
+                    const icon = hamburgerBtn.querySelector('i');
+                    if (mobileMenu.classList.contains('active')) {
+                        icon.classList.remove('fa-bars');
+                        icon.classList.add('fa-times');
+                    } else {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+                        mobileMenu.classList.remove('active');
+                        const icon = hamburgerBtn.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+            }
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>
