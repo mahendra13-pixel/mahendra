@@ -297,6 +297,13 @@
                     style="font-size: 0.6rem; padding: 2px 8px; border-radius: 12px; text-decoration: none;">
                     <i class="fas fa-database"></i> Storage
                 </a>
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'visits:visits_list' %}" class="icon-link" title="Visit Logs">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="brand-text">VISITS</span>
+                    </a>
+                    {% endif %}
+
             </div>
 
             <!-- Compact File Attachment -->
