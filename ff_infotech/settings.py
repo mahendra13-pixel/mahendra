@@ -56,7 +56,6 @@ EXTERNAL_APPS = [
     'latest_export',
     'filemanager',
     'visits', 
-    'zipmanager',
 ]
 
 INSTALLED_APPS.extend(EXTERNAL_APPS)

@@ -404,7 +404,7 @@
 <script>
     const storedItemsData = {
         {% for item in page_obj %}
-    { { item.id } }: {
+    {{ item.id }}: {
         name: "{{ item.name|escapejs }}",
             department: "{{ item.department|escapejs }}",
                 description: "{{ item.description|escapejs }}",
