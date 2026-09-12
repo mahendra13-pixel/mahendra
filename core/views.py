@@ -370,10 +370,20 @@ def issue_edit(request, pk):
 
         if not exists_in_stored:
             has_legacy_file = True
+
+            try:
+                safe_size = contact.media_file.size
+            except (FileNotFoundError, OSError, ValueError):
+                safe_size = 0
+            try:
+                safe_url = contact.media_file.url
+            except (ValueError, OSError):
+                safe_url = ""
+
             legacy_file = {
                 "name": file_name,
-                "size": contact.media_file.size,
-                "url": contact.media_file.url,
+                "size": safe_size,
+                "url": safe_url,
             }
 
             # Also add to stored_files list so it appears in the list
@@ -383,8 +393,8 @@ def issue_edit(request, pk):
 
             virtual = VirtualFile()
             virtual.file_name = file_name
-            virtual.file_size = contact.media_file.size
-            virtual.file_url = contact.media_file.url
+            virtual.file_size = safe_size
+            virtual.file_url = safe_url
             virtual.file = contact.media_file
             virtual.is_legacy = True
             stored_files.append(virtual)
@@ -453,11 +463,15 @@ def issue_edit(request, pk):
                         file_name=contact.media_file.name.split("/")[-1],
                     )
                     if not existing:
+                        try:
+                            legacy_size = contact.media_file.size
+                        except (FileNotFoundError, OSError, ValueError):
+                            legacy_size = 0
                         StoredFile.objects.create(
                             contact=contact,
                             file=contact.media_file,
                             file_name=contact.media_file.name.split("/")[-1],
-                            file_size=contact.media_file.size,
+                            file_size=legacy_size,
                         )
                 # Don't delete media_file yet, keep for backward compatibility
                 # But we'll update it later
@@ -969,10 +983,20 @@ def store_edit(request, pk):
 
         if not exists_in_stored:
             has_legacy_file = True
+
+            try:
+                safe_size = item.media_file.size
+            except (FileNotFoundError, OSError, ValueError):
+                safe_size = 0
+            try:
+                safe_url = item.media_file.url
+            except (ValueError, OSError):
+                safe_url = ""
+
             legacy_file = {
                 "name": file_name,
-                "size": item.media_file.size,
-                "url": item.media_file.url,
+                "size": safe_size,
+                "url": safe_url,  
             }
 
             # Add to stored_files list
@@ -981,8 +1005,8 @@ def store_edit(request, pk):
 
             virtual = VirtualFile()
             virtual.file_name = file_name
-            virtual.file_size = item.media_file.size
-            virtual.file_url = item.media_file.url
+            virtual.file_size = safe_size
+            virtual.file_url = safe_url
             virtual.file = item.media_file
             virtual.is_legacy = True
             stored_files.append(virtual)
@@ -1105,11 +1129,15 @@ def store_edit(request, pk):
                 file_name = item.media_file.name.split("/")[-1]
                 existing = StoredFile.objects.filter(contact=item, file_name=file_name)
                 if not existing.exists():
+                    try:
+                        legacy_size = item.media_file.size
+                    except (FileNotFoundError, OSError, ValueError):
+                        legacy_size = 0
                     StoredFile.objects.create(
                         contact=item,
                         file=item.media_file,
                         file_name=file_name,
-                        file_size=item.media_file.size,
+                        file_size=legacy_size,
                     )
 
             # Create StoredFile records for each new file
