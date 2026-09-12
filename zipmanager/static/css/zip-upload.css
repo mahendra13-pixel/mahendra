@@ -1,0 +1,37 @@
+/* zipmanager — shared styles */
+
+/* Base mini button — used by 👁 view, ⬇ download, 🗑️ delete */
+.zip-mini-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f8f8f8;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 0.75rem;
+  transition: all 0.15s;
+  vertical-align: middle;
+}
+.zip-mini-btn:hover {
+  background: #eef;
+  border-color: #99f;
+  color: #2563eb;
+}
+
+/* Danger variant — the 🗑️ delete button */
+.zip-mini-btn.zip-mini-danger {
+  color: #b91c1c;
+  border-color: #fca5a5;
+  background: #fef2f2;
+  cursor: pointer;
+}
+.zip-mini-btn.zip-mini-danger:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}

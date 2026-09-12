@@ -20,7 +20,8 @@
 
                     {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-primary" role="alert" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
+                    <div class="alert alert-primary" role="alert"
+                        style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -34,27 +35,34 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name" style="font-size: 0.7rem; font-weight: 600;">Full Name</label>
-                                    <input type="text" id="name" name="name" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                    <input type="text" id="name" name="name" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="department" style="font-size: 0.7rem; font-weight: 600;">Department</label>
-                                    <input type="text" id="department" name="department" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                    <label for="department"
+                                        style="font-size: 0.7rem; font-weight: 600;">Department</label>
+                                    <input type="text" id="department" name="department" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Row 2: Phone + Priority -->
-                        
+
 
                         <!-- BIG FORM FIELD: Description -->
                         <div class="row g-2 mt-1">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description *</label>
-                                    <textarea id="description" name="description" rows="5" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 80px;" required placeholder="Describe the issue in detail..." maxlength="5000"></textarea>
-                                    <div style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
+                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description
+                                        *</label>
+                                    <textarea id="description" name="description" rows="5" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 80px;" required
+                                        placeholder="Describe the issue in detail..." maxlength="5000"></textarea>
+                                    <div
+                                        style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
                                         <span id="charCount">0</span> / 5000 characters
                                     </div>
                                 </div>
@@ -66,7 +74,9 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="remarks" style="font-size: 0.7rem; font-weight: 600;">Remarks</label>
-                                    <textarea id="remarks" name="remarks" rows="2" class="form-control" style="font-size: 0.75rem; padding: 4px 8px; min-height: 40px;" placeholder="Additional remarks..."></textarea>
+                                    <textarea id="remarks" name="remarks" rows="2" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 40px;"
+                                        placeholder="Additional remarks..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -83,8 +93,10 @@
                                             <i class="fas fa-paperclip" style="font-size: 0.8rem; color: #6b7280;"></i>
                                             <span>Add Files</span>
                                         </label>
-                                        <input type="file" id="store_media_upload" name="media_file" multiple style="display: none;" onchange="updateStoreFileLabel(this)">
-                                        <span id="storeFileName" style="font-size: 0.65rem; color: #6b7280;">No file selected</span>
+                                        <input type="file" id="store_media_upload" name="media_file" multiple
+                                            style="display: none;" onchange="updateStoreFileLabel(this)">
+                                        <span id="storeFileName" style="font-size: 0.65rem; color: #6b7280;">No file
+                                            selected</span>
                                     </div>
                                 </div>
                             </div>
@@ -95,13 +107,21 @@
                             <button type="submit" class="btn btn-primary" style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-archive"></i> Store
                             </button>
+
+                            <!-- ZIP icon — admin only -->
+                            {% if request.user.is_authenticated and request.user.is_staff %}
+                            {% include "zipmanager/_zip_icon.html" with source="store" source_id="" %}
+                            {% endif %}
+                            
                             <!-- Storage button - Shows only for admin -->
                             {% if request.user.is_authenticated and request.user.is_staff %}
-                            <a href="{% url 'core:storage_view' %}" class="btn btn-outline-info" style="font-size: 0.7rem; padding: 4px 12px;">
+                            <a href="{% url 'core:storage_view' %}" class="btn btn-outline-info"
+                                style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-database"></i> View Storage
                             </a>
                             {% endif %}
-                            <a href="{% url 'core:contact' %}" class="btn btn-outline-secondary" style="font-size: 0.7rem; padding: 4px 12px;">
+                            <a href="{% url 'core:contact' %}" class="btn btn-outline-secondary"
+                                style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         </div>
@@ -116,49 +136,49 @@
 </div>
 
 <script>
-// Character counter for description
-document.addEventListener('DOMContentLoaded', function() {
-    const descriptionField = document.getElementById('description');
-    const charCountSpan = document.getElementById('charCount');
-    
-    if (descriptionField && charCountSpan) {
-        descriptionField.addEventListener('input', function() {
-            const count = this.value.length;
-            charCountSpan.textContent = count;
-            
-            // Change color when approaching limit
-            if (count > 4500) {
-                charCountSpan.style.color = '#dc2626'; // Red
-            } else if (count > 3500) {
-                charCountSpan.style.color = '#f59e0b'; // Yellow/Orange
-            } else {
-                charCountSpan.style.color = '#6b7280'; // Gray
-            }
-        });
-        
-        // Initial count
-        charCountSpan.textContent = descriptionField.value.length;
-    }
-});
+    // Character counter for description
+    document.addEventListener('DOMContentLoaded', function () {
+        const descriptionField = document.getElementById('description');
+        const charCountSpan = document.getElementById('charCount');
 
-function updateStoreFileLabel(input) {
-    const fileNameSpan = document.getElementById('storeFileName');
-    if (input.files && input.files.length > 0) {
-        const count = input.files.length;
-        if (count === 1) {
-            const file = input.files[0];
-            const fileType = file.type.startsWith('video/') ? '🎬' : 
-                            file.type.startsWith('image/') ? '🖼️' :
-                            file.type.startsWith('application/pdf') ? '📄' :
-                            '📎';
-            fileNameSpan.textContent = fileType + ' ' + file.name;
-        } else {
-            fileNameSpan.textContent = '📎 ' + count + ' files selected';
+        if (descriptionField && charCountSpan) {
+            descriptionField.addEventListener('input', function () {
+                const count = this.value.length;
+                charCountSpan.textContent = count;
+
+                // Change color when approaching limit
+                if (count > 4500) {
+                    charCountSpan.style.color = '#dc2626'; // Red
+                } else if (count > 3500) {
+                    charCountSpan.style.color = '#f59e0b'; // Yellow/Orange
+                } else {
+                    charCountSpan.style.color = '#6b7280'; // Gray
+                }
+            });
+
+            // Initial count
+            charCountSpan.textContent = descriptionField.value.length;
         }
-    } else {
-        fileNameSpan.textContent = 'No file selected';
+    });
+
+    function updateStoreFileLabel(input) {
+        const fileNameSpan = document.getElementById('storeFileName');
+        if (input.files && input.files.length > 0) {
+            const count = input.files.length;
+            if (count === 1) {
+                const file = input.files[0];
+                const fileType = file.type.startsWith('video/') ? '🎬' :
+                    file.type.startsWith('image/') ? '🖼️' :
+                        file.type.startsWith('application/pdf') ? '📄' :
+                            '📎';
+                fileNameSpan.textContent = fileType + ' ' + file.name;
+            } else {
+                fileNameSpan.textContent = '📎 ' + count + ' files selected';
+            }
+        } else {
+            fileNameSpan.textContent = 'No file selected';
+        }
     }
-}
 </script>
 
 {% endblock %}

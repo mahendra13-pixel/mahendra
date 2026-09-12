@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ZIP Contents{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+            <span class="fw-bold" style="font-size: 0.9rem;">
+                <i class="fas fa-folder-open"></i> {{ source }} #{{ source_id }}
+                <span class="text-white-50 ms-2" style="font-size: 0.75rem;">{{ entries|length }} file(s)</span>
+            </span>
+            {% if entries %}
+            <a href="{{ download_url }}" class="btn btn-sm btn-light py-1 px-2" style="font-size: 0.7rem;">
+                <i class="fas fa-download"></i> Download All
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="card-body p-2">
+            {% if not entries %}
+                <p class="text-muted mb-0" style="font-size: 0.8rem;">No files extracted yet.</p>
+            {% else %}
+                <ul class="list-unstyled mb-0">
+                {% for e in entries %}
+                    <li class="d-flex justify-content-between align-items-center py-1 px-2"
+                        style="font-size: 0.8rem; border-bottom: 1px solid #f1f5f9;">
+                        <a href="{{ e.url }}" download class="text-decoration-none text-dark flex-grow-1"
+                           style="word-break: break-all;">
+                            <i class="fas fa-file text-secondary me-1"></i> {{ e.name }}
+                        </a>
+                        <span class="text-muted ms-2" style="font-size: 0.7rem; white-space: nowrap;">
+                            {{ e.size|filesizeformat }}
+                        </span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-2">
+        <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary"
+           style="font-size: 0.7rem;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+{% endblock %}

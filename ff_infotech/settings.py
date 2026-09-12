@@ -56,6 +56,7 @@ EXTERNAL_APPS = [
     'latest_export',
     'filemanager',
     'visits', 
+    'zipmanager',
 ]
 
 INSTALLED_APPS.extend(EXTERNAL_APPS)
@@ -146,8 +147,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL='/media/'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 1000000000  # 500 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440
 
 
 # Authentication redirects

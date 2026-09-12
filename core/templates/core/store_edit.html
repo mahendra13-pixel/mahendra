@@ -66,10 +66,14 @@
                                     <label for="priority" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
                                     <select id="priority" name="priority" class="form-select"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High</option>
-                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>Critical</option>
+                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low
+                                        </option>
+                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>
+                                            Medium</option>
+                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High
+                                        </option>
+                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>
+                                            Critical</option>
                                     </select>
                                 </div>
                             </div>
@@ -178,6 +182,29 @@
                                         <input type="file" id="add_files_upload" name="media_file" multiple
                                             style="display: none;" onchange="updateStoreFileLabel(this, 'add')">
 
+                                        {# ⬇️ ZIP ICONS — admin only, sit right after Add Files ⬇️ #}
+                                        {% if request.user.is_authenticated and request.user.is_staff %}
+                                        {% include "zipmanager/_zip_icon.html" with source="store" source_id=item.id %}
+
+                                        <a href="{% url 'zipmanager:view_files' %}?source=store&source_id={{ item.id }}"
+                                            class="zip-mini-btn" title="View extracted files">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <a href="{% url 'zipmanager:download_all' %}?source=store&source_id={{ item.id }}"
+                                            class="zip-mini-btn" title="Download all as ZIP">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </a>
+
+                                        {# ⬇️ NEW — hard delete ⬇️ #}
+                                        <button type="button" class="zip-mini-btn zip-mini-danger"
+                                            title="Delete all extracted ZIP files (permanent)"
+                                            onclick="zipDeleteAll('{{ item.id }}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        {% endif %}
+                                        {# ⬆️ ZIP ICONS END ⬆️ #}
+
                                         <span id="storeFileName" style="font-size: 0.6rem; color: #9ca3af;">No files
                                             selected</span>
                                     </div>
@@ -271,6 +298,37 @@
             replaceAction.value = '';
             addAction.value = '';
         }
+    }
+
+    function zipDeleteAll(itemId) {
+        if (!confirm('Delete ALL extracted ZIP files for this store?\n\nThis cannot be undone.')) {
+            return;
+        }
+
+        const url = "{% url 'zipmanager:delete_zip' %}";
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrf,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                source: 'store',
+                source_id: itemId,
+            }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    alert('✅ Deleted ' + data.deleted_files + ' file(s).');
+                    window.location.reload();
+                } else {
+                    alert('❌ ' + (data.error || 'Delete failed'));
+                }
+            })
+            .catch(err => alert('❌ Network error: ' + err.message));
     }
 </script>
 
