@@ -507,7 +507,7 @@ def issue_edit(request, pk):
 
             file = request.FILES.get("media_file")
             saved_path = save_file_hybrid(file, "stored_files")
-            contact.media_file = file
+            contact.media_file = saved_path
             contact.is_multiple = False
             contact.file_count = 1
 
@@ -1081,25 +1081,25 @@ def store_edit(request, pk):
 
             if multiple_files and len(multiple_files) > 0:
                 file_count = len(multiple_files)
-                if file_count == 1:
-                    media_file = multiple_files[0]
-                    is_multiple = False
-                else:
-                    media_file = multiple_files[0]
-                    is_multiple = True
+                is_multiple = file_count > 1
 
-                item.media_file = media_file
                 item.is_multiple = is_multiple
                 item.file_count = file_count
 
-                for file in multiple_files:
+                first_saved_path = None
+                for idx, file in enumerate(multiple_files):
                     saved_path = save_file_hybrid(file, "stored_files")
+                    if idx == 0:
+                        first_saved_path = saved_path
                     StoredFile.objects.create(
                         contact=item,
                         file=saved_path,
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+
+                if first_saved_path:
+                    item.media_file = first_saved_path
 
         # ADD: Keep existing files and upload new ones
         elif (
@@ -1172,7 +1172,7 @@ def store_edit(request, pk):
 
             file = request.FILES.get("media_file")
             saved_path = save_file_hybrid(file, "stored_files")
-            item.media_file = file
+            item.media_file = saved_path
             item.is_multiple = False
             item.file_count = 1
 
