@@ -473,6 +473,7 @@ def issue_edit(request, pk):
                             file_name=contact.media_file.name.split("/")[-1],
                             file_size=legacy_size,
                         )
+                        contact.media_file = None  
                 # Don't delete media_file yet, keep for backward compatibility
                 # But we'll update it later
 
@@ -1139,6 +1140,7 @@ def store_edit(request, pk):
                         file_name=file_name,
                         file_size=legacy_size,
                     )
+                    item.media_file = None   
 
             # Create StoredFile records for each new file
             with transaction.atomic():

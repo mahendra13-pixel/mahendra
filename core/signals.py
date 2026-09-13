@@ -1,8 +1,11 @@
 import os
+import logging
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.conf import settings
 from .models import Contact, StoredFile
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(post_delete, sender=StoredFile)
@@ -14,13 +17,14 @@ def delete_storedfile_file_from_disk(sender, instance, **kwargs):
     if instance.file:
         try:
             instance.file.delete(save=False)
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Primary delete failed for StoredFile#{instance.pk}: {e}")
             try:
                 full = os.path.join(settings.MEDIA_ROOT, str(instance.file))
                 if os.path.exists(full):
                     os.remove(full)
-            except Exception:
-                pass
+            except Exception as e2:
+                logger.error(f"Fallback delete also failed for StoredFile#{instance.pk}: {e2}")
 
 
 @receiver(post_delete, sender=Contact)
@@ -32,5 +36,5 @@ def delete_contact_media_file_from_disk(sender, instance, **kwargs):
     if instance.media_file:
         try:
             instance.media_file.delete(save=False)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to delete media_file for Contact#{instance.pk}: {e}")
