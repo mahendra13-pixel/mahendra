@@ -684,7 +684,6 @@ def store_submit(request):
                     contact.media_file = first_saved_path
                     contact.save(update_fields=["media_file"])
 
-
             if file_count == 0:
                 messages.success(request, f"✅ Issue '{name}' stored successfully!")
             elif file_count == 1:
