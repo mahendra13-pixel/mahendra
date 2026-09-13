@@ -1269,8 +1269,10 @@ def delete_stored_file(request, pk, file_index):
         # Delete from database (this also removes the physical file)
         file_to_delete.delete()
 
-        # Update file count
-        item.file_count = StoredFile.objects.filter(contact=item).count()
+        # Re-sync media_file and update file count
+        remaining = StoredFile.objects.filter(contact=item).order_by("id")
+        item.media_file = remaining.first().file if remaining.exists() else None
+        item.file_count = remaining.count()
         item.is_multiple = item.file_count > 1
         item.save()
 
@@ -1331,8 +1333,10 @@ def delete_issue_file(request, pk, file_index):
         # Delete from database (this also removes the physical file)
         file_to_delete.delete()
 
-        # Update file count
-        contact.file_count = StoredFile.objects.filter(contact=contact).count()
+        # Re-sync media_file and update file count
+        remaining = StoredFile.objects.filter(contact=contact).order_by("id")
+        contact.media_file = remaining.first().file if remaining.exists() else None
+        contact.file_count = remaining.count()
         contact.is_multiple = contact.file_count > 1
         contact.save()
 
