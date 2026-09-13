@@ -206,7 +206,7 @@ def contact(request):
                     solved_by=solved_by,
                     assigned_to=assigned_to,
                     remarks=remarks,
-                    media_file=media_file,
+                    media_file=None,
                     is_multiple=is_multiple,
                     file_count=file_count,
                     status=status,
@@ -217,14 +217,20 @@ def contact(request):
                     resolved_at=now if is_resolved else None,
                     updated_at=now,
                 )
-                for file in multiple_files:
+                first_saved_path = None
+                for idx, file in enumerate(multiple_files):
                     saved_path = save_file_hybrid(file, "stored_files")
+                    if idx == 0:
+                        first_saved_path = saved_path
                     StoredFile.objects.create(
                         contact=contact,
                         file=saved_path,
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+                if first_saved_path:
+                    contact.media_file = first_saved_path
+                    contact.save(update_fields=["media_file"])
 
             if action == "resolve":
                 messages.success(
@@ -653,9 +659,9 @@ def store_submit(request):
                     message=None,
                     description=description,
                     remarks=remarks,
-                    media_file=media_file,
-                    is_multiple=is_multiple,  # ← ADD THIS
-                    file_count=file_count,  # ← ADD THIS
+                    media_file=None,
+                    is_multiple=is_multiple,
+                    file_count=file_count,
                     status="Stored",
                     is_stored=True,
                     stored_at=now,
@@ -663,14 +669,21 @@ def store_submit(request):
                     updated_at=now,
                 )
 
-                for file in multiple_files:
+                first_saved_path = None
+                for idx, file in enumerate(multiple_files):
                     saved_path = save_file_hybrid(file, "stored_files")
+                    if idx == 0:
+                        first_saved_path = saved_path
                     StoredFile.objects.create(
                         contact=contact,
                         file=saved_path,
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+                if first_saved_path:
+                    contact.media_file = first_saved_path
+                    contact.save(update_fields=["media_file"])
+
 
             if file_count == 0:
                 messages.success(request, f"✅ Issue '{name}' stored successfully!")
