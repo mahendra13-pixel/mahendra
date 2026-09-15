@@ -147,7 +147,7 @@ MEDIA_URL='/media/'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824
-FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440
+FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000
 
 
 # Authentication redirects
@@ -165,3 +165,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://192.168.18.87:8000',
     'https://*.onrender.com',
 ]
+
+SESSION_COOKIE_AGE = 21600  # 6 hours (6 * 60 * 60)
+SESSION_SAVE_EVERY_REQUEST = False  # Do NOT reset timer on activity
