@@ -149,6 +149,19 @@
     form * {
         pointer-events: auto !important;
     }
+
+    /* Public/Private toggle — super compact, no layout shift */
+    .toggle-public-btn {
+        font-size: 0.5rem;
+        padding: 1px 6px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        border-radius: 4px;
+        cursor: pointer;
+    }
 </style>
 
 <div class="container py-3">
@@ -157,10 +170,12 @@
             <i class="fas fa-database" style="color: #7c3aed;"></i> Storage
         </h4>
         <div style="display: flex; gap: 8px;">
+            {% if is_admin_user %}
             <a href="{% url 'core:store_issue' %}" class="btn btn-sm btn-primary"
                 style="font-size: 0.7rem; padding: 4px 12px;">
                 <i class="fas fa-plus"></i> New
             </a>
+            {% endif %}
             <a href="{% url 'core:contact' %}" class="btn btn-sm btn-outline-secondary"
                 style="font-size: 0.7rem; padding: 4px 12px;">
                 <i class="fas fa-arrow-left"></i> Back
@@ -212,13 +227,18 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
         {% for item in page_obj %}
         <div class="card"
-            style="border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            style="border: 1px solid {% if item.is_public %}#86efac{% else %}#e5e7eb{% endif %}; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
             <!-- Card Header -->
             <div
-                style="background: #f3f4f6; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
+                style="background: {% if item.is_public %}#dcfce7{% else %}#f3f4f6{% endif %}; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid {% if item.is_public %}#86efac{% else %}#e5e7eb{% endif %};">
                 <span
                     style="font-size: 0.65rem; font-weight: 600; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;">
                     {{ item.name }}
+                    {% if item.is_public %}
+                    <span style="font-size: 0.5rem; background: #22c55e; color: white; padding: 1px 5px; border-radius: 8px; margin-left: 4px; font-weight: 600;">
+                        <i class="fas fa-globe"></i> PUBLIC
+                    </span>
+                    {% endif %}
                 </span>
                 <span class="badge bg-warning text-dark" style="font-size: 0.5rem; padding: 1px 6px;">
                     {{ item.priority }}
@@ -240,6 +260,7 @@
 
                 <!-- File Attachment with Eye Button -->
                 <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                    {% if is_admin_user or item.is_public %}
                     {% if item.stored_files.exists or item.media_file %}
                     <button type="button" class="eye-btn" onclick='openFileViewer([
     {% for sf in item.stored_files.all %}
@@ -252,6 +273,7 @@
                     {% else %}
                     <span style="font-size: 0.5rem; color: #9ca3af;"><i class="fas fa-times"></i> No files</span>
                     {% endif %}
+                    {% endif %}
                 </div>
 
                 <div style="font-size: 0.5rem; color: #9ca3af; margin-top: 2px;">
@@ -261,21 +283,43 @@
 
             <!-- Card Footer -->
             <div style="background: #f9fafb; padding: 4px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb;">
+                {% if is_admin_user %}
                 <a href="{% url 'core:store_edit' item.id %}" class="btn btn-sm btn-outline-primary"
                     style="font-size: 0.5rem; padding: 1px 6px; text-decoration: none;">
                     <i class="fas fa-edit"></i> Edit
                 </a>
+                {% endif %}
 
                 <a href="{% url 'core:stored_item_detail' item.id %}" target="_blank"
                     class="btn btn-sm btn-outline-info" style="font-size: 0.5rem; padding: 1px 6px;">
                     <i class="fas fa-eye"></i> View
                 </a>
+
+                {% if is_admin_user or item.is_public %}
                 <!-- Notepad Button -->
                 <button type="button" class="btn btn-sm btn-outline-warning" onclick="openNotepad({{ item.id }})"
                     style="font-size: 0.5rem; padding: 1px 6px; cursor: pointer; border: 1px solid #f59e0b; border-radius: 4px; background: transparent; color: #f59e0b;">
                     <i class="fas fa-book"></i>
                 </button>
-                <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline;"
+                {% endif %}
+
+                {% if is_admin_user %}
+                <!-- Public/Private toggle — super compact icon only -->
+                <form method="POST" action="{% url 'core:toggle_public_storage' item.id %}" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm toggle-public-btn
+                        {% if item.is_public %}btn-success{% else %}btn-outline-secondary{% endif %}"
+                        style="{% if item.is_public %}background-color: #22c55e; border-color: #22c55e; color: white;{% else %}color: #6b7280; border-color: #d1d5db;{% endif %}"
+                        title="{% if item.is_public %}Make Private (only admins can see){% else %}Make Public (visible to all users){% endif %}">
+                        {% if item.is_public %}
+                        <i class="fas fa-globe"></i>
+                        {% else %}
+                        <i class="fas fa-eye-slash"></i>
+                        {% endif %}
+                    </button>
+                </form>
+
+                <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline; margin: 0;"
                     onsubmit="return confirm('Delete this stored item?');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-outline-danger"
@@ -283,6 +327,7 @@
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -332,11 +377,13 @@
             No items in storage
             {% endif %}
         </p>
+        {% if is_admin_user %}
         <p style="font-size: 0.8rem; color: #9ca3af;">Click "New" to store an issue</p>
         <a href="{% url 'core:store_issue' %}" class="btn btn-primary btn-sm mt-2"
             style="font-size: 0.7rem; padding: 4px 14px;">
             <i class="fas fa-plus"></i> Store New Issue
         </a>
+        {% endif %}
         {% if request.GET.search %}
         <div style="margin-top: 8px;">
             <a href="?" class="btn btn-sm btn-outline-secondary"

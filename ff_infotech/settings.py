@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     ".onrender.com",
@@ -159,4 +159,9 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://100.94.171.17:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://172.31.100.8:8000',
+    'http://192.168.18.87:8000',
+    'https://*.onrender.com',
 ]

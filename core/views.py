@@ -701,11 +701,15 @@ def store_submit(request):
 
 
 # Storage View - Show all stored items (ADMIN ONLY)
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def storage_view(request):
-    """View all stored issues - ADMIN ONLY"""
+    is_admin_user = request.user.is_authenticated and (
+        request.user.is_staff or request.user.is_superuser
+    )
     stored_items = Contact.objects.filter(is_stored=True).order_by("-stored_at")
+    if not is_admin_user:
+        stored_items = stored_items.filter(is_public=True)
+
     search_query = request.GET.get("search")
     if search_query:
         stored_items = stored_items.filter(
@@ -724,6 +728,7 @@ def storage_view(request):
         "core/storage_view.html",
         {
             "page_obj": page_obj,
+            "is_admin_user": is_admin_user, 
         },
     )
 
@@ -959,11 +964,20 @@ def resolved_issues_excel_compact(request):
     return response
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def stored_item_detail(request, pk):
-    """View for stored items - shows all files with preview"""
+    """View for stored items - admins see all, normal users see only public ones"""
+    is_admin_user = request.user.is_authenticated and (
+        request.user.is_staff or request.user.is_superuser
+    )
+
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+
+    # Non-admins can only open public stored items
+    if not is_admin_user and not item.is_public:
+        messages.error(request, "🔒 This item is private.")
+        return redirect("core:storage_view")
+
     stored_files = StoredFile.objects.filter(contact=item)
 
     return render(
@@ -972,6 +986,7 @@ def stored_item_detail(request, pk):
         {
             "item": item,
             "stored_files": stored_files,
+            "is_admin_user": is_admin_user,
         },
     )
 
@@ -1226,13 +1241,19 @@ def store_edit(request, pk):
     )
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def get_zip_contents(request, pk):
-    """Get contents of a stored item (individual files)"""
+    """Get contents of a stored item - admins see all, normal users only for public items"""
+    is_admin_user = request.user.is_authenticated and (
+        request.user.is_staff or request.user.is_superuser
+    )
+
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
 
-    # Get individual files from StoredFile model
+    # Non-admins can only fetch files from public items
+    if not is_admin_user and not item.is_public:
+        return JsonResponse({"files": [], "error": "private"})
+
     stored_files = StoredFile.objects.filter(contact=item)
 
     files = []
@@ -1241,7 +1262,7 @@ def get_zip_contents(request, pk):
             {
                 "name": sf.file_name,
                 "size": sf.file_size,
-                "url": sf.file.url,  # Direct URL to the file
+                "url": sf.file.url,
             }
         )
 
@@ -1415,3 +1436,23 @@ def autocomplete_suggestions(request):
     )
 
     return JsonResponse({"success": True, "suggestions": list(suggestions)})
+
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def toggle_public_storage(request, pk):
+    """Toggle the public visibility of a stored item - ADMIN ONLY"""
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    item.is_public = not item.is_public
+    item.save(update_fields=["is_public"])
+
+    if item.is_public:
+        messages.success(
+            request, f"✅ Stored item #{pk} is now PUBLIC - visible to everyone!"
+        )
+    else:
+        messages.warning(
+            request, f"🔒 Stored item #{pk} is now PRIVATE - only visible to admins"
+        )
+
+    return redirect("core:storage_view")

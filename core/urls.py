@@ -29,5 +29,8 @@ urlpatterns = [
          views.delete_issue_file, name='delete_issue_file'),
     path('issue/<int:pk>/files/delete-all/', 
          views.delete_issue_all_files, name='delete_issue_all_files'),
-    path('autocomplete/', views.autocomplete_suggestions, name='autocomplete'),     
+    path('autocomplete/', views.autocomplete_suggestions, name='autocomplete'),
+    path('storage-toggle-public/<int:pk>/', 
+     views.toggle_public_storage, 
+     name='toggle_public_storage'),     
 ]
