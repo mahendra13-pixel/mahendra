@@ -1,0 +1,2371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Local Screen & Audio Recorder{% endblock %}
+
+{% block extra_css %}
+<style>
+  .rec-container {
+    max-width: 1000px;
+    margin: 24px auto;
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .rec-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+  }
+  .rec-container h1 {
+    font-size: 1.25rem; margin: 0; color: #f1f5f9;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rec-subtitle { font-size: 0.78rem; color: #94a3b8; margin: 0; }
+
+  .rec-toggle-btn {
+    background: #334155; color: #cbd5e1;
+    padding: 6px 12px; font-size: 0.78rem;
+    border: none; border-radius: 6px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 600; transition: all 0.15s;
+  }
+  .rec-toggle-btn:hover { background: #475569; }
+  .rec-toggle-btn.open { background: #8b5cf6; color: white; }
+  .rec-toggle-btn .rec-chev { transition: transform 0.2s; }
+  .rec-toggle-btn.open .rec-chev { transform: rotate(180deg); }
+
+  .rec-tabs {
+    display: flex; gap: 4px; margin-bottom: 16px;
+    background: #0f172a; padding: 4px; border-radius: 10px;
+    border: 1px solid #334155;
+  }
+  .rec-tab {
+    flex: 1; padding: 8px 14px; border: none; border-radius: 7px;
+    background: transparent; color: #94a3b8; font-weight: 600;
+    font-size: 0.82rem; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .rec-tab:hover { color: #cbd5e1; background: #1e293b; }
+  .rec-tab.active {
+    background: #8b5cf6; color: white;
+    box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+  }
+
+  .rec-tab-content { display: none; }
+  .rec-tab-content.active { display: block; }
+
+  .rec-controls {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 12px; align-items: center;
+  }
+  .rec-container button {
+    padding: 8px 14px; border: none; border-radius: 8px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; display: inline-flex; align-items: center;
+    gap: 6px; color: white;
+  }
+  .rec-container button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .rec-container button:not(:disabled):hover {
+    transform: translateY(-1px); filter: brightness(1.1);
+  }
+  .rec-btn-start { background: #dc2626; }
+  .rec-btn-stop { background: #475569; }
+  .rec-btn-pause { background: #f59e0b; }
+  .rec-btn-trim { background: #8b5cf6; }
+  .rec-btn-save { background: #16a34a; }
+  .rec-btn-discard { background: #64748b; }
+  .rec-btn-secondary { background: #334155; }
+  .rec-btn-danger { background: #b91c1c; }
+  .rec-btn-info { background: #0ea5e9; }
+  .rec-btn-small { padding: 5px 10px !important; font-size: 0.72rem !important; }
+
+  .rec-timer {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 1.1rem; font-weight: 700; color: #f1f5f9;
+    padding: 5px 12px; background: #0f172a;
+    border-radius: 6px; border: 1px solid #334155; margin-left: auto;
+  }
+  .rec-status {
+    font-size: 0.78rem; padding: 5px 10px; border-radius: 6px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-weight: 500; max-width: 100%; word-break: break-word;
+  }
+  .rec-status.ready { background: #334155; color: #cbd5e1; }
+  .rec-status.recording { background: #7f1d1d; color: #fecaca; animation: rec-pulse 1.5s infinite; }
+  .rec-status.paused { background: #78350f; color: #fed7aa; }
+  .rec-status.done { background: #14532d; color: #bbf7d0; }
+  .rec-status.error { background: #7f1d1d; color: #fecaca; }
+  @keyframes rec-pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+  #recPreview {
+    width: 100%; max-height: 480px; border-radius: 8px;
+    background: #000; display: none; margin-top: 12px;
+  }
+  #audPreview {
+    width: 100%; display: none; margin-top: 12px;
+    background: #0f172a; border-radius: 8px; padding: 8px;
+  }
+
+  .rec-error-banner, .rec-warn-banner, .rec-info-banner {
+    display: none; margin-top: 10px; padding: 10px;
+    border-radius: 6px; font-size: 0.78rem; line-height: 1.45;
+  }
+  .rec-error-banner { background: #7f1d1d; border-left: 3px solid #dc2626; color: #fecaca; }
+  .rec-warn-banner { background: #78350f; border-left: 3px solid #f59e0b; color: #fed7aa; }
+  .rec-info-banner { background: #075985; border-left: 3px solid #0ea5e9; color: #bae6fd; }
+
+  .rec-settings {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+    opacity: 0;
+    margin-top: 0;
+  }
+  .rec-settings.open {
+    max-height: 800px;
+    opacity: 1;
+    margin-top: 12px;
+  }
+  .rec-settings-inner {
+    padding: 14px; background: #0f172a;
+    border-radius: 10px; border: 1px solid #334155;
+  }
+  .rec-settings h3 {
+    margin: 0 0 10px 0; font-size: 0.85rem; color: #f1f5f9;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rec-settings-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+  }
+  .rec-setting-item { display: flex; flex-direction: column; gap: 3px; }
+  .rec-setting-item label {
+    font-size: 0.72rem; color: #94a3b8; font-weight: 600;
+  }
+  .rec-setting-item select, .rec-setting-item input[type="checkbox"] {
+    accent-color: #8b5cf6;
+  }
+  .rec-setting-item select {
+    padding: 5px 8px; background: #1e293b; border: 1px solid #334155;
+    border-radius: 6px; color: #e2e8f0; font-size: 0.78rem;
+  }
+  .rec-checkbox-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; color: #cbd5e1;
+  }
+  .rec-audio-meter {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; color: #94a3b8;
+  }
+  .rec-audio-bar {
+    flex: 1; height: 6px; background: #1e293b;
+    border-radius: 3px; overflow: hidden;
+    border: 1px solid #334155; min-width: 60px;
+  }
+  .rec-audio-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a, #f59e0b, #dc2626);
+    transition: width 0.05s;
+  }
+
+  .rec-editor {
+    display: none; margin-top: 16px; padding: 14px;
+    background: #0f172a; border-radius: 10px;
+    border: 1px solid #334155;
+  }
+  .rec-editor h3 {
+    margin: 0 0 4px 0; font-size: 0.92rem; color: #f1f5f9;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rec-editor .rec-editor-sub {
+    font-size: 0.72rem; color: #94a3b8; margin-bottom: 12px;
+  }
+
+  .rec-timeline {
+    position: relative; height: 48px; background: #1e293b;
+    border-radius: 6px; border: 1px solid #334155;
+    margin-bottom: 6px; overflow: hidden; cursor: pointer;
+    user-select: none;
+  }
+  .rec-timeline-segment {
+    position: absolute; top: 0; height: 100%;
+    background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+    border-right: 1px solid #6d28d9;
+    border-left: 1px solid #6d28d9;
+    transition: opacity 0.15s;
+    cursor: grab;
+  }
+  .rec-timeline-segment:active { cursor: grabbing; }
+  .rec-timeline-segment.dragging { opacity: 0.6; }
+  .rec-timeline-segment:hover { opacity: 0.85; }
+  .rec-timeline-cut {
+    position: absolute; top: 0; height: 100%;
+    background: repeating-linear-gradient(
+      45deg, #450a0a, #450a0a 6px, #7f1d1d 6px, #7f1d1d 12px
+    );
+    border-left: 2px solid #dc2626;
+    border-right: 2px solid #dc2626;
+    cursor: pointer;
+  }
+  .rec-timeline-cut:hover { background: repeating-linear-gradient(45deg, #7f1d1d, #7f1d1d 6px, #dc2626 6px, #dc2626 12px); }
+  .rec-playhead {
+    position: absolute; top: 0; width: 2px; height: 100%;
+    background: #fbbf24; pointer-events: none; z-index: 5;
+    box-shadow: 0 0 6px #fbbf24;
+  }
+  .rec-timeline-handle {
+    position: absolute; top: 0; width: 8px; height: 100%;
+    background: #fbbf24; cursor: ew-resize; z-index: 4;
+    opacity: 0.7;
+  }
+  .rec-timeline-handle:hover { opacity: 1; }
+  .rec-timeline-labels {
+    display: flex; justify-content: space-between;
+    font-family: monospace; font-size: 0.68rem; color: #64748b;
+    margin-bottom: 12px;
+  }
+
+  .rec-segments {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 10px; max-height: 200px; overflow-y: auto;
+  }
+  .rec-segment-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; background: #1e293b;
+    border-radius: 6px; border: 1px solid #334155;
+    font-size: 0.76rem;
+  }
+  .rec-segment-row.removed {
+    opacity: 0.45; text-decoration: line-through;
+    background: #450a0a; border-color: #7f1d1d;
+  }
+  .rec-segment-row .seg-num { font-weight: 700; color: #8b5cf6; min-width: 20px; }
+  .rec-segment-row .seg-time { font-family: monospace; color: #cbd5e1; flex: 1; }
+  .rec-segment-row .seg-dur { font-family: monospace; color: #94a3b8; font-size: 0.7rem; }
+  .rec-segment-row .seg-actions { display: flex; gap: 5px; }
+
+  .rec-cut-controls {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    align-items: center; padding: 10px;
+    background: #1e293b; border-radius: 6px;
+    border: 1px dashed #475569; margin-bottom: 10px;
+  }
+  .rec-cut-controls label {
+    font-size: 0.72rem; color: #94a3b8; font-weight: 600;
+  }
+  .rec-cut-controls input[type="number"] {
+    width: 70px; padding: 5px 7px; background: #0f172a;
+    border: 1px solid #334155; border-radius: 6px;
+    color: #e2e8f0; font-family: monospace; font-size: 0.76rem;
+  }
+  .rec-cut-controls input[type="number"]:focus {
+    outline: none; border-color: #8b5cf6;
+  }
+
+  .rec-editor-stats {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    padding: 8px 12px; background: #1e293b;
+    border-radius: 6px; font-size: 0.74rem;
+    color: #cbd5e1; margin-bottom: 10px;
+  }
+  .rec-editor-stats span strong { color: #f1f5f9; }
+
+  .rec-editor-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+
+  .rec-download-area {
+    display: none; margin-top: 12px; padding: 12px;
+    background: #14532d; border-radius: 8px; border: 1px solid #16a34a;
+  }
+  .rec-download-area a { color: #bbf7d0; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+  .rec-download-area a:hover { text-decoration: underline; }
+
+  .rec-privacy-note {
+    margin-top: 14px; padding: 10px; background: #0f172a;
+    border-left: 3px solid #16a34a; border-radius: 6px;
+    font-size: 0.72rem; color: #94a3b8; line-height: 1.45;
+  }
+  .rec-privacy-note strong { color: #bbf7d0; }
+  .rec-file-info {
+    font-size: 0.72rem; color: #94a3b8;
+    margin-top: 4px; font-family: monospace;
+  }
+  .rec-empty-segments {
+    text-align: center; padding: 16px; color: #64748b;
+    font-size: 0.76rem; font-style: italic;
+  }
+
+  .rec-countdown {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 9999;
+    align-items: center; justify-content: center;
+    color: white; font-size: 8rem; font-weight: 700;
+    text-shadow: 0 0 40px rgba(0,0,0,0.9);
+  }
+  .rec-countdown.active { display: flex; }
+
+  .rec-float-bar {
+    display: none; position: fixed; bottom: 20px; right: 20px;
+    background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+    border: 1px solid #334155; border-radius: 50px;
+    padding: 8px 14px; z-index: 9998;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    align-items: center; gap: 10px;
+  }
+  .rec-float-bar.active { display: flex; }
+  .rec-float-bar .rec-float-time {
+    font-family: monospace; font-size: 0.9rem;
+    color: #fecaca; font-weight: 700;
+  }
+  .rec-float-bar button {
+    padding: 6px 12px !important; font-size: 0.75rem !important;
+    border-radius: 20px !important;
+  }
+  .rec-float-bar .rec-pulse-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #dc2626; animation: rec-pulse 1s infinite;
+  }
+
+  .rec-summary {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .rec-chip {
+    font-size: 0.68rem; padding: 3px 8px;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; color: #cbd5e1;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .rec-chip strong { color: #f1f5f9; font-weight: 600; }
+
+  .aud-waveform {
+    width: 100%; height: 80px;
+    background: #0f172a; border-radius: 8px;
+    border: 1px solid #334155;
+    margin-top: 12px;
+    display: none;
+  }
+  .aud-waveform.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rec-container">
+  <div class="rec-header">
+    <div>
+      <h1>🎥 Local Screen & Audio Recorder</h1>
+      <p class="rec-subtitle">Record · Annotate · Edit · Download — everything stays in your browser</p>
+    </div>
+    <button type="button" class="rec-toggle-btn" id="recSettingsToggle">
+      ⚙️ Settings <span class="rec-chev">▾</span>
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="rec-tabs">
+    <button type="button" class="rec-tab active" data-tab="screen">
+      🖥️ Screen Recording
+    </button>
+    <button type="button" class="rec-tab" data-tab="audio">
+      🎙️ Audio Recording
+    </button>
+  </div>
+
+  <!-- ==================== TAB 1: SCREEN RECORDING ==================== -->
+  <div class="rec-tab-content active" id="tab-screen">
+
+    <div class="rec-summary" id="recSummary">
+      <span class="rec-chip">📺 <strong id="chipQuality">720p</strong></span>
+      <span class="rec-chip">🎞️ <strong id="chipFps">30 fps</strong></span>
+      <span class="rec-chip">📁 <strong id="chipFormat">WebM</strong></span>
+      <span class="rec-chip">⏱️ <strong id="chipCountdown">3s</strong></span>
+      <span class="rec-chip" id="chipAudio">🔊 System audio</span>
+      <span class="rec-chip" id="chipMic" style="display:none;">🎤 Mic</span>
+      <span class="rec-chip" id="chipWebcam" style="display:none;">📷 Webcam</span>
+    </div>
+
+    <div id="recErrorBanner" class="rec-error-banner"></div>
+    <div id="recWarnBanner" class="rec-warn-banner"></div>
+    <div id="recInfoBanner" class="rec-info-banner"></div>
+
+    <div class="rec-settings" id="recSettings">
+      <div class="rec-settings-inner">
+        <h3>⚙️ Screen Recording Settings</h3>
+        <div class="rec-settings-grid">
+          <div class="rec-setting-item">
+            <label>Resolution</label>
+            <select id="recQuality">
+              <option value="1080">1080p (Full HD)</option>
+              <option value="720" selected>720p (HD)</option>
+              <option value="480">480p (SD)</option>
+              <option value="0">Native (screen resolution)</option>
+            </select>
+          </div>
+          <div class="rec-setting-item">
+            <label>Frame Rate</label>
+            <select id="recFps">
+              <option value="15">15 fps</option>
+              <option value="24">24 fps</option>
+              <option value="30" selected>30 fps (recommended)</option>
+              <option value="60">60 fps</option>
+            </select>
+          </div>
+          <div class="rec-setting-item">
+            <label>Output Format</label>
+            <select id="recFormat">
+              <option value="webm" selected>WebM (universal)</option>
+              <option value="mp4">MP4 (Safari / best compatibility)</option>
+            </select>
+          </div>
+          <div class="rec-setting-item">
+            <label>Countdown before start</label>
+            <select id="recCountdown">
+              <option value="0">No countdown</option>
+              <option value="3" selected>3 seconds</option>
+              <option value="5">5 seconds</option>
+              <option value="10">10 seconds</option>
+            </select>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="recSystemAudio" checked>
+              <label for="recSystemAudio">Capture system audio</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="recMic">
+              <label for="recMic">Capture microphone</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="recWebcam">
+              <label for="recWebcam">Webcam overlay</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="recCursor" checked>
+              <label for="recCursor">Show cursor</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="recAutosave" checked>
+              <label for="recAutosave">Auto-save on refresh</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <label>Mic level</label>
+            <div class="rec-audio-meter">
+              <span>🎤</span>
+              <div class="rec-audio-bar"><div class="rec-audio-fill" id="recAudioFill"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rec-controls" style="margin-top: 4px;">
+      <button id="recStartBtn" class="rec-btn-start" type="button">🎥 Start Recording</button>
+      <button id="recPauseBtn" class="rec-btn-pause" type="button" disabled>⏸ Pause</button>
+      <button id="recStopBtn" class="rec-btn-stop" type="button" disabled>⏹ Stop</button>
+      <button id="recAnnotateBtn" class="rec-btn-info" type="button" disabled>✏️ Annotate</button>
+      <span id="recStatusBadge" class="rec-status ready">● Ready</span>
+      <span id="recTimer" class="rec-timer">00:00:00</span>
+    </div>
+
+    <video id="recPreview" controls playsinline></video>
+
+    <div id="recEditor" class="rec-editor">
+      <h3>✂️ Video Editor</h3>
+      <div class="rec-editor-sub">Drag segment edges on the timeline, or use the buttons below. Preview plays the original — click "Apply Edits" to bake in the cuts.</div>
+
+      <div class="rec-timeline" id="recTimeline">
+        <div class="rec-playhead" id="recPlayhead" style="left: 0;"></div>
+      </div>
+      <div class="rec-timeline-labels">
+        <span>0:00</span>
+        <span id="recTimelineMid">—</span>
+        <span id="recTimelineEnd">—</span>
+      </div>
+
+      <div class="rec-cut-controls">
+        <label>Trim START:</label>
+        <input type="number" id="recTrimStartInput" min="0" step="0.1" value="0" placeholder="sec">
+        <button class="rec-btn-secondary rec-btn-small" id="recApplyTrimStart" type="button">✂️ Apply</button>
+
+        <label style="margin-left: 12px;">Trim END:</label>
+        <input type="number" id="recTrimEndInput" min="0" step="0.1" value="0" placeholder="sec">
+        <button class="rec-btn-secondary rec-btn-small" id="recApplyTrimEnd" type="button">✂️ Apply</button>
+      </div>
+
+      <div class="rec-cut-controls">
+        <label>Cut from:</label>
+        <input type="number" id="recCutFrom" min="0" step="0.1" value="0" placeholder="start">
+        <label>to:</label>
+        <input type="number" id="recCutTo" min="0" step="0.1" value="0" placeholder="end">
+        <button class="rec-btn-danger rec-btn-small" id="recApplyCut" type="button">🗑 Cut</button>
+        <button class="rec-btn-secondary rec-btn-small" id="recUsePlayheadFrom" type="button">📍 → From</button>
+        <button class="rec-btn-secondary rec-btn-small" id="recUsePlayheadTo" type="button">📍 → To</button>
+      </div>
+
+      <div class="rec-segments" id="recSegments">
+        <div class="rec-empty-segments">No cuts applied. Full recording will be used.</div>
+      </div>
+
+      <div class="rec-editor-stats">
+        <span>Original: <strong id="recStatOriginal">0.0s</strong></span>
+        <span>After edit: <strong id="recStatEdited">0.0s</strong></span>
+        <span>Removed: <strong id="recStatRemoved">0.0s</strong></span>
+        <span>Segments: <strong id="recStatSegments">1</strong></span>
+      </div>
+
+      <div class="rec-editor-actions">
+        <button id="recApplyEditBtn" class="rec-btn-trim" type="button">✅ Apply Edits & Re-encode</button>
+        <button id="recResetEditBtn" class="rec-btn-secondary" type="button">↺ Reset</button>
+        <button id="recUndoBtn" class="rec-btn-secondary" type="button" disabled>↶ Undo</button>
+        <button id="recRedoBtn" class="rec-btn-secondary" type="button" disabled>↷ Redo</button>
+        <span id="recEditStatus" class="rec-file-info"></span>
+      </div>
+    </div>
+
+    <div id="recDownloadArea" class="rec-download-area">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a id="recDownloadLink" download="" target="_self" rel="noopener">⬇️ Download Recording</a>
+        <select id="recDownloadFormat" style="padding: 5px 8px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 0.78rem;">
+          <option value="webm">.webm</option>
+          <option value="mp4">.mp4</option>
+        </select>
+        <span id="recFileSize" class="rec-file-info"></span>
+        <button id="recDiscardBtn" class="rec-btn-discard" type="button" style="margin-left: auto; padding: 5px 10px; font-size: 0.76rem;">🗑 Discard</button>
+      </div>
+    </div>
+
+    <div class="rec-privacy-note">
+      🔒 <strong>100% Local.</strong> Native browser <code>MediaRecorder</code> API. No uploads. Recording lives in browser memory + IndexedDB (for auto-save) and is discarded when you clear it.
+    </div>
+  </div>
+
+  <!-- ==================== TAB 2: AUDIO RECORDING ==================== -->
+  <div class="rec-tab-content" id="tab-audio">
+
+    <div class="rec-summary" id="audSummary">
+      <span class="rec-chip">📁 <strong id="chipAudFormat">WebM</strong></span>
+      <span class="rec-chip" id="chipAudEcho">🎧 Echo cancel</span>
+      <span class="rec-chip" id="chipAudNoise">🔇 Noise suppr</span>
+      <span class="rec-chip" id="chipAudGain">📈 Auto gain</span>
+    </div>
+
+    <div id="audErrorBanner" class="rec-error-banner"></div>
+    <div id="audWarnBanner" class="rec-warn-banner"></div>
+    <div id="audInfoBanner" class="rec-info-banner"></div>
+
+    <div class="rec-settings" id="audSettings">
+      <div class="rec-settings-inner">
+        <h3>⚙️ Audio Recording Settings</h3>
+        <div class="rec-settings-grid">
+          <div class="rec-setting-item">
+            <label>Output Format</label>
+            <select id="audFormat">
+              <option value="webm" selected>WebM (Opus)</option>
+              <option value="mp4">MP4 (AAC - Safari)</option>
+            </select>
+          </div>
+          <div class="rec-setting-item">
+            <label>Countdown before start</label>
+            <select id="audCountdown">
+              <option value="0">No countdown</option>
+              <option value="3" selected>3 seconds</option>
+              <option value="5">5 seconds</option>
+            </select>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="audEchoCancel" checked>
+              <label for="audEchoCancel">Echo cancellation</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="audNoiseSuppress" checked>
+              <label for="audNoiseSuppress">Noise suppression</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <div class="rec-checkbox-row">
+              <input type="checkbox" id="audAutoGain" checked>
+              <label for="audAutoGain">Auto gain control</label>
+            </div>
+          </div>
+          <div class="rec-setting-item">
+            <label>Mic level</label>
+            <div class="rec-audio-meter">
+              <span>🎤</span>
+              <div class="rec-audio-bar"><div class="rec-audio-fill" id="audAudioFill"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rec-controls" style="margin-top: 4px;">
+      <button id="audStartBtn" class="rec-btn-start" type="button">🎙️ Start Recording</button>
+      <button id="audPauseBtn" class="rec-btn-pause" type="button" disabled>⏸ Pause</button>
+      <button id="audStopBtn" class="rec-btn-stop" type="button" disabled>⏹ Stop</button>
+      <span id="audStatusBadge" class="rec-status ready">● Ready</span>
+      <span id="audTimer" class="rec-timer">00:00:00</span>
+    </div>
+
+    <canvas id="audWaveform" class="aud-waveform" width="960" height="80"></canvas>
+
+    <audio id="audPreview" controls style="width: 100%; display: none; margin-top: 12px;"></audio>
+
+    <div id="audDownloadArea" class="rec-download-area">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a id="audDownloadLink" download="" target="_self" rel="noopener">⬇️ Download Audio</a>
+        <select id="audDownloadFormat" style="padding: 5px 8px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 0.78rem;">
+          <option value="webm">.webm</option>
+          <option value="mp4">.m4a</option>
+          <option value="wav">.wav</option>
+        </select>
+        <span id="audFileSize" class="rec-file-info"></span>
+        <button id="audDiscardBtn" class="rec-btn-discard" type="button" style="margin-left: auto; padding: 5px 10px; font-size: 0.76rem;">🗑 Discard</button>
+      </div>
+    </div>
+
+    <div class="rec-privacy-note">
+      🔒 <strong>100% Local.</strong> Microphone audio stays in your browser. No uploads. Recording is discarded when you clear it or close the tab.
+    </div>
+  </div>
+
+</div>
+
+<div id="recCountdown" class="rec-countdown">3</div>
+
+<div id="recFloatBar" class="rec-float-bar">
+  <div class="rec-pulse-dot"></div>
+  <span class="rec-float-time" id="recFloatTime">00:00:00</span>
+  <button id="recFloatPause" class="rec-btn-pause" type="button">⏸</button>
+  <button id="recFloatStop" class="rec-btn-stop" type="button">⏹</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+
+  // ============================================================
+  // ============ CONSTANTS =====================================
+  // ============================================================
+  const MAX_RECORDING_SECONDS = 2 * 60 * 60;
+  const MAX_FILE_SIZE_WARN = 500 * 1024 * 1024;
+  const MAX_WAV_CONVERT_SIZE = 100 * 1024 * 1024;
+  const MIN_SEGMENT_DURATION = 0.15;
+  const URL_REVOKE_DELAY_MS = 5000;   // ✅ Delay before revoking old blob URLs
+  const DB_NAME = 'recorderDB';
+  const DB_STORE = 'recordings';
+  const DB_KEY = 'lastRecording';
+
+  // ============================================================
+  // ============ GLOBAL HELPERS ================================
+  // ============================================================
+  const $ = (id) => document.getElementById(id);
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+  function formatTime(s) {
+    s = Math.floor(s);
+    const h = String(Math.floor(s / 3600)).padStart(2, '0');
+    const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    return `${h}:${m}:${sec}`;
+  }
+  function formatClock(s) {
+    s = Math.max(0, s);
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  }
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  // ✅ Safe URL revoke — delayed so in-progress downloads don't fail
+  function safeRevokeURL(url) {
+    if (!url) return;
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch (e) {}
+    }, URL_REVOKE_DELAY_MS);
+  }
+  async function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore(DB_STORE); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  // ============================================================
+  // ============ TAB SWITCHING =================================
+  // ============================================================
+  const tabs = document.querySelectorAll('.rec-tab');
+  const tabContents = document.querySelectorAll('.rec-tab-content');
+  const recSettingsPanel = $('recSettings');
+  const audSettingsPanel = $('audSettings');
+  const settingsToggle = $('recSettingsToggle');
+  const recSummaryEl = $('recSummary');
+  const audSummaryEl = $('audSummary');
+  let recSettingsPanelEl = recSettingsPanel;
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      tabs.forEach(t => t.classList.toggle('active', t === tab));
+      tabContents.forEach(c => {
+        c.classList.toggle('active', c.id === 'tab-' + target);
+      });
+      recSettingsPanelEl = target === 'screen' ? recSettingsPanel : audSettingsPanel;
+      recSettingsPanel.classList.remove('open');
+      audSettingsPanel.classList.remove('open');
+      settingsToggle.classList.remove('open');
+      recSummaryEl.style.display = 'flex';
+      audSummaryEl.style.display = 'flex';
+      if (target !== 'screen' && typeof rec_resetAnnotationState === 'function') {
+        rec_resetAnnotationState();
+      }
+    });
+  });
+
+  settingsToggle.addEventListener('click', () => {
+    const isOpen = recSettingsPanelEl.classList.toggle('open');
+    settingsToggle.classList.toggle('open', isOpen);
+    const activeTab = document.querySelector('.rec-tab.active').dataset.tab;
+    if (activeTab === 'screen') {
+      recSummaryEl.style.display = isOpen ? 'none' : 'flex';
+    } else {
+      audSummaryEl.style.display = isOpen ? 'none' : 'flex';
+    }
+  });
+
+  // ============================================================
+  // ============ SCREEN RECORDER ===============================
+  // ============================================================
+  let rec_recorder = null;
+  let rec_stream = null;
+  let rec_micStream = null;
+  let rec_webcamStream = null;
+  let rec_combinedStream = null;
+  let rec_chunks = [];
+  let rec_originalBlob = null;
+  let rec_currentBlob = null;
+  let rec_currentURL = null;
+  let rec_timerInterval = null;
+  let rec_seconds = 0;
+  let rec_duration = 0;
+  let rec_isPaused = false;
+  let rec_isRecording = false;
+  let rec_supportedMimeType = null;
+  let rec_webcamVideoEl = null;
+  let rec_webcamRafId = null;
+  let rec_audioContext = null;
+  let rec_micAnalyser = null;
+  let rec_micRafId = null;
+  let rec_annotationCanvas = null;
+  let rec_annotationCtx = null;
+  let rec_annotationActive = false;
+
+  let rec_history = [];
+  let rec_historyIndex = -1;
+  let rec_segments = [];
+  let rec_isReencoding = false;
+
+  // DOM
+  const rec_startBtn = $('recStartBtn');
+  const rec_pauseBtn = $('recPauseBtn');
+  const rec_stopBtn = $('recStopBtn');
+  const rec_annotateBtn = $('recAnnotateBtn');
+  const rec_statusBadge = $('recStatusBadge');
+  const rec_timer = $('recTimer');
+  const rec_preview = $('recPreview');
+  const rec_editor = $('recEditor');
+  const rec_downloadArea = $('recDownloadArea');
+  const rec_downloadLink = $('recDownloadLink');
+  const rec_fileSize = $('recFileSize');
+  const rec_discardBtn = $('recDiscardBtn');
+  const rec_errorBanner = $('recErrorBanner');
+  const rec_warnBanner = $('recWarnBanner');
+  const rec_infoBanner = $('recInfoBanner');
+  const rec_floatBar = $('recFloatBar');
+  const rec_floatTime = $('recFloatTime');
+  const rec_floatPause = $('recFloatPause');
+  const rec_floatStop = $('recFloatStop');
+  const rec_countdownEl = $('recCountdown');
+  const rec_audioFill = $('recAudioFill');
+
+  const rec_qualitySel = $('recQuality');
+  const rec_fpsSel = $('recFps');
+  const rec_formatSel = $('recFormat');
+  const rec_countdownSel = $('recCountdown');
+  const rec_systemAudioChk = $('recSystemAudio');
+  const rec_micChk = $('recMic');
+  const rec_webcamChk = $('recWebcam');
+  const rec_cursorChk = $('recCursor');
+  const rec_autosaveChk = $('recAutosave');
+
+  const rec_chipQuality = $('chipQuality');
+  const rec_chipFps = $('chipFps');
+  const rec_chipFormat = $('chipFormat');
+  const rec_chipCountdown = $('chipCountdown');
+  const rec_chipAudio = $('chipAudio');
+  const rec_chipMic = $('chipMic');
+  const rec_chipWebcam = $('chipWebcam');
+
+  const rec_timeline = $('recTimeline');
+  const rec_playhead = $('recPlayhead');
+  const rec_timelineMid = $('recTimelineMid');
+  const rec_timelineEnd = $('recTimelineEnd');
+  const rec_segmentsEl = $('recSegments');
+  const rec_trimStartInput = $('recTrimStartInput');
+  const rec_trimEndInput = $('recTrimEndInput');
+  const rec_cutFromInput = $('recCutFrom');
+  const rec_cutToInput = $('recCutTo');
+  const rec_applyTrimStartBtn = $('recApplyTrimStart');
+  const rec_applyTrimEndBtn = $('recApplyTrimEnd');
+  const rec_applyCutBtn = $('recApplyCut');
+  const rec_usePlayheadFromBtn = $('recUsePlayheadFrom');
+  const rec_usePlayheadToBtn = $('recUsePlayheadTo');
+  const rec_applyEditBtn = $('recApplyEditBtn');
+  const rec_resetEditBtn = $('recResetEditBtn');
+  const rec_undoBtn = $('recUndoBtn');
+  const rec_redoBtn = $('recRedoBtn');
+  const rec_editStatus = $('recEditStatus');
+  const rec_statOriginal = $('recStatOriginal');
+  const rec_statEdited = $('recStatEdited');
+  const rec_statRemoved = $('recStatRemoved');
+  const rec_statSegments = $('recStatSegments');
+  const rec_downloadFormat = $('recDownloadFormat');
+
+  function rec_setStatus(text, type) {
+    rec_statusBadge.textContent = text;
+    rec_statusBadge.className = 'rec-status ' + (type || 'ready');
+  }
+  function rec_resetTimer() {
+    clearInterval(rec_timerInterval); rec_timerInterval = null;
+    rec_seconds = 0; rec_timer.textContent = '00:00:00'; rec_floatTime.textContent = '00:00:00';
+  }
+  function rec_startTimer() {
+    clearInterval(rec_timerInterval);
+    rec_timerInterval = setInterval(() => {
+      if (!rec_isPaused && rec_isRecording) {
+        rec_seconds++;
+        rec_timer.textContent = formatTime(rec_seconds);
+        rec_floatTime.textContent = formatTime(rec_seconds);
+        if (rec_seconds >= MAX_RECORDING_SECONDS) {
+          rec_setStatus('⏹ Max duration reached', 'done');
+          rec_stopRecording();
+        }
+      }
+    }, 1000);
+  }
+  function rec_cleanupURL() {
+    // ✅ Safe revoke — delay so any in-progress download finishes
+    if (rec_currentURL) {
+      safeRevokeURL(rec_currentURL);
+      rec_currentURL = null;
+    }
+    if (rec_preview.src && rec_preview.src.startsWith('blob:')) {
+      safeRevokeURL(rec_preview.src);
+    }
+  }
+  function rec_releaseAllStreams() {
+    [rec_stream, rec_micStream, rec_webcamStream, rec_combinedStream].forEach((s) => {
+      if (s) s.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
+    });
+    rec_stream = rec_micStream = rec_webcamStream = rec_combinedStream = null;
+    if (rec_webcamVideoEl) {
+      try { rec_webcamVideoEl.pause(); rec_webcamVideoEl.srcObject = null; } catch (e) {}
+      rec_webcamVideoEl = null;
+    }
+    if (rec_webcamRafId) { cancelAnimationFrame(rec_webcamRafId); rec_webcamRafId = null; }
+    if (rec_micRafId) { cancelAnimationFrame(rec_micRafId); rec_micRafId = null; }
+    if (rec_audioContext) { try { rec_audioContext.close(); } catch (e) {} rec_audioContext = null; }
+    rec_micAnalyser = null;
+    rec_annotationCanvas = null;
+    rec_annotationCtx = null;
+    if (rec_floatBar) rec_floatBar.classList.remove('active');
+  }
+  function rec_stopRecording() {
+    if (rec_recorder && rec_recorder.state !== 'inactive') {
+      try { rec_recorder.stop(); } catch (e) { console.warn(e); }
+    }
+  }
+  function rec_setDownload(blob, forcedExt) {
+    // ✅ Save old URL and revoke it later (so in-progress downloads finish)
+    const previousURL = rec_currentURL;
+    rec_currentURL = URL.createObjectURL(blob);
+    rec_currentBlob = blob;
+
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const ext = forcedExt || (rec_formatSel.value === 'mp4' && rec_supportedMimeType && rec_supportedMimeType.includes('mp4') ? 'mp4' : 'webm');
+    rec_downloadLink.href = rec_currentURL;
+    rec_downloadLink.download = `recording-${ts}.${ext}`;
+    rec_fileSize.textContent = `(${formatBytes(blob.size)})`;
+    rec_downloadArea.style.display = 'block';
+
+    if (previousURL) safeRevokeURL(previousURL);
+
+    if (blob.size > MAX_FILE_SIZE_WARN) {
+      rec_warnBanner.style.display = 'block';
+      rec_warnBanner.innerHTML = '⚠️ Recording exceeds 500 MB. Download may be slow.';
+    }
+  }
+  function rec_pickMimeType() {
+    const wantMp4 = rec_formatSel.value === 'mp4';
+    const candidates = wantMp4
+      ? ['video/mp4;codecs=h264,aac', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm']
+      : ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+    for (const c of candidates) {
+      if (MediaRecorder.isTypeSupported(c)) return c;
+    }
+    return 'video/webm';
+  }
+  function rec_updateSummaryChips() {
+    const q = rec_qualitySel.value;
+    rec_chipQuality.textContent = q === '0' ? 'Native' : q + 'p';
+    rec_chipFps.textContent = rec_fpsSel.value + ' fps';
+    rec_chipFormat.textContent = rec_formatSel.value === 'mp4' ? 'MP4' : 'WebM';
+    const c = rec_countdownSel.value;
+    rec_chipCountdown.textContent = c === '0' ? 'No countdown' : c + 's';
+    rec_chipAudio.innerHTML = rec_systemAudioChk.checked
+      ? '🔊 <strong>System audio</strong>'
+      : '🔇 <strong>System audio off</strong>';
+    rec_chipMic.style.display = rec_micChk.checked ? 'inline-flex' : 'none';
+    rec_chipWebcam.style.display = rec_webcamChk.checked ? 'inline-flex' : 'none';
+  }
+  [rec_qualitySel, rec_fpsSel, rec_formatSel, rec_countdownSel,
+   rec_systemAudioChk, rec_micChk, rec_webcamChk].forEach(el => {
+    el.addEventListener('change', rec_updateSummaryChips);
+  });
+
+  function rec_detectSupport() {
+    const issues = [];
+    const warnings = [];
+    const infos = [];
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      issues.push('Your browser does not support screen recording.');
+    }
+    if (typeof MediaRecorder === 'undefined') {
+      issues.push('Your browser does not support MediaRecorder.');
+    }
+    if (!window.isSecureContext) {
+      issues.push('Screen recording requires HTTPS or localhost.');
+    }
+    if (!URL.createObjectURL || !URL.revokeObjectURL) {
+      issues.push('URL.createObjectURL is not supported.');
+    }
+    if (navigator.userAgent.includes('Firefox')) {
+      warnings.push('Firefox does not capture system audio. Video + optional mic only.');
+    }
+    if (typeof indexedDB === 'undefined') {
+      warnings.push('IndexedDB unavailable — auto-save disabled.');
+      rec_autosaveChk.checked = false;
+      rec_autosaveChk.disabled = true;
+      rec_updateSummaryChips();
+    }
+    if (!MediaRecorder.isTypeSupported || !MediaRecorder.isTypeSupported('video/mp4')) {
+      infos.push('MP4 export uses Safari-native encoding. On Chrome/Firefox, output is .webm.');
+    }
+    if (issues.length) {
+      rec_errorBanner.style.display = 'block';
+      rec_errorBanner.innerHTML = '❌ <strong>Recorder unavailable:</strong><br>' +
+        issues.map(i => '• ' + escapeHtml(i)).join('<br>');
+      rec_startBtn.disabled = true;
+    }
+    if (warnings.length) {
+      rec_warnBanner.style.display = 'block';
+      rec_warnBanner.innerHTML = '⚠️ <strong>Note:</strong><br>' +
+        warnings.map(w => '• ' + escapeHtml(w)).join('<br>');
+    }
+    if (infos.length) {
+      rec_infoBanner.style.display = 'block';
+      rec_infoBanner.innerHTML = 'ℹ️ <strong>Info:</strong><br>' +
+        infos.map(i => '• ' + escapeHtml(i)).join('<br>');
+    }
+  }
+
+  async function rec_saveToDB(blob) {
+    if (!rec_autosaveChk.checked || typeof indexedDB === 'undefined') return;
+    try {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).put(blob, DB_KEY);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) { console.warn('Autosave failed:', e); }
+  }
+  async function rec_loadFromDB() {
+    if (typeof indexedDB === 'undefined') return null;
+    try {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, 'readonly');
+        const req = tx.objectStore(DB_STORE).get(DB_KEY);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) { return null; }
+  }
+  async function rec_clearDB() {
+    if (typeof indexedDB === 'undefined') return;
+    try {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).delete(DB_KEY);
+        tx.oncomplete = () => resolve();
+      });
+    } catch (e) {}
+  }
+
+  (async function rec_restoreLastRecording() {
+    const saved = await rec_loadFromDB();
+    if (saved && saved.size > 0) {
+      rec_originalBlob = saved;
+      rec_preview.src = URL.createObjectURL(saved);
+      rec_preview.style.display = 'block';
+      rec_preview.onloadedmetadata = () => {
+        rec_duration = isFinite(rec_preview.duration) ? rec_preview.duration : 0;
+        rec_setupEditor(rec_duration);
+      };
+      rec_setDownload(saved);
+      rec_setStatus('✅ Restored from autosave — edit or download', 'done');
+      rec_infoBanner.style.display = 'block';
+      rec_infoBanner.innerHTML = 'ℹ️ A previous recording was restored from browser storage.';
+    }
+  })();
+
+  function rec_runCountdown(n) {
+    return new Promise((resolve) => {
+      if (n <= 0) return resolve();
+      rec_countdownEl.classList.add('active');
+      rec_countdownEl.textContent = n;
+      let remaining = n;
+      const iv = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(iv);
+          rec_countdownEl.classList.remove('active');
+          resolve();
+        } else {
+          rec_countdownEl.textContent = remaining;
+        }
+      }, 1000);
+    });
+  }
+
+  async function rec_buildCombinedStream() {
+    const wantSystemAudio = rec_systemAudioChk.checked;
+    const wantMic = rec_micChk.checked;
+    const wantWebcam = rec_webcamChk.checked;
+    const showCursor = rec_cursorChk.checked;
+    const quality = parseInt(rec_qualitySel.value, 10);
+    const fps = parseInt(rec_fpsSel.value, 10);
+
+    const displayOpts = {
+      video: { cursor: showCursor ? 'always' : 'never', frameRate: fps },
+      audio: wantSystemAudio,
+    };
+    if (quality > 0) {
+      displayOpts.video.width = { ideal: quality * 16 / 9 };
+      displayOpts.video.height = { ideal: quality };
+    }
+    rec_stream = await navigator.mediaDevices.getDisplayMedia(displayOpts);
+
+    if (wantMic) {
+      try {
+        rec_micStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        });
+      } catch (e) {
+        rec_warnBanner.style.display = 'block';
+        rec_warnBanner.innerHTML = '⚠️ Microphone access denied. Recording without mic.';
+      }
+    }
+    if (wantWebcam) {
+      try {
+        rec_webcamStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 320, height: 240, frameRate: 15 },
+        });
+      } catch (e) {
+        rec_warnBanner.style.display = 'block';
+        rec_warnBanner.innerHTML = '⚠️ Webcam access denied. Recording without webcam.';
+      }
+    }
+
+    const displayVideoTrack = rec_stream.getVideoTracks()[0];
+
+    if (!rec_micStream && !rec_webcamStream) {
+      rec_combinedStream = rec_stream;
+      if (wantSystemAudio && rec_stream.getAudioTracks().length) {
+        rec_startAudioMeterFromStream(rec_stream);
+      }
+      return rec_combinedStream;
+    }
+
+    const canvas = document.createElement('canvas');
+    const settings = displayVideoTrack.getSettings ? displayVideoTrack.getSettings() : {};
+    canvas.width = settings.width || 1280;
+    canvas.height = settings.height || 720;
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    const screenVideo = document.createElement('video');
+    screenVideo.srcObject = new MediaStream([displayVideoTrack]);
+    screenVideo.muted = true;
+    screenVideo.playsInline = true;
+    await screenVideo.play();
+
+    let webcamVideo = null;
+    if (rec_webcamStream) {
+      webcamVideo = document.createElement('video');
+      webcamVideo.srcObject = rec_webcamStream;
+      webcamVideo.muted = true;
+      webcamVideo.playsInline = true;
+      await webcamVideo.play();
+      rec_webcamVideoEl = webcamVideo;
+    }
+
+    rec_annotationCanvas = document.createElement('canvas');
+    rec_annotationCanvas.width = canvas.width;
+    rec_annotationCanvas.height = canvas.height;
+    rec_annotationCtx = rec_annotationCanvas.getContext('2d');
+    rec_annotationCtx.lineWidth = 4;
+    rec_annotationCtx.strokeStyle = '#ef4444';
+    rec_annotationCtx.lineCap = 'round';
+    rec_annotationCtx.clearRect(0, 0, rec_annotationCanvas.width, rec_annotationCanvas.height);
+
+    const draw = () => {
+      try { ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height); } catch (e) {}
+      if (rec_annotationCanvas) {
+        try { ctx.drawImage(rec_annotationCanvas, 0, 0, canvas.width, canvas.height); } catch (e) {}
+      }
+      if (webcamVideo && webcamVideo.readyState >= 2) {
+        const w = canvas.width * 0.22;
+        const h = w * (webcamVideo.videoHeight / webcamVideo.videoWidth || 0.75);
+        const x = canvas.width - w - 20;
+        const y = canvas.height - h - 20;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + w / 2, y + h / 2, Math.min(w, h) / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = '#000';
+        ctx.fill();
+        ctx.clip();
+        ctx.drawImage(webcamVideo, x, y, w, h);
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(x + w / 2, y + h / 2, Math.min(w, h) / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      rec_webcamRafId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    rec_combinedStream = canvas.captureStream(fps);
+
+    const audioTracks = [];
+    if (wantSystemAudio && rec_stream.getAudioTracks().length) audioTracks.push(rec_stream.getAudioTracks()[0]);
+    if (rec_micStream && rec_micStream.getAudioTracks().length) audioTracks.push(rec_micStream.getAudioTracks()[0]);
+
+    if (audioTracks.length) {
+      rec_audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const dest = rec_audioContext.createMediaStreamDestination();
+      audioTracks.forEach(t => {
+        try {
+          const src = rec_audioContext.createMediaStreamSource(new MediaStream([t]));
+          src.connect(dest);
+        } catch (e) { console.warn('Audio mix error:', e); }
+      });
+      if (rec_micStream && rec_micStream.getAudioTracks().length) {
+        try {
+          const micSrc = rec_audioContext.createMediaStreamSource(rec_micStream);
+          rec_micAnalyser = rec_audioContext.createAnalyser();
+          rec_micAnalyser.fftSize = 256;
+          micSrc.connect(rec_micAnalyser);
+          rec_startAudioMeter();
+        } catch (e) {}
+      }
+      dest.stream.getAudioTracks().forEach(t => rec_combinedStream.addTrack(t));
+    }
+
+    return rec_combinedStream;
+  }
+
+  function rec_startAudioMeter() {
+    if (!rec_micAnalyser) return;
+    const data = new Uint8Array(rec_micAnalyser.frequencyBinCount);
+    const tick = () => {
+      if (!rec_micAnalyser) return;
+      rec_micAnalyser.getByteFrequencyData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) sum += data[i];
+      const avg = sum / data.length;
+      const pct = Math.min(100, (avg / 128) * 100);
+      rec_audioFill.style.width = pct + '%';
+      rec_micRafId = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+  function rec_startAudioMeterFromStream(s) {
+    try {
+      rec_audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const src = rec_audioContext.createMediaStreamSource(s);
+      rec_micAnalyser = rec_audioContext.createAnalyser();
+      rec_micAnalyser.fftSize = 256;
+      src.connect(rec_micAnalyser);
+      rec_startAudioMeter();
+    } catch (e) {}
+  }
+
+  // Annotation
+  rec_annotateBtn.onclick = () => {
+    if (!rec_annotationCanvas) {
+      rec_infoBanner.style.display = 'block';
+      rec_infoBanner.innerHTML = 'ℹ️ Annotation requires recording with webcam or mic enabled.';
+      return;
+    }
+    rec_annotationActive = !rec_annotationActive;
+    rec_annotateBtn.textContent = rec_annotationActive ? '✏️ Annotating…' : '✏️ Annotate';
+    rec_annotateBtn.classList.toggle('rec-btn-info', !rec_annotationActive);
+    rec_annotateBtn.classList.toggle('rec-btn-save', rec_annotationActive);
+    if (rec_annotationActive) {
+      rec_infoBanner.style.display = 'block';
+      rec_infoBanner.innerHTML = '✏️ Annotation ON — click and drag anywhere to draw. Click "Annotating…" to turn off.';
+      document.addEventListener('mousedown', rec_startDraw);
+      document.addEventListener('mousemove', rec_doDraw);
+      document.addEventListener('mouseup', rec_endDraw);
+      document.addEventListener('touchstart', rec_startDraw, { passive: false });
+      document.addEventListener('touchmove', rec_doDraw, { passive: false });
+      document.addEventListener('touchend', rec_endDraw);
+    } else {
+      document.removeEventListener('mousedown', rec_startDraw);
+      document.removeEventListener('mousemove', rec_doDraw);
+      document.removeEventListener('mouseup', rec_endDraw);
+      document.removeEventListener('touchstart', rec_startDraw);
+      document.removeEventListener('touchmove', rec_doDraw);
+      document.removeEventListener('touchend', rec_endDraw);
+    }
+  };
+
+  let rec_drawing = false;
+  let rec_lastX = 0, rec_lastY = 0;
+  function rec_getCanvasPos(e) {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX / window.innerWidth) * rec_annotationCanvas.width,
+      y: (clientY / window.innerHeight) * rec_annotationCanvas.height,
+    };
+  }
+  function rec_startDraw(e) {
+    if (!rec_annotationActive) return;
+    if (e.target.closest('button, input, select, a, .rec-float-bar')) return;
+    rec_drawing = true;
+    const p = rec_getCanvasPos(e);
+    rec_lastX = p.x; rec_lastY = p.y;
+  }
+  function rec_doDraw(e) {
+    if (!rec_drawing || !rec_annotationActive) return;
+    e.preventDefault();
+    const p = rec_getCanvasPos(e);
+    rec_annotationCtx.beginPath();
+    rec_annotationCtx.moveTo(rec_lastX, rec_lastY);
+    rec_annotationCtx.lineTo(p.x, p.y);
+    rec_annotationCtx.stroke();
+    rec_lastX = p.x; rec_lastY = p.y;
+  }
+  function rec_endDraw() { rec_drawing = false; }
+
+  document.addEventListener('dblclick', () => {
+    if (rec_annotationActive && rec_annotationCtx) {
+      rec_annotationCtx.clearRect(0, 0, rec_annotationCanvas.width, rec_annotationCanvas.height);
+    }
+  });
+
+  function rec_resetAnnotationState() {
+    if (rec_annotationActive) {
+      rec_annotationActive = false;
+      rec_annotateBtn.textContent = '✏️ Annotate';
+      rec_annotateBtn.classList.remove('rec-btn-save');
+      rec_annotateBtn.classList.add('rec-btn-info');
+      document.removeEventListener('mousedown', rec_startDraw);
+      document.removeEventListener('mousemove', rec_doDraw);
+      document.removeEventListener('mouseup', rec_endDraw);
+      document.removeEventListener('touchstart', rec_startDraw);
+      document.removeEventListener('touchmove', rec_doDraw);
+      document.removeEventListener('touchend', rec_endDraw);
+    }
+  }
+
+  // Screen recording
+  rec_startBtn.onclick = async () => {
+    if (rec_isRecording) return;
+    try {
+      rec_cleanupURL();
+      rec_chunks = [];
+      rec_originalBlob = null;
+      rec_currentBlob = null;
+      rec_segments = [];
+      rec_history = [];
+      rec_historyIndex = -1;
+      rec_resetTimer();
+      rec_editor.style.display = 'none';
+      rec_downloadArea.style.display = 'none';
+      rec_preview.style.display = 'none';
+      rec_preview.src = '';
+
+      await rec_runCountdown(parseInt(rec_countdownSel.value, 10) || 0);
+
+      rec_combinedStream = await rec_buildCombinedStream();
+
+      rec_stream.getVideoTracks().forEach(t => {
+        t.onended = () => { if (rec_recorder && rec_recorder.state !== 'inactive') rec_stopRecording(); };
+      });
+
+      rec_supportedMimeType = rec_pickMimeType();
+      let opts = { mimeType: rec_supportedMimeType };
+      try { rec_recorder = new MediaRecorder(rec_combinedStream, opts); }
+      catch (e) { rec_recorder = new MediaRecorder(rec_combinedStream); }
+
+      rec_recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) rec_chunks.push(e.data);
+      };
+      rec_recorder.onerror = (e) => {
+        console.error('MediaRecorder error:', e);
+        rec_setStatus('❌ Recorder error', 'error');
+        rec_stopRecording();
+      };
+      rec_recorder.onstop = async () => {
+        rec_isRecording = false;
+        clearInterval(rec_timerInterval); rec_timerInterval = null;
+
+        const blob = new Blob(rec_chunks, { type: rec_supportedMimeType || 'video/webm' });
+        rec_originalBlob = blob;
+
+        if (!blob.size) {
+          rec_setStatus('❌ Empty recording', 'error');
+          rec_errorBanner.style.display = 'block';
+          rec_errorBanner.innerHTML = '❌ No data captured. Try again.';
+          rec_releaseAllStreams();
+          rec_resetAnnotationState();
+          rec_startBtn.disabled = false;
+          rec_pauseBtn.disabled = true;
+          rec_stopBtn.disabled = true;
+          rec_annotateBtn.disabled = true;
+          return;
+        }
+
+        rec_preview.src = URL.createObjectURL(blob);
+        rec_preview.style.display = 'block';
+        rec_preview.onloadedmetadata = () => {
+          rec_duration = isFinite(rec_preview.duration) ? rec_preview.duration : rec_seconds;
+          rec_setupEditor(rec_duration);
+        };
+
+        rec_setDownload(blob);
+        rec_setStatus('✅ Ready — edit or download', 'done');
+        await rec_saveToDB(blob);
+
+        rec_releaseAllStreams();
+        rec_resetAnnotationState();
+        rec_startBtn.disabled = false;
+        rec_pauseBtn.disabled = true;
+        rec_stopBtn.disabled = true;
+        rec_annotateBtn.disabled = true;
+        rec_pauseBtn.textContent = '⏸ Pause';
+        rec_isPaused = false;
+      };
+
+      rec_recorder.start(1000);
+      rec_isRecording = true;
+      rec_startBtn.disabled = true;
+      rec_pauseBtn.disabled = false;
+      rec_stopBtn.disabled = false;
+      rec_annotateBtn.disabled = false;
+      rec_setStatus('🔴 Recording...', 'recording');
+      rec_startTimer();
+      rec_floatBar.classList.add('active');
+
+    } catch (err) {
+      console.error(err);
+      rec_releaseAllStreams();
+      rec_resetAnnotationState();
+      if (err.name === 'NotAllowedError') rec_setStatus('❌ Permission denied', 'error');
+      else if (err.name === 'NotFoundError') rec_setStatus('❌ No screen selected', 'error');
+      else if (err.name === 'NotReadableError') rec_setStatus('❌ Screen is in use', 'error');
+      else if (err.name === 'AbortError') rec_setStatus('⏹ Cancelled', 'ready');
+      else rec_setStatus('❌ ' + (err.message || 'Recording failed'), 'error');
+      rec_startBtn.disabled = false;
+      rec_pauseBtn.disabled = true;
+      rec_stopBtn.disabled = true;
+      rec_annotateBtn.disabled = true;
+      rec_isRecording = false;
+    }
+  };
+
+  rec_pauseBtn.onclick = () => {
+    if (!rec_recorder) return;
+    try {
+      if (rec_recorder.state === 'recording') {
+        rec_recorder.pause(); rec_isPaused = true;
+        rec_pauseBtn.textContent = '▶ Resume';
+        rec_setStatus('⏸ Paused', 'paused');
+        rec_floatPause.textContent = '▶';
+      } else if (rec_recorder.state === 'paused') {
+        rec_recorder.resume(); rec_isPaused = false;
+        rec_pauseBtn.textContent = '⏸ Pause';
+        rec_setStatus('🔴 Recording...', 'recording');
+        rec_floatPause.textContent = '⏸';
+      }
+    } catch (e) { console.warn(e); }
+  };
+  rec_stopBtn.onclick = rec_stopRecording;
+  rec_floatPause.onclick = () => rec_pauseBtn.click();
+  rec_floatStop.onclick = () => rec_stopBtn.click();
+
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+      e.preventDefault();
+      if (rec_isRecording) rec_stopBtn.click();
+      else rec_startBtn.click();
+    }
+    if (e.code === 'Space' && rec_isRecording) {
+      e.preventDefault();
+      rec_pauseBtn.click();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && rec_editor.style.display === 'block') {
+      e.preventDefault();
+      if (e.shiftKey) rec_redoBtn.click();
+      else rec_undoBtn.click();
+    }
+  });
+
+  // Editor
+  function rec_setupEditor(dur) {
+    rec_editor.style.display = 'block';
+    rec_timelineEnd.textContent = formatClock(dur);
+    rec_timelineMid.textContent = formatClock(dur / 2);
+    rec_trimStartInput.max = dur;
+    rec_trimEndInput.max = dur;
+    rec_cutFromInput.max = dur;
+    rec_cutToInput.max = dur;
+    rec_trimStartInput.value = 0;
+    rec_trimEndInput.value = 0;
+    rec_cutFromInput.value = 0;
+    rec_cutToInput.value = dur;
+    rec_segments = [];
+    rec_history = [JSON.stringify([])];
+    rec_historyIndex = 0;
+    rec_updateUndoRedoButtons();
+    rec_renderTimeline();
+    rec_renderSegments();
+    rec_updateStats();
+    rec_editStatus.textContent = '';
+  }
+  function rec_pushHistory() {
+    const snap = JSON.stringify(rec_segments);
+    if (rec_history[rec_historyIndex] === snap) return;
+    rec_history = rec_history.slice(0, rec_historyIndex + 1);
+    rec_history.push(snap);
+    rec_historyIndex++;
+    rec_updateUndoRedoButtons();
+  }
+  function rec_updateUndoRedoButtons() {
+    rec_undoBtn.disabled = rec_historyIndex <= 0;
+    rec_redoBtn.disabled = rec_historyIndex >= rec_history.length - 1;
+  }
+  rec_undoBtn.onclick = () => {
+    if (rec_historyIndex <= 0) return;
+    rec_historyIndex--;
+    rec_segments = JSON.parse(rec_history[rec_historyIndex]);
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_updateUndoRedoButtons();
+    rec_editStatus.textContent = '↶ Undo';
+  };
+  rec_redoBtn.onclick = () => {
+    if (rec_historyIndex >= rec_history.length - 1) return;
+    rec_historyIndex++;
+    rec_segments = JSON.parse(rec_history[rec_historyIndex]);
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_updateUndoRedoButtons();
+    rec_editStatus.textContent = '↷ Redo';
+  };
+
+  function rec_getKeptSegments() {
+    if (!rec_segments.length) return [{ start: 0, end: rec_duration }];
+    return rec_segments.slice().sort((a, b) => a.start - b.start);
+  }
+  function rec_getRemovedSegments() {
+    const kept = rec_getKeptSegments();
+    const removed = [];
+    let cursor = 0;
+    for (const s of kept) {
+      if (s.start > cursor + 0.001) removed.push({ start: cursor, end: s.start });
+      cursor = s.end;
+    }
+    if (cursor < rec_duration - 0.001) removed.push({ start: cursor, end: rec_duration });
+    return removed;
+  }
+
+  rec_applyTrimStartBtn.onclick = () => {
+    const trimAmt = parseFloat(rec_trimStartInput.value) || 0;
+    if (trimAmt <= 0) { rec_editStatus.textContent = '⚠️ Enter seconds > 0'; return; }
+    if (trimAmt >= rec_duration) { rec_editStatus.textContent = '⚠️ Cannot trim beyond end'; return; }
+    rec_segments = [{ start: trimAmt, end: rec_duration }];
+    rec_pushHistory();
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_editStatus.textContent = `✅ Trimmed ${trimAmt.toFixed(1)}s from start`;
+    try { rec_preview.currentTime = trimAmt; } catch (e) {}
+  };
+  rec_applyTrimEndBtn.onclick = () => {
+    const trimAmt = parseFloat(rec_trimEndInput.value) || 0;
+    if (trimAmt <= 0) { rec_editStatus.textContent = '⚠️ Enter seconds > 0'; return; }
+    if (trimAmt >= rec_duration) { rec_editStatus.textContent = '⚠️ Cannot trim beyond start'; return; }
+    const currentKept = rec_getKeptSegments();
+    const firstStart = currentKept[0].start;
+    const newEnd = rec_duration - trimAmt;
+    if (newEnd <= firstStart) { rec_editStatus.textContent = '⚠️ Result would be empty'; return; }
+    rec_segments = [{ start: firstStart, end: newEnd }];
+    rec_pushHistory();
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_editStatus.textContent = `✅ Trimmed ${trimAmt.toFixed(1)}s from end`;
+    try { rec_preview.currentTime = Math.max(0, newEnd - 1); } catch (e) {}
+  };
+  rec_applyCutBtn.onclick = () => {
+    let from = parseFloat(rec_cutFromInput.value) || 0;
+    let to = parseFloat(rec_cutToInput.value) || 0;
+    if (to <= from) { rec_editStatus.textContent = '⚠️ "To" must be greater than "From"'; return; }
+    from = Math.max(0, Math.min(from, rec_duration));
+    to = Math.max(0, Math.min(to, rec_duration));
+    const current = rec_getKeptSegments();
+    const result = [];
+    for (const seg of current) {
+      if (to <= seg.start || from >= seg.end) { result.push({ ...seg }); continue; }
+      if (from > seg.start + 0.001) result.push({ start: seg.start, end: from });
+      if (to < seg.end - 0.001) result.push({ start: to, end: seg.end });
+    }
+    const filtered = result.filter(s => (s.end - s.start) >= MIN_SEGMENT_DURATION);
+    if (!filtered.length) { rec_editStatus.textContent = '⚠️ Cut would remove everything!'; return; }
+    rec_segments = filtered;
+    rec_pushHistory();
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_editStatus.textContent = `✅ Cut ${(to - from).toFixed(1)}s from middle`;
+    try { rec_preview.currentTime = to; } catch (e) {}
+  };
+  rec_usePlayheadFromBtn.onclick = () => {
+    const t = rec_preview.currentTime;
+    if (!isFinite(t)) { rec_editStatus.textContent = '⚠️ Playhead not ready'; return; }
+    rec_cutFromInput.value = t.toFixed(2);
+    rec_editStatus.textContent = `📍 From set to ${t.toFixed(2)}s`;
+  };
+  rec_usePlayheadToBtn.onclick = () => {
+    const t = rec_preview.currentTime;
+    if (!isFinite(t)) { rec_editStatus.textContent = '⚠️ Playhead not ready'; return; }
+    rec_cutToInput.value = t.toFixed(2);
+    rec_editStatus.textContent = `📍 To set to ${t.toFixed(2)}s`;
+  };
+  rec_resetEditBtn.onclick = () => {
+    rec_segments = [];
+    rec_trimStartInput.value = 0;
+    rec_trimEndInput.value = 0;
+    rec_cutFromInput.value = 0;
+    rec_cutToInput.value = rec_duration;
+    rec_pushHistory();
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_editStatus.textContent = '↺ All edits reset';
+  };
+
+  function rec_renderTimeline() {
+    Array.from(rec_timeline.querySelectorAll('.rec-timeline-segment, .rec-timeline-cut, .rec-timeline-handle'))
+      .forEach(el => el.remove());
+    const kept = rec_getKeptSegments();
+    const removed = rec_getRemovedSegments();
+    const total = rec_duration || 1;
+
+    kept.forEach((seg, i) => {
+      const el = document.createElement('div');
+      el.className = 'rec-timeline-segment';
+      el.style.left = (seg.start / total * 100) + '%';
+      el.style.width = ((seg.end - seg.start) / total * 100) + '%';
+      el.title = `Keep ${seg.start.toFixed(1)}s → ${seg.end.toFixed(1)}s. Drag edges to resize.`;
+      el.dataset.index = i;
+
+      const lh = document.createElement('div');
+      lh.className = 'rec-timeline-handle';
+      lh.style.left = '0';
+      lh.addEventListener('mousedown', (e) => rec_startSegmentDrag(e, i, 'left'));
+      el.appendChild(lh);
+
+      const rh = document.createElement('div');
+      rh.className = 'rec-timeline-handle';
+      rh.style.right = '0';
+      rh.addEventListener('mousedown', (e) => rec_startSegmentDrag(e, i, 'right'));
+      el.appendChild(rh);
+
+      rec_timeline.appendChild(el);
+    });
+
+    removed.forEach(seg => {
+      const el = document.createElement('div');
+      el.className = 'rec-timeline-cut';
+      el.style.left = (seg.start / total * 100) + '%';
+      el.style.width = ((seg.end - seg.start) / total * 100) + '%';
+      el.title = `Removed ${seg.start.toFixed(1)}s → ${seg.end.toFixed(1)}s (click to restore)`;
+      el.addEventListener('click', () => rec_restoreRemovedSegment(seg));
+      rec_timeline.appendChild(el);
+    });
+  }
+
+  let rec_dragging = null;
+  function rec_startSegmentDrag(e, index, side) {
+    e.stopPropagation();
+    e.preventDefault();
+    const kept = rec_getKeptSegments();
+    rec_dragging = { index, side, seg: { ...kept[index] } };
+    document.addEventListener('mousemove', rec_doSegmentDrag);
+    document.addEventListener('mouseup', rec_endSegmentDrag);
+  }
+  function rec_doSegmentDrag(e) {
+    if (!rec_dragging) return;
+    const rect = rec_timeline.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const t = pct * rec_duration;
+    if (rec_dragging.side === 'left') {
+      rec_dragging.seg.start = Math.max(0, Math.min(t, rec_dragging.seg.end - MIN_SEGMENT_DURATION));
+    } else {
+      rec_dragging.seg.end = Math.min(rec_duration, Math.max(t, rec_dragging.seg.start + MIN_SEGMENT_DURATION));
+    }
+    const kept = rec_getKeptSegments();
+    kept[rec_dragging.index] = { ...rec_dragging.seg };
+    rec_segments = kept;
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+  }
+  function rec_endSegmentDrag() {
+    if (rec_dragging) {
+      rec_pushHistory();
+      rec_editStatus.textContent = '✏️ Segment resized';
+    }
+    rec_dragging = null;
+    document.removeEventListener('mousemove', rec_doSegmentDrag);
+    document.removeEventListener('mouseup', rec_endSegmentDrag);
+  }
+
+  function rec_restoreRemovedSegment(removed) {
+    const kept = rec_getKeptSegments();
+    kept.push({ start: removed.start, end: removed.end });
+    kept.sort((a, b) => a.start - b.start);
+    const merged = [];
+    for (const s of kept) {
+      const last = merged[merged.length - 1];
+      if (last && s.start <= last.end + 0.001) {
+        last.end = Math.max(last.end, s.end);
+      } else {
+        merged.push({ ...s });
+      }
+    }
+    rec_segments = merged.filter(s => (s.end - s.start) >= MIN_SEGMENT_DURATION);
+    if (rec_segments.length === 1 &&
+        rec_segments[0].start <= 0.001 &&
+        rec_segments[0].end >= rec_duration - 0.001) {
+      rec_segments = [];
+    }
+    rec_pushHistory();
+    rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+    rec_editStatus.textContent = '↺ Removed segment restored';
+  }
+
+  function rec_renderSegments() {
+    const kept = rec_getKeptSegments();
+    const removed = rec_getRemovedSegments();
+    rec_segmentsEl.innerHTML = '';
+    if (!rec_segments.length) {
+      rec_segmentsEl.innerHTML = '<div class="rec-empty-segments">No cuts applied. Full recording will be used.</div>';
+      return;
+    }
+    kept.forEach((seg, i) => {
+      const row = document.createElement('div');
+      row.className = 'rec-segment-row';
+      row.innerHTML = `
+        <span class="seg-num">${i + 1}.</span>
+        <span class="seg-time">${formatClock(seg.start)} → ${formatClock(seg.end)}</span>
+        <span class="seg-dur">${(seg.end - seg.start).toFixed(1)}s</span>
+        <span class="seg-actions"></span>
+      `;
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'rec-btn-danger rec-btn-small';
+      removeBtn.type = 'button';
+      removeBtn.textContent = '🗑 Cut';
+      removeBtn.onclick = () => {
+        const newSegments = kept.filter((_, idx) => idx !== i);
+        rec_segments = newSegments.length ? newSegments : [];
+        rec_pushHistory();
+        rec_renderTimeline(); rec_renderSegments(); rec_updateStats();
+      };
+      row.querySelector('.seg-actions').appendChild(removeBtn);
+      rec_segmentsEl.appendChild(row);
+    });
+    removed.forEach(seg => {
+      const row = document.createElement('div');
+      row.className = 'rec-segment-row removed';
+      row.innerHTML = `
+        <span class="seg-num">✂️</span>
+        <span class="seg-time">${formatClock(seg.start)} → ${formatClock(seg.end)}</span>
+        <span class="seg-dur">removed ${(seg.end - seg.start).toFixed(1)}s</span>
+        <span class="seg-actions"></span>
+      `;
+      const btn = document.createElement('button');
+      btn.className = 'rec-btn-secondary rec-btn-small';
+      btn.type = 'button';
+      btn.textContent = '↺ Restore';
+      btn.onclick = () => rec_restoreRemovedSegment(seg);
+      row.querySelector('.seg-actions').appendChild(btn);
+      rec_segmentsEl.appendChild(row);
+    });
+  }
+
+  function rec_updateStats() {
+    const kept = rec_getKeptSegments();
+    const editedDur = kept.reduce((sum, s) => sum + (s.end - s.start), 0);
+    const removedDur = rec_duration - editedDur;
+    rec_statOriginal.textContent = rec_duration.toFixed(1) + 's';
+    rec_statEdited.textContent = editedDur.toFixed(1) + 's';
+    rec_statRemoved.textContent = removedDur.toFixed(1) + 's';
+    rec_statSegments.textContent = kept.length;
+  }
+
+  rec_preview.addEventListener('timeupdate', () => {
+    if (!rec_duration) return;
+    const pct = (rec_preview.currentTime / rec_duration) * 100;
+    rec_playhead.style.left = pct + '%';
+  });
+  rec_timeline.addEventListener('click', (e) => {
+    if (!rec_duration) return;
+    if (e.target.classList.contains('rec-timeline-handle')) return;
+    if (e.target.classList.contains('rec-timeline-cut')) return;
+    const rect = rec_timeline.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    rec_preview.currentTime = pct * rec_duration;
+  });
+
+  rec_applyEditBtn.onclick = async () => {
+    if (!rec_originalBlob || rec_isReencoding) return;
+    const kept = rec_getKeptSegments();
+    const editedDur = kept.reduce((sum, s) => sum + (s.end - s.start), 0);
+    if (editedDur < MIN_SEGMENT_DURATION) {
+      rec_editStatus.textContent = '⚠️ Edited duration too short';
+      return;
+    }
+    rec_isReencoding = true;
+    rec_applyEditBtn.disabled = true;
+    rec_editStatus.textContent = `⏳ Re-encoding ${kept.length} segment(s)... (~${editedDur.toFixed(0)}s)`;
+    try {
+      const editedBlob = await rec_reencodeSegments(rec_originalBlob, kept);
+      // ✅ FIXED: single setDownload call, no double URL creation
+      rec_setDownload(editedBlob);
+      rec_preview.src = rec_currentURL;
+      await rec_saveToDB(editedBlob);
+      rec_editStatus.textContent = `✅ Done! ${editedDur.toFixed(1)}s, ${formatBytes(editedBlob.size)}`;
+      rec_setStatus('✂️ Edited & ready', 'done');
+    } catch (err) {
+      console.error('Re-encode failed:', err);
+      rec_editStatus.textContent = '❌ Re-encode failed: ' + (err.message || 'unknown');
+    } finally {
+      rec_isReencoding = false;
+      rec_applyEditBtn.disabled = false;
+    }
+  };
+
+  async function rec_reencodeSegments(blob, segments) {
+    if (!segments.length) throw new Error('No segments');
+    if (segments.length === 1 &&
+        segments[0].start <= 0.001 &&
+        segments[0].end >= rec_duration - 0.001) {
+      return blob;
+    }
+    const srcURL = URL.createObjectURL(blob);
+    const video = document.createElement('video');
+    video.src = srcURL;
+    video.playsInline = true;
+    video.muted = false;
+    video.preload = 'auto';
+
+    await new Promise((resolve, reject) => {
+      video.onloadedmetadata = resolve;
+      video.onerror = () => reject(new Error('Failed to load video'));
+      setTimeout(() => reject(new Error('Video load timeout')), 15000);
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const canvasStream = canvas.captureStream(30);
+
+    let audioCtx = null;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        audioCtx = new AudioCtx();
+        const source = audioCtx.createMediaElementSource(video);
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        dest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
+      }
+    } catch (e) { console.warn('Audio unavailable during re-encode:', e); }
+
+    let outRecorder;
+    const outMime = rec_pickMimeType();
+    try { outRecorder = new MediaRecorder(canvasStream, { mimeType: outMime }); }
+    catch (e) { outRecorder = new MediaRecorder(canvasStream); }
+    const outChunks = [];
+    outRecorder.ondataavailable = (e) => { if (e.data.size) outChunks.push(e.data); };
+    const done = new Promise((resolve, reject) => {
+      outRecorder.onstop = () => resolve(new Blob(outChunks, { type: outMime }));
+      outRecorder.onerror = () => reject(new Error('Recorder error'));
+    });
+    outRecorder.start();
+
+    let drawRAF = null;
+    const draw = () => {
+      if (video.paused || video.ended) return;
+      try { ctx.drawImage(video, 0, 0, canvas.width, canvas.height); } catch (e) {}
+      drawRAF = requestAnimationFrame(draw);
+    };
+
+    for (const seg of segments) {
+      const segDur = seg.end - seg.start;
+      if (segDur < MIN_SEGMENT_DURATION) continue;
+      await new Promise((resolve) => {
+        const onSeeked = () => {
+          video.removeEventListener('seeked', onSeeked);
+          video.play().then(() => {
+            draw();
+            setTimeout(() => {
+              video.pause();
+              if (drawRAF) cancelAnimationFrame(drawRAF);
+              resolve();
+            }, segDur * 1000 + 60);
+          }).catch(resolve);
+        };
+        video.addEventListener('seeked', onSeeked, { once: true });
+        video.currentTime = seg.start;
+      });
+    }
+
+    if (outRecorder.state !== 'inactive') outRecorder.stop();
+    const outBlob = await done;
+    try { URL.revokeObjectURL(srcURL); } catch (e) {}
+    if (audioCtx && audioCtx.close) { try { audioCtx.close(); } catch (e) {} }
+    canvasStream.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
+    return outBlob;
+  }
+
+  rec_downloadFormat.addEventListener('change', () => {
+    if (!rec_currentBlob) return;
+    const ext = rec_downloadFormat.value;
+    if (ext === 'mp4' && !(rec_supportedMimeType && rec_supportedMimeType.includes('mp4'))) {
+      rec_infoBanner.style.display = 'block';
+      rec_infoBanner.innerHTML = 'ℹ️ Your browser records WebM only. Renaming to .mp4 may not play in all players.';
+    }
+    rec_setDownload(rec_currentBlob, ext);
+  });
+
+  rec_discardBtn.onclick = async () => {
+    rec_cleanupURL();
+    rec_originalBlob = null;
+    rec_currentBlob = null;
+    rec_chunks = [];
+    rec_segments = [];
+    rec_history = [];
+    rec_historyIndex = -1;
+    rec_preview.src = '';
+    rec_preview.style.display = 'none';
+    rec_editor.style.display = 'none';
+    rec_downloadArea.style.display = 'none';
+    rec_resetTimer();
+    rec_setStatus('● Ready', 'ready');
+    await rec_clearDB();
+  };
+
+  rec_detectSupport();
+  rec_updateSummaryChips();
+
+  // ============================================================
+  // ============ AUDIO RECORDER ================================
+  // ============================================================
+  let aud_recorder = null;
+  let aud_stream = null;
+  let aud_chunks = [];
+  let aud_blob = null;
+  let aud_currentURL = null;
+  let aud_timerInterval = null;
+  let aud_seconds = 0;
+  let aud_isPaused = false;
+  let aud_isRecording = false;
+  let aud_supportedMimeType = null;
+  let aud_audioContext = null;
+  let aud_analyser = null;
+  let aud_rafId = null;
+  let aud_waveformCtx = null;
+
+  const aud_startBtn = $('audStartBtn');
+  const aud_pauseBtn = $('audPauseBtn');
+  const aud_stopBtn = $('audStopBtn');
+  const aud_statusBadge = $('audStatusBadge');
+  const aud_timer = $('audTimer');
+  const aud_preview = $('audPreview');
+  const aud_downloadArea = $('audDownloadArea');
+  const aud_downloadLink = $('audDownloadLink');
+  const aud_fileSize = $('audFileSize');
+  const aud_discardBtn = $('audDiscardBtn');
+  const aud_errorBanner = $('audErrorBanner');
+  const aud_warnBanner = $('audWarnBanner');
+  const aud_infoBanner = $('audInfoBanner');
+  const aud_audioFill = $('audAudioFill');
+  const aud_waveform = $('audWaveform');
+  const aud_downloadFormat = $('audDownloadFormat');
+
+  const aud_formatSel = $('audFormat');
+  const aud_countdownSel = $('audCountdown');
+  const aud_echoChk = $('audEchoCancel');
+  const aud_noiseChk = $('audNoiseSuppress');
+  const aud_gainChk = $('audAutoGain');
+
+  const aud_chipFormat = $('chipAudFormat');
+  const aud_chipEcho = $('chipAudEcho');
+  const aud_chipNoise = $('chipAudNoise');
+  const aud_chipGain = $('chipAudGain');
+
+  function aud_setStatus(text, type) {
+    aud_statusBadge.textContent = text;
+    aud_statusBadge.className = 'rec-status ' + (type || 'ready');
+  }
+  function aud_resetTimer() {
+    clearInterval(aud_timerInterval); aud_timerInterval = null;
+    aud_seconds = 0; aud_timer.textContent = '00:00:00';
+  }
+  function aud_startTimer() {
+    clearInterval(aud_timerInterval);
+    aud_timerInterval = setInterval(() => {
+      if (!aud_isPaused && aud_isRecording) {
+        aud_seconds++;
+        aud_timer.textContent = formatTime(aud_seconds);
+        if (aud_seconds >= MAX_RECORDING_SECONDS) {
+          aud_setStatus('⏹ Max duration reached', 'done');
+          aud_stopRecording();
+        }
+      }
+    }, 1000);
+  }
+  function aud_cleanupURL() {
+    if (aud_currentURL) {
+      safeRevokeURL(aud_currentURL);
+      aud_currentURL = null;
+    }
+    if (aud_preview.src && aud_preview.src.startsWith('blob:')) {
+      safeRevokeURL(aud_preview.src);
+    }
+  }
+  function aud_releaseStream() {
+    if (aud_stream) {
+      aud_stream.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
+      aud_stream = null;
+    }
+    if (aud_rafId) { cancelAnimationFrame(aud_rafId); aud_rafId = null; }
+    if (aud_audioContext) { try { aud_audioContext.close(); } catch (e) {} aud_audioContext = null; }
+    aud_analyser = null;
+    if (aud_waveformCtx) {
+      aud_waveformCtx.clearRect(0, 0, aud_waveform.width, aud_waveform.height);
+    }
+    aud_audioFill.style.width = '0%';
+  }
+  function aud_stopRecording() {
+    if (aud_recorder && aud_recorder.state !== 'inactive') {
+      try { aud_recorder.stop(); } catch (e) { console.warn(e); }
+    }
+  }
+  function aud_setDownload(blob, forcedExt) {
+    // ✅ Same delayed revoke as screen recorder
+    const previousURL = aud_currentURL;
+    aud_currentURL = URL.createObjectURL(blob);
+    aud_blob = blob;
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    let ext = forcedExt || 'webm';
+    if (forcedExt === 'mp4') ext = 'm4a';
+    aud_downloadLink.href = aud_currentURL;
+    aud_downloadLink.download = `audio-${ts}.${ext}`;
+    aud_fileSize.textContent = `(${formatBytes(blob.size)})`;
+    aud_downloadArea.style.display = 'block';
+
+    if (previousURL) safeRevokeURL(previousURL);
+
+    if (blob.size > MAX_FILE_SIZE_WARN) {
+      aud_warnBanner.style.display = 'block';
+      aud_warnBanner.innerHTML = '⚠️ Recording exceeds 500 MB. Download may be slow.';
+    }
+  }
+  function aud_pickMimeType() {
+    const wantMp4 = aud_formatSel.value === 'mp4';
+    const candidates = wantMp4
+      ? ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm']
+      : ['audio/webm;codecs=opus', 'audio/webm;codecs=vorbis', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    for (const c of candidates) {
+      if (MediaRecorder.isTypeSupported(c)) return c;
+    }
+    return 'audio/webm';
+  }
+  function aud_updateSummaryChips() {
+    aud_chipFormat.textContent = aud_formatSel.value === 'mp4' ? 'M4A' : 'WebM';
+    aud_chipEcho.style.display = aud_echoChk.checked ? 'inline-flex' : 'none';
+    aud_chipNoise.style.display = aud_noiseChk.checked ? 'inline-flex' : 'none';
+    aud_chipGain.style.display = aud_gainChk.checked ? 'inline-flex' : 'none';
+  }
+  [aud_formatSel, aud_echoChk, aud_noiseChk, aud_gainChk].forEach(el => {
+    el.addEventListener('change', aud_updateSummaryChips);
+  });
+
+  function aud_detectSupport() {
+    const issues = [];
+    const warnings = [];
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      issues.push('Your browser does not support microphone recording.');
+    }
+    if (typeof MediaRecorder === 'undefined') {
+      issues.push('Your browser does not support MediaRecorder.');
+    }
+    if (!window.isSecureContext) {
+      issues.push('Audio recording requires HTTPS or localhost.');
+    }
+    if (issues.length) {
+      aud_errorBanner.style.display = 'block';
+      aud_errorBanner.innerHTML = '❌ <strong>Audio recorder unavailable:</strong><br>' +
+        issues.map(i => '• ' + escapeHtml(i)).join('<br>');
+      aud_startBtn.disabled = true;
+    }
+    if (warnings.length) {
+      aud_warnBanner.style.display = 'block';
+      aud_warnBanner.innerHTML = '⚠️ <strong>Note:</strong><br>' +
+        warnings.map(w => '• ' + escapeHtml(w)).join('<br>');
+    }
+  }
+
+  function aud_initWaveform() {
+    if (!aud_waveform) return;
+    aud_waveformCtx = aud_waveform.getContext('2d');
+    aud_waveformCtx.fillStyle = '#0f172a';
+    aud_waveformCtx.fillRect(0, 0, aud_waveform.width, aud_waveform.height);
+    aud_waveformCtx.strokeStyle = '#334155';
+    aud_waveformCtx.beginPath();
+    aud_waveformCtx.moveTo(0, aud_waveform.height / 2);
+    aud_waveformCtx.lineTo(aud_waveform.width, aud_waveform.height / 2);
+    aud_waveformCtx.stroke();
+  }
+
+  function aud_drawWaveform() {
+    if (!aud_analyser || !aud_waveformCtx) return;
+    const dataArray = new Uint8Array(aud_analyser.fftSize);
+    const bufferLength = aud_analyser.fftSize;
+    const W = aud_waveform.width;
+    const H = aud_waveform.height;
+
+    const tick = () => {
+      if (!aud_analyser || !aud_waveformCtx) return;
+
+      aud_analyser.getByteTimeDomainData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const v = (dataArray[i] - 128) / 128;
+        sum += v * v;
+      }
+      const rms = Math.sqrt(sum / bufferLength);
+      const pct = Math.min(100, rms * 200);
+      aud_audioFill.style.width = pct + '%';
+
+      aud_waveformCtx.fillStyle = '#0f172a';
+      aud_waveformCtx.fillRect(0, 0, W, H);
+
+      aud_waveformCtx.lineWidth = 2;
+      aud_waveformCtx.strokeStyle = '#8b5cf6';
+      aud_waveformCtx.beginPath();
+
+      const sliceWidth = W / bufferLength;
+      let x = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = (v * H) / 2;
+        if (i === 0) aud_waveformCtx.moveTo(x, y);
+        else aud_waveformCtx.lineTo(x, y);
+        x += sliceWidth;
+      }
+      aud_waveformCtx.lineTo(W, H / 2);
+      aud_waveformCtx.stroke();
+
+      aud_rafId = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  aud_startBtn.onclick = async () => {
+    if (aud_isRecording) return;
+    try {
+      aud_cleanupURL();
+      aud_chunks = [];
+      aud_blob = null;
+      aud_resetTimer();
+      aud_downloadArea.style.display = 'none';
+      aud_preview.style.display = 'none';
+      aud_preview.src = '';
+
+      const n = parseInt(aud_countdownSel.value, 10) || 0;
+      if (n > 0) {
+        rec_countdownEl.classList.add('active');
+        rec_countdownEl.textContent = n;
+        await new Promise(resolve => {
+          let remaining = n;
+          const iv = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+              clearInterval(iv);
+              rec_countdownEl.classList.remove('active');
+              resolve();
+            } else {
+              rec_countdownEl.textContent = remaining;
+            }
+          }, 1000);
+        });
+      }
+
+      aud_stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: aud_echoChk.checked,
+          noiseSuppression: aud_noiseChk.checked,
+          autoGainControl: aud_gainChk.checked,
+        },
+      });
+
+      aud_supportedMimeType = aud_pickMimeType();
+      let opts = { mimeType: aud_supportedMimeType };
+      try { aud_recorder = new MediaRecorder(aud_stream, opts); }
+      catch (e) { aud_recorder = new MediaRecorder(aud_stream); }
+
+      aud_recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) aud_chunks.push(e.data);
+      };
+      aud_recorder.onerror = (e) => {
+        console.error('Audio recorder error:', e);
+        aud_setStatus('❌ Recorder error', 'error');
+        aud_stopRecording();
+      };
+      aud_recorder.onstop = () => {
+        aud_isRecording = false;
+        clearInterval(aud_timerInterval); aud_timerInterval = null;
+
+        const blob = new Blob(aud_chunks, { type: aud_supportedMimeType || 'audio/webm' });
+        aud_blob = blob;
+
+        if (!blob.size) {
+          aud_setStatus('❌ Empty recording', 'error');
+          aud_errorBanner.style.display = 'block';
+          aud_errorBanner.innerHTML = '❌ No data captured. Try again.';
+          aud_releaseStream();
+          aud_startBtn.disabled = false;
+          aud_pauseBtn.disabled = true;
+          aud_stopBtn.disabled = true;
+          return;
+        }
+
+        aud_preview.src = URL.createObjectURL(blob);
+        aud_preview.style.display = 'block';
+        aud_setDownload(blob);
+        aud_setStatus('✅ Ready — download', 'done');
+
+        aud_releaseStream();
+        aud_startBtn.disabled = false;
+        aud_pauseBtn.disabled = true;
+        aud_stopBtn.disabled = true;
+        aud_pauseBtn.textContent = '⏸ Pause';
+        aud_isPaused = false;
+      };
+
+      aud_recorder.start(1000);
+      aud_isRecording = true;
+      aud_startBtn.disabled = true;
+      aud_pauseBtn.disabled = false;
+      aud_stopBtn.disabled = false;
+      aud_setStatus('🔴 Recording...', 'recording');
+      aud_startTimer();
+
+      try {
+        aud_audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const src = aud_audioContext.createMediaStreamSource(aud_stream);
+        aud_analyser = aud_audioContext.createAnalyser();
+        aud_analyser.fftSize = 2048;
+        src.connect(aud_analyser);
+        aud_waveform.classList.add('active');
+        aud_drawWaveform();
+      } catch (e) { console.warn('Waveform failed:', e); }
+
+    } catch (err) {
+      console.error(err);
+      aud_releaseStream();
+      if (err.name === 'NotAllowedError') aud_setStatus('❌ Mic permission denied', 'error');
+      else if (err.name === 'NotFoundError') aud_setStatus('❌ No microphone found', 'error');
+      else if (err.name === 'NotReadableError') aud_setStatus('❌ Mic is in use', 'error');
+      else aud_setStatus('❌ ' + (err.message || 'Recording failed'), 'error');
+      aud_startBtn.disabled = false;
+      aud_pauseBtn.disabled = true;
+      aud_stopBtn.disabled = true;
+      aud_isRecording = false;
+    }
+  };
+
+  aud_pauseBtn.onclick = () => {
+    if (!aud_recorder) return;
+    try {
+      if (aud_recorder.state === 'recording') {
+        aud_recorder.pause(); aud_isPaused = true;
+        aud_pauseBtn.textContent = '▶ Resume';
+        aud_setStatus('⏸ Paused', 'paused');
+      } else if (aud_recorder.state === 'paused') {
+        aud_recorder.resume(); aud_isPaused = false;
+        aud_pauseBtn.textContent = '⏸ Pause';
+        aud_setStatus('🔴 Recording...', 'recording');
+      }
+    } catch (e) { console.warn(e); }
+  };
+  aud_stopBtn.onclick = aud_stopRecording;
+
+  aud_downloadFormat.addEventListener('change', () => {
+    if (!aud_blob) return;
+    const ext = aud_downloadFormat.value;
+    if (ext === 'wav') {
+      aud_infoBanner.style.display = 'block';
+      aud_infoBanner.innerHTML = 'ℹ️ WAV export converts the recording. This may take a moment.';
+      aud_convertToWav(aud_blob).then(wavBlob => {
+        if (wavBlob) {
+          aud_setDownload(wavBlob, 'wav');
+        } else {
+          aud_downloadFormat.value = 'webm';
+          aud_setDownload(aud_blob, 'webm');
+        }
+      });
+      return;
+    }
+    if (ext === 'mp4' && !(aud_supportedMimeType && aud_supportedMimeType.includes('mp4'))) {
+      aud_infoBanner.style.display = 'block';
+      aud_infoBanner.innerHTML = 'ℹ️ Your browser records WebM/Opus. Renaming to .m4a may not play in all players.';
+    }
+    aud_setDownload(aud_blob, ext);
+  });
+
+  async function aud_convertToWav(blob) {
+    if (blob.size > MAX_WAV_CONVERT_SIZE) {
+      aud_infoBanner.style.display = 'block';
+      aud_infoBanner.innerHTML = '⚠️ Recording too large for WAV conversion (>100 MB). Please download as WebM or M4A instead.';
+      return null;
+    }
+    try {
+      const arrayBuffer = await blob.arrayBuffer();
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+      await ctx.close();
+
+      const numCh = audioBuffer.numberOfChannels;
+      const len = audioBuffer.length * numCh * 2 + 44;
+      const buf = new ArrayBuffer(len);
+      const view = new DataView(buf);
+      const writeStr = (offset, str) => {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+      };
+
+      writeStr(0, 'RIFF');
+      view.setUint32(4, len - 8, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numCh, true);
+      view.setUint32(24, audioBuffer.sampleRate, true);
+      view.setUint32(28, audioBuffer.sampleRate * numCh * 2, true);
+      view.setUint16(32, numCh * 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, len - 44, true);
+
+      let offset = 44;
+      const channels = [];
+      for (let i = 0; i < numCh; i++) channels.push(audioBuffer.getChannelData(i));
+      for (let i = 0; i < audioBuffer.length; i++) {
+        for (let ch = 0; ch < numCh; ch++) {
+          let s = Math.max(-1, Math.min(1, channels[ch][i]));
+          s = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          view.setInt16(offset, s, true);
+          offset += 2;
+        }
+      }
+      return new Blob([buf], { type: 'audio/wav' });
+    } catch (e) {
+      console.error('WAV conversion failed:', e);
+      aud_infoBanner.innerHTML = '❌ WAV conversion failed.';
+      return null;
+    }
+  }
+
+  aud_discardBtn.onclick = () => {
+    aud_cleanupURL();
+    aud_blob = null;
+    aud_chunks = [];
+    aud_preview.src = '';
+    aud_preview.style.display = 'none';
+    aud_downloadArea.style.display = 'none';
+    aud_waveform.classList.remove('active');
+    aud_initWaveform();
+    aud_resetTimer();
+    aud_setStatus('● Ready', 'ready');
+  };
+
+  aud_initWaveform();
+  aud_detectSupport();
+  aud_updateSummaryChips();
+
+  // ============================================================
+  // ============ GLOBAL CLEANUP ================================
+  // ============================================================
+  window.addEventListener('beforeunload', () => {
+    // ✅ Don't revoke blob URLs on unload — browser cleans them up automatically
+    // (revoking mid-download would cause "Network error")
+    rec_releaseAllStreams();
+    clearInterval(rec_timerInterval);
+    aud_releaseStream();
+    clearInterval(aud_timerInterval);
+  });
+
+})();
+</script>
+{% endblock %}
