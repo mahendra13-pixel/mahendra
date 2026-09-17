@@ -595,22 +595,22 @@ def issue_mark_done(request, pk):
 @login_required(login_url="/admin/login/")
 @user_passes_test(is_admin)
 def toggle_public_issue(request, pk):
-    """Toggle the public visibility of an issue"""
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
     contact.is_public = not contact.is_public
     contact.save()
 
     if contact.is_public:
-        messages.success(
-            request, f"✅ Issue #{pk} is now PUBLIC - visible to everyone!"
-        )
+        messages.success(request, f"✅ Issue #{pk} is now PUBLIC - visible to everyone!")
     else:
-        messages.warning(
-            request, f"🔒 Issue #{pk} is now PRIVATE - only visible to the original IP"
-        )
+        messages.warning(request, f"🔒 Issue #{pk} is now PRIVATE - only visible to the original IP")
 
-    return redirect("core:contact")
-
+    # ✅ Preserve page + date after toggle
+    page = request.POST.get("page", 1)
+    date = request.POST.get("date", "").strip()
+    url = f"{reverse('core:contact')}?page={page}"
+    if date:
+        url += f"&date={date}"
+    return redirect(url)
 
 # Store Issue - Open Store Form (Anyone can access)
 @login_required(login_url="/admin/login/")

@@ -441,14 +441,11 @@
                             <p style="margin:2px 0;"><strong>Ext:</strong> {{ contact.phone }}</p>
                             <p style="margin:2px 0;"><strong>IP:</strong> {{ contact.ip_address }}</p>
                             <p style="margin:2px 0;"><strong>OS:</strong> {{ contact.os_info|default:"N/A" }}</p>
-                            <p style="margin:2px 0;"><strong>Attended By:</strong> {{
-                                contact.call_attended_by|default:"N/A" }}</p>
-                            <p style="margin:2px 0;"><strong>Handover To:</strong> {{ contact.handover_to|default:"N/A"
-                                }}</p>
+                            <p style="margin:2px 0;"><strong>Attended By:</strong> {{ contact.call_attended_by|default:"N/A" }}</p>
+                            <p style="margin:2px 0;"><strong>Handover To:</strong> {{ contact.handover_to|default:"N/A" }}</p>
                             <p style="margin:2px 0;"><strong>Solved By:</strong> {{ contact.solved_by|default:"N/A" }}
                             </p>
-                            <p style="margin:2px 0;"><strong>Assigned To:</strong> {{ contact.assigned_to|default:"N/A"
-                                }}</p>
+                            <p style="margin:2px 0;"><strong>Assigned To:</strong> {{ contact.assigned_to|default:"N/A" }}</p>
                             <p style="margin:2px 0;"><strong>Remarks:</strong> {{ contact.remarks|default:"N/A" }}</p>
                             <p style="margin:2px 0;">
                                 <strong>Priority:</strong>
@@ -635,6 +632,10 @@
                 {% if is_admin_user %}
                 <form method="POST" action="{% url 'core:toggle_public_issue' contact.id %}" style="display: inline;">
                     {% csrf_token %}
+                    <input type="hidden" name="page" value="{{ slider_page_obj.number }}">
+                    {% if request.GET.date %}
+                    <input type="hidden" name="date" value="{{ request.GET.date }}">
+                    {% endif %}
                     <button type="submit" class="btn btn-sm 
                         {% if contact.is_public %}btn-success{% else %}btn-outline-secondary{% endif %}"
                         style="padding: 2px 8px; font-size: 0.55rem; 
