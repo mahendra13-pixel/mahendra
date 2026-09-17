@@ -14,6 +14,7 @@ from io import BytesIO
 from datetime import datetime
 import socket
 import getpass
+from django.urls import reverse 
 from django.core.paginator import Paginator
 from .models import StoredFile
 from django.http import JsonResponse
@@ -740,11 +741,38 @@ def storage_delete(request, pk):
     """Delete a stored item - ADMIN ONLY"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
     if request.method == "POST":
+        current_page = int(request.POST.get("page", 1) or 1)
+        current_search = request.POST.get("search", "").strip()
+
         item.delete()
         messages.success(request, "✅ Item removed from storage")
-        return redirect("core:storage_view")
-    return redirect("core:storage_view")
 
+        # ✅ Rebuild the queryset the same way storage_view does
+        stored_items = Contact.objects.filter(is_stored=True).order_by("-stored_at")
+        if current_search:
+            stored_items = stored_items.filter(
+                models.Q(name__icontains=current_search) |
+                models.Q(department__icontains=current_search) |
+                models.Q(description__icontains=current_search) |
+                models.Q(remarks__icontains=current_search)
+            )
+
+        # ✅ Check if the current page is now empty
+        paginator = Paginator(stored_items, 20)
+        total_pages = paginator.num_pages or 1
+
+        # If current page exceeds total pages, step back
+        if current_page > total_pages:
+            current_page = total_pages
+
+        # ✅ Build redirect URL
+        url = f"{reverse('core:storage_view')}?page={current_page}"
+        if current_search:
+            url += f"&search={current_search}"
+
+        return redirect(url)
+
+    return redirect("core:storage_view")
 
 # Restore stored item (ADMIN ONLY)
 @login_required(login_url="/admin/login/")
@@ -1447,12 +1475,14 @@ def toggle_public_storage(request, pk):
     item.save(update_fields=["is_public"])
 
     if item.is_public:
-        messages.success(
-            request, f"✅ Stored item #{pk} is now PUBLIC - visible to everyone!"
-        )
+        messages.success(request, f"✅ Stored item #{pk} is now PUBLIC - visible to everyone!")
     else:
-        messages.warning(
-            request, f"🔒 Stored item #{pk} is now PRIVATE - only visible to admins"
-        )
+        messages.warning(request, f"🔒 Stored item #{pk} is now PRIVATE - only visible to admins")
 
-    return redirect("core:storage_view")
+    # ✅ Preserve page + search after toggle
+    page = request.POST.get("page", 1)
+    search = request.POST.get("search", "").strip()
+    url = f"{reverse('core:storage_view')}?page={page}"
+    if search:
+        url += f"&search={search}"
+    return redirect(url)

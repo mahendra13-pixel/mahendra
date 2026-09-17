@@ -307,6 +307,10 @@
                 <!-- Public/Private toggle — super compact icon only -->
                 <form method="POST" action="{% url 'core:toggle_public_storage' item.id %}" style="display: inline; margin: 0;">
                     {% csrf_token %}
+                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                    {% if request.GET.search %}
+                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
                     <button type="submit" class="btn btn-sm toggle-public-btn
                         {% if item.is_public %}btn-success{% else %}btn-outline-secondary{% endif %}"
                         style="{% if item.is_public %}background-color: #22c55e; border-color: #22c55e; color: white;{% else %}color: #6b7280; border-color: #d1d5db;{% endif %}"
@@ -319,9 +323,14 @@
                     </button>
                 </form>
 
-                <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline; margin: 0;"
+                <form method="POST" action="{% url 'core:storage_delete' item.id %}"
+                    style="display: inline; margin: 0;"
                     onsubmit="return confirm('Delete this stored item?');">
                     {% csrf_token %}
+                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                    {% if request.GET.search %}
+                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
                     <button type="submit" class="btn btn-sm btn-outline-danger"
                         style="font-size: 0.5rem; padding: 1px 6px;">
                         <i class="fas fa-trash"></i> Delete
@@ -364,8 +373,7 @@
 
     <div
         style="margin-top: 12px; font-size: 0.7rem; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px;">
-        <i class="fas fa-database"></i> Total: {{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize
-        }} in storage
+        <i class="fas fa-database"></i> Total: {{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize }} in storage
     </div>
     {% else %}
     <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
@@ -454,7 +462,7 @@
     {{ item.id }}: {
         name: "{{ item.name|escapejs }}",
             department: "{{ item.department|escapejs }}",
-                description: "{{ item.description|escapejs }}",
+                description: "{{ item.description|default:''|escapejs }}",
                     remarks: "{{ item.remarks|default:'No remarks'|escapejs }}",
                         priority: "{{ item.priority|escapejs }}",
                             stored_at: "{{ item.stored_at|date:'Y-m-d H:i:s' }}"
