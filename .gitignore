@@ -59,3 +59,4 @@ staticfiles/admin/js/vendor/
 *.bak
 *.backup
 *.corrupted.*
+db.sqlite3

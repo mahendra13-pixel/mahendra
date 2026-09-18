@@ -32,5 +32,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     path('visits/', include('visits.urls')),
     path('recordings/', include('recordings.urls')),
+    path('personal/', include('personal_store.urls')),
 
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
