@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.urls import reverse
 from .models import PersonalItem, PersonalStoredFile
+import socket
 
 def is_admin(user):
     return user.is_staff or user.is_superuser
@@ -67,6 +68,7 @@ def personal_store_submit(request):
                     # ✅ NEW FIELDS SAVED
                     due_date=due_date,
                     status=status,
+                    ip_address=get_client_ip(request),  
                     created_at=now,
                     updated_at=now,
                 )
@@ -205,3 +207,23 @@ def personal_item_detail(request, pk):
         'item': item,
         'stored_files': stored_files,
     })
+
+def get_client_ip(request):
+    """Get the real client IP address even behind proxies."""
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+
+    if ip in ("127.0.0.1", "::1", "localhost"):
+        try:
+            hostname = socket.gethostname()
+            ip = socket.gethostbyname(hostname)
+        except:
+            ip = "127.0.0.1"
+
+    if ip == "::1":
+        ip = "127.0.0.1"
+
+    return ip    

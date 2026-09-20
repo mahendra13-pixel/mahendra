@@ -8,7 +8,8 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-3 py-2 d-flex justify-content-between align-items-center">
+                <div
+                    class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-3 py-2 d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-list-check"></i> Personal Item Details</span>
                     <div class="d-flex align-items-center gap-2">
                         {% if stored_files %}
@@ -28,36 +29,45 @@
                 <div class="card-body p-4">
                     <!-- Name -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Name</label>
-                        <div style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Name</label>
+                        <div
+                            style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {{ item.name }}
                         </div>
                     </div>
 
                     <!-- Due Date -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Due Date</label>
-                        <div style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Due
+                            Date</label>
+                        <div
+                            style="font-size: 1rem; font-weight: 500; color: #1f2937; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {% if item.due_date %}
-                                {{ item.due_date|date:"Y-m-d" }}
+                            {{ item.due_date|date:"Y-m-d" }}
                             {% else %}
-                                <span style="color: #9ca3af;">No due date set</span>
+                            <span style="color: #9ca3af;">No due date set</span>
                             {% endif %}
                         </div>
                     </div>
 
                     <!-- Description -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Description</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Description</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap;">
                             {{ item.description|linebreaks }}
                         </div>
                     </div>
 
                     <!-- Remarks -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Remarks</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Remarks</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb; white-space: pre-wrap;">
                             {{ item.remarks|default:"No remarks"|linebreaks }}
                         </div>
                     </div>
@@ -65,9 +75,12 @@
                     <!-- Priority -->
                     {% if item.priority %}
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Priority</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
-                            <span class="badge {% if item.priority == 'Urgent' %}bg-danger{% elif item.priority == 'High' %}bg-warning{% elif item.priority == 'Medium' %}bg-info{% else %}bg-secondary{% endif %}">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Priority</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                            <span
+                                class="badge {% if item.priority == 'Urgent' %}bg-danger{% elif item.priority == 'High' %}bg-warning{% elif item.priority == 'Medium' %}bg-info{% else %}bg-secondary{% endif %}">
                                 {{ item.priority }}
                             </span>
                         </div>
@@ -76,9 +89,12 @@
 
                     <!-- Status (from model) -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Status</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
-                            <span class="badge {% if item.status == 'Closed' %}bg-secondary{% elif item.status == 'In Progress' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Status</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                            <span
+                                class="badge {% if item.status == 'Closed' %}bg-secondary{% elif item.status == 'In Progress' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
                                 {{ item.status }}
                             </span>
                         </div>
@@ -86,8 +102,10 @@
 
                     <!-- Completion Status (is_completed toggle) -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Completion</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Completion</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {% if item.is_completed %}
                             <span class="badge bg-success"><i class="fas fa-check-circle"></i> Completed</span>
                             {% else %}
@@ -98,23 +116,47 @@
 
                     <!-- Timestamps -->
                     <div class="mb-3">
-                        <label style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Created At</label>
-                        <div style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Created
+                            At</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
                             {{ item.created_at|date:"Y-m-d H:i:s" }}
+                        </div>
+                    </div>
+
+                    <!-- IP Address -->
+                    <div class="mb-3">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">IP
+                            Address</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                            {% if item.ip_address %}
+                            <code
+                                style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">{{ item.ip_address }}</code>
+                            {% else %}
+                            <span style="color: #9ca3af;">Not recorded</span>
+                            {% endif %}
                         </div>
                     </div>
 
                     <!-- Buttons -->
                     <div class="d-flex gap-2 mt-4 flex-wrap align-items-center">
-                        <a href="{% url 'personal_store:storage_view' %}" class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem; padding: 4px 14px;">
+                        <a href="{% url 'personal_store:storage_view' %}" class="btn btn-sm btn-outline-secondary"
+                            style="font-size: 0.7rem; padding: 4px 14px;">
                             <i class="fas fa-arrow-left"></i> Back
                         </a>
-                        <a href="{% url 'personal_store:store_edit' item.id %}" class="btn btn-sm btn-outline-primary" style="font-size: 0.7rem; padding: 4px 14px;">
+                        <a href="{% url 'personal_store:store_edit' item.id %}" class="btn btn-sm btn-outline-primary"
+                            style="font-size: 0.7rem; padding: 4px 14px;">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <form method="POST" action="{% url 'personal_store:storage_delete' item.id %}" style="display: inline;" onsubmit="return confirm('Permanently delete this item and all its files from disk?');">
+                        <form method="POST" action="{% url 'personal_store:storage_delete' item.id %}"
+                            style="display: inline;"
+                            onsubmit="return confirm('Permanently delete this item and all its files from disk?');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem; padding: 4px 14px;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                style="font-size: 0.7rem; padding: 4px 14px;">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </form>
