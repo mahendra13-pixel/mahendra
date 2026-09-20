@@ -5,4 +5,5 @@ app_name = 'ai'
 
 urlpatterns = [
     path('tools/', views.ai_links, name='ai_links'),
+    path('developer/', views.developer, name='developer'),
 ]

@@ -246,11 +246,15 @@
 
                 <!-- LEFT CORNER - ALL icons (including qms) -->
                 <div class="header-left-icons" id="mobileMenu">
+                    <a href="{% url 'ai:developer' %}" class="icon-link" title="Developer">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="brand-text">Developer</span>
+                    </a>
                     {% if user.is_authenticated and user.is_staff %}
                     <a href="{% url 'personal_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
                         style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️</a>
                     <a href="{% url 'personal_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
-                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️</a>    
+                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️</a>
                     <!-- qms -->
                     <a href="http://192.168.0.63:7000/#/login?_k=4z3xlh" target="_blank" rel="noopener noreferrer"
                         class="icon-link" title="Open System Login">
@@ -395,7 +399,7 @@
                         <i class="fas fa-address-card"></i>
                         <span class="brand-text">HOME</span>
                     </a>
-                    
+
                     <a href="https://www.ezyzip.com/convert-folder-to-zip.html" target="_blank">
                         📦
                     </a>

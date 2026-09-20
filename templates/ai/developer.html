@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Developer — Mahendra Kunwar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div style="max-width: 720px; margin: 0 auto;">
+
+        <!-- Profile card -->
+        <div
+            style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px 20px; text-align: center;">
+            <img src="{% static 'images/1.jpg' %}" alt="Mahendra Kunwar"
+                style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; margin-bottom: 16px;">
+            <h2 style="margin: 0 0 4px; font-size: 1.4rem;">Mahendra Kunwar</h2>
+            <p style="color: #6b7280; margin: 0 0 4px; font-size: 0.9rem;">
+                Python Developer · Full-Stack · IT Officer Assistant
+            </p>
+            <p style="color: #9ca3af; margin: 0 0 18px; font-size: 0.8rem;">
+                Grande International Hospital, Nepal
+            </p>
+
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <a href="mailto:your-email@example.com" class="dev-btn">📧 Email</a>
+                <a href="https://wa.me/9779742386629" target="_blank" rel="noopener noreferrer" class="dev-btn">💬
+                    WhatsApp</a>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
+            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">About</h3>
+            <p style="color: #374151; line-height: 1.7; margin: 0; font-size: 0.9rem;">
+                BSc CSIT graduate and Python developer with 6 months of experience building full-stack web
+                applications. Currently working as IT Officer Assistant at Grande International Hospital.
+                Passionate about clean code, backend architecture, and delivering practical software that solves
+                real problems. This issue solver is one of my primary projects — designed to streamline IT
+                support workflows inside the hospital.
+            </p>
+        </div>
+
+        <!-- Qualifications & Experience -->
+        <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
+            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">Qualifications & Experience</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 0.9rem; line-height: 1.8;">
+                <li><strong>BSc CSIT</strong> — Bachelor of Science in Computer Science and Information Technology
+                </li>
+                <li><strong>Python Developer</strong> — 6 months of hands-on experience</li>
+                <li><strong>IT Officer Assistant</strong> — Grande International Hospital (current)</li>
+                <li><strong>Full-Stack Web Development</strong> — Django, React, Bootstrap</li>
+            </ul>
+        </div>
+
+        <!-- Skills -->
+        <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
+            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">Skills</h3>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">Django</span>
+                <span class="tech-tag">HTML</span>
+                <span class="tech-tag">CSS</span>
+                <span class="tech-tag">JavaScript</span>
+                <span class="tech-tag">React</span>
+                <span class="tech-tag">Bootstrap</span>
+                <span class="tech-tag">SQLite</span>
+                <span class="tech-tag">Git</span>
+            </div>
+        </div>
+
+        <!-- Photos -->
+        <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
+            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">Photos</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                <a href="{% static 'images/1.jpg' %}" target="_blank" rel="noopener noreferrer">
+                    <img src="{% static 'images/1.jpg' %}" alt="Photo 1"
+                        style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; display: block;">
+                </a>
+                <a href="{% static 'images/2.jpg' %}" target="_blank" rel="noopener noreferrer">
+                    <img src="{% static 'images/2.jpg' %}" alt="Photo 2"
+                        style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; display: block;">
+                </a>
+                <a href="{% static 'images/3.jpg' %}" target="_blank" rel="noopener noreferrer">
+                    <img src="{% static 'images/3.jpg' %}" alt="Photo 3"
+                        style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; display: block;">
+                </a>
+            </div>
+            <p style="color: #9ca3af; font-size: 0.75rem; margin: 10px 0 0;">
+                Replace these placeholders with real photos in <code>static/images/developer/</code>.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .dev-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .dev-btn:hover {
+        background: #dbeafe;
+    }
+
+    .tech-tag {
+        padding: 4px 12px;
+        background: #f3f4f6;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: #374151;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
