@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Tools{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 style="font-size: 1.4rem; margin-bottom: 16px;">🤖 AI Tools</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;">
+
+        <!-- Multiples (2× each) -->
+        <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" class="ai-card">ChatGPT</a>
+        <a href="https://platform.openai.com" target="_blank" rel="noopener noreferrer" class="ai-card">ChatGPT 2</a>
+
+        <a href="https://chat.deepseek.com" target="_blank" rel="noopener noreferrer" class="ai-card">DeepSeek</a>
+        <a href="https://platform.deepseek.com" target="_blank" rel="noopener noreferrer" class="ai-card">DeepSeek 2</a>
+
+        <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Claude</a>
+        <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" class="ai-card">Claude 2</a>
+
+        <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="ai-card">Gemini</a>
+        <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" class="ai-card">Gemini 2</a>
+
+        <a href="https://grok.com" target="_blank" rel="noopener noreferrer" class="ai-card">Grok</a>
+        <a href="https://x.com/i/grok" target="_blank" rel="noopener noreferrer" class="ai-card">Grok 2</a>
+
+        <!-- Singles (1× each) -->
+        <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Perplexity</a>
+        <a href="https://chat.mistral.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Mistral</a>
+        <a href="https://copilot.microsoft.com" target="_blank" rel="noopener noreferrer" class="ai-card">Copilot</a>
+        <a href="https://www.meta.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Meta AI</a>
+        <a href="https://pi.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Pi</a>
+        <a href="https://poe.com" target="_blank" rel="noopener noreferrer" class="ai-card">Poe</a>
+        <a href="https://you.com" target="_blank" rel="noopener noreferrer" class="ai-card">You.com</a>
+        <a href="https://phind.com" target="_blank" rel="noopener noreferrer" class="ai-card">Phind</a>
+        <a href="https://huggingface.co/chat" target="_blank" rel="noopener noreferrer" class="ai-card">Hugging Face</a>
+        <a href="https://www.blackbox.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Blackbox</a>
+        <a href="https://kimi.moonshot.cn" target="_blank" rel="noopener noreferrer" class="ai-card">Kimi</a>
+        <a href="https://chat.qwen.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Qwen</a>
+        <a href="https://coral.cohere.com" target="_blank" rel="noopener noreferrer" class="ai-card">Cohere</a>
+        <a href="https://character.ai" target="_blank" rel="noopener noreferrer" class="ai-card">Character.AI</a>
+        <a href="https://replicate.com" target="_blank" rel="noopener noreferrer" class="ai-card">Replicate</a>
+        <a href="https://groq.com" target="_blank" rel="noopener noreferrer" class="ai-card">Groq</a>
+
+    </div>
+</div>
+
+<style>
+    .ai-card {
+        display: block;
+        padding: 14px 16px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #1f2937;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-align: center;
+        transition: all 0.15s ease;
+    }
+    .ai-card:hover {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #1d4ed8;
+    }
+</style>
+{% endblock %}

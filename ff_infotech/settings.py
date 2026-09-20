@@ -58,6 +58,7 @@ EXTERNAL_APPS = [
     'visits',
     'recordings',
     'personal_store', 
+    'ai',
 ]
 
 INSTALLED_APPS.extend(EXTERNAL_APPS)

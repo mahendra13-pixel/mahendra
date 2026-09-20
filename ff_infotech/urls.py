@@ -33,5 +33,6 @@ urlpatterns = [
     path('visits/', include('visits.urls')),
     path('recordings/', include('recordings.urls')),
     path('personal/', include('personal_store.urls')),
+    path('ai/', include('ai.urls')),
 
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
