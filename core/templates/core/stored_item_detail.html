@@ -106,6 +106,23 @@
                         </div>
                     </div>
 
+                                        <!-- Link -->
+                    <div class="mb-3">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Link</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                            {% if item.link %}
+                            <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer"
+                                style="color: #2563eb; text-decoration: none; word-break: break-all;">
+                                <i class="fas fa-external-link-alt" style="font-size: 0.75rem;"></i> {{ item.link }}
+                            </a>
+                            {% else %}
+                            <span style="color: #9ca3af;">No link set</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
                     <!-- Buttons -->
                     <div class="d-flex gap-2 mt-4 flex-wrap align-items-center">
                         <a href="{% url 'core:storage_view' %}" class="btn btn-sm btn-outline-secondary"

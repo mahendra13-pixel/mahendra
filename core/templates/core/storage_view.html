@@ -279,6 +279,14 @@
                 <div style="font-size: 0.5rem; color: #9ca3af; margin-top: 2px;">
                     <i class="far fa-clock"></i> {{ item.stored_at|date:"Y-m-d H:i" }}
                 </div>
+                {% if item.link %}
+                <div style="font-size: 0.55rem; margin-top: 2px;">
+                    <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer"
+                        style="color: #2563eb; text-decoration: none;" title="{{ item.link }}">
+                        <i class="fas fa-external-link-alt"></i> Open Link
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Card Footer -->

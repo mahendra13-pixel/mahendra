@@ -632,6 +632,7 @@ def store_submit(request):
         priority = request.POST.get("priority")
         remarks = request.POST.get("remarks", "")
         description = request.POST.get("description")
+        link = request.POST.get("link") or None
         now = timezone.localtime(timezone.now())
 
         # Get file
@@ -660,6 +661,7 @@ def store_submit(request):
                     message=None,
                     description=description,
                     remarks=remarks,
+                    link=link,   
                     media_file=None,
                     is_multiple=is_multiple,
                     file_count=file_count,
@@ -1079,6 +1081,7 @@ def store_edit(request, pk):
         priority = request.POST.get("priority")
         remarks = request.POST.get("remarks", "")
         description = request.POST.get("description")
+        link = request.POST.get("link") or None
 
         # Update the item
         item.name = name
@@ -1087,6 +1090,7 @@ def store_edit(request, pk):
         item.priority = priority
         item.remarks = remarks
         item.description = description
+        item.link = link 
 
         # ============================================================
         # ✅ HANDLE FILE OPERATIONS (ADD/REPLACE/DELETE)

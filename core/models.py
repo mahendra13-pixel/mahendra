@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from django.utils import timezone
 
@@ -59,6 +60,7 @@ class Contact(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     description = models.TextField(blank=True, null=True)  # NEW: For store form
+    link = models.URLField(blank=True, null=True) 
     is_stored = models.BooleanField(default=False)
     stored_at = models.DateTimeField(null=True, blank=True)
 
