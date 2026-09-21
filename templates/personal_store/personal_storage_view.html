@@ -10,17 +10,21 @@
         overflow: hidden;
         transition: all 0.2s ease;
     }
+
     .card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
     }
+
     .badge-done {
         background-color: #22c55e;
         color: white;
     }
+
     .badge-pending {
         background-color: #f59e0b;
         color: white;
     }
+
     .done-border {
         border: 2px solid #22c55e !important;
     }
@@ -44,7 +48,8 @@
     </div>
 
     <!-- Search Bar -->
-    <div style="margin-bottom: 12px; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+    <div
+        style="margin-bottom: 12px; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
         <form method="GET" action="" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 150px; position: relative;">
                 <i class="fas fa-search"
@@ -107,7 +112,8 @@
                     style="font-size: 0.65rem; font-weight: 600; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;">
                     {{ item.name }}
                     {% if item.is_completed %}
-                    <span class="badge-done" style="font-size: 0.5rem; padding: 1px 5px; border-radius: 8px; margin-left: 4px;">
+                    <span class="badge-done"
+                        style="font-size: 0.5rem; padding: 1px 5px; border-radius: 8px; margin-left: 4px;">
                         <i class="fas fa-check"></i> DONE
                     </span>
                     {% endif %}
@@ -121,7 +127,9 @@
             <div style="padding: 6px 10px;">
                 <!-- NEW: Status Badge -->
                 <div style="font-size: 0.6rem; margin-bottom: 2px;">
-                    <span class="badge {% if item.status == 'Closed' %}bg-secondary{% elif item.status == 'In Progress' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}" style="font-size: 0.5rem;">
+                    <span
+                        class="badge {% if item.status == 'Closed' %}bg-secondary{% elif item.status == 'In Progress' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}"
+                        style="font-size: 0.5rem;">
                         {{ item.status }}
                     </span>
                 </div>
@@ -131,7 +139,8 @@
                     <i class="fas fa-calendar-alt"></i> Due: {{ item.due_date|date:"Y-m-d" }}
                 </div>
                 {% endif %}
-                <div style="font-size: 0.6rem; color: #374151; margin-bottom: 4px; max-height: 32px; overflow: hidden; text-overflow: ellipsis;">
+                <div
+                    style="font-size: 0.6rem; color: #374151; margin-bottom: 4px; max-height: 32px; overflow: hidden; text-overflow: ellipsis;">
                     {{ item.description|truncatechars:50 }}
                 </div>
 
@@ -154,10 +163,21 @@
                 <div style="font-size: 0.5rem; color: #9ca3af; margin-top: 2px;">
                     <i class="far fa-clock"></i> {{ item.created_at|date:"Y-m-d H:i" }}
                 </div>
+
+
+                {% if item.link %}
+                <div style="font-size: 0.55rem; margin-top: 2px;">
+                    <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer"
+                        style="color: #2563eb; text-decoration: none;" title="{{ item.link }}">
+                        <i class="fas fa-external-link-alt"></i> Open Link
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Card Footer -->
-            <div style="background: #f9fafb; padding: 4px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb; flex-wrap: wrap;">
+            <div
+                style="background: #f9fafb; padding: 4px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb; flex-wrap: wrap;">
                 <a href="{% url 'personal_store:store_edit' item.id %}" class="btn btn-sm btn-outline-primary"
                     style="font-size: 0.5rem; padding: 1px 6px; text-decoration: none;">
                     <i class="fas fa-edit"></i> Edit
@@ -169,7 +189,8 @@
                 </a>
 
                 <!-- Completion Toggle -->
-                <form method="POST" action="{% url 'personal_store:toggle_completion' item.id %}" style="display: inline; margin: 0;">
+                <form method="POST" action="{% url 'personal_store:toggle_completion' item.id %}"
+                    style="display: inline; margin: 0;">
                     {% csrf_token %}
                     <input type="hidden" name="page" value="{{ page_obj.number }}">
                     {% if request.GET.search %}
@@ -234,8 +255,10 @@
         {% endif %}
     </div>
 
-    <div style="margin-top: 12px; font-size: 0.7rem; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px;">
-        <i class="fas fa-database"></i> Total: {{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize }} in personal store
+    <div
+        style="margin-top: 12px; font-size: 0.7rem; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 10px;">
+        <i class="fas fa-database"></i> Total: {{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize
+        }} in personal store
     </div>
     {% else %}
     <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
@@ -248,7 +271,8 @@
             {% endif %}
         </p>
         <p style="font-size: 0.8rem; color: #9ca3af;">Click "New" to store an item</p>
-        <a href="{% url 'personal_store:store_submit' %}" class="btn btn-primary btn-sm mt-2" style="font-size: 0.7rem; padding: 4px 14px;">
+        <a href="{% url 'personal_store:store_submit' %}" class="btn btn-primary btn-sm mt-2"
+            style="font-size: 0.7rem; padding: 4px 14px;">
             <i class="fas fa-plus"></i> Store New Item
         </a>
     </div>

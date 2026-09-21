@@ -72,6 +72,7 @@
                         </div>
                     </div>
 
+
                     <!-- Priority -->
                     {% if item.priority %}
                     <div class="mb-3">
@@ -137,6 +138,23 @@
                                 style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">{{ item.ip_address }}</code>
                             {% else %}
                             <span style="color: #9ca3af;">Not recorded</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Link -->
+                    <div class="mb-3">
+                        <label
+                            style="font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Link</label>
+                        <div
+                            style="font-size: 0.95rem; color: #374151; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                            {% if item.link %}
+                            <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer"
+                                style="color: #2563eb; text-decoration: none; word-break: break-all;">
+                                <i class="fas fa-external-link-alt" style="font-size: 0.75rem;"></i> {{ item.link }}
+                            </a>
+                            {% else %}
+                            <span style="color: #9ca3af;">No link set</span>
                             {% endif %}
                         </div>
                     </div>

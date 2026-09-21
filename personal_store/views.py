@@ -51,6 +51,7 @@ def personal_store_submit(request):
         description = request.POST.get("description")
         priority = request.POST.get("priority")
         remarks = request.POST.get("remarks", "")
+        link = request.POST.get("link") or None     
         # ✅ NEW FIELDS
         due_date = request.POST.get("due_date") or None
         status = request.POST.get("status", "Pending")
@@ -65,6 +66,7 @@ def personal_store_submit(request):
                     description=description,
                     priority=priority,
                     remarks=remarks,
+                    link=link, 
                     # ✅ NEW FIELDS SAVED
                     due_date=due_date,
                     status=status,
@@ -152,6 +154,7 @@ def personal_store_edit(request, pk):
         item.description = request.POST.get("description")
         item.priority = request.POST.get("priority")
         item.remarks = request.POST.get("remarks")
+        item.link = request.POST.get("link") or None 
         item.is_completed = request.POST.get("is_completed") == "on"
         # ✅ NEW FIELDS
         item.due_date = request.POST.get("due_date") or None

@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "172.31.100.8",
     "192.168.18.87",
-    "100.94.171.17",
+    "100.90.22.96",
 ]
 
 # Application definition
@@ -160,7 +160,7 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://100.94.171.17:8000',
+    'http://100.90.22.96:8000',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
     'http://172.31.100.8:8000',

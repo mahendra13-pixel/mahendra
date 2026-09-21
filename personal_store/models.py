@@ -11,6 +11,7 @@ class PersonalItem(models.Model):
     remarks = models.TextField(blank=True, null=True)
 
     ip_address = models.GenericIPAddressField(null=True, blank=True)
+    link = models.URLField(blank=True, null=True)
     
     # ✅ NEW FIELDS ADDED
     due_date = models.DateField(blank=True, null=True)

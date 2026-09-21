@@ -20,7 +20,8 @@
 
                     {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-primary" role="alert" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
+                    <div class="alert alert-primary" role="alert"
+                        style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -52,7 +53,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="status" style="font-size: 0.7rem; font-weight: 600;">Status</label>
-                                    <select id="status" name="status" class="form-select" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                    <select id="status" name="status" class="form-select"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
                                         <option value="Pending" selected>Pending</option>
                                         <option value="In Progress">In Progress</option>
                                         <option value="Closed">Closed</option>
@@ -62,7 +64,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="priority" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
-                                    <select id="priority" name="priority" class="form-select" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                    <select id="priority" name="priority" class="form-select"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
                                         <option value="Low">Low</option>
                                         <option value="Medium" selected>Medium</option>
                                         <option value="High">High</option>
@@ -76,11 +79,13 @@
                         <div class="row g-2 mt-1">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description </label>
+                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description
+                                    </label>
                                     <textarea id="description" name="description" rows="5" class="form-control"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 80px;"
                                         placeholder="Describe the task in detail..." maxlength="5000"></textarea>
-                                    <div style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
+                                    <div
+                                        style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
                                         <span id="charCount">0</span> / 5000 characters
                                     </div>
                                 </div>
@@ -95,6 +100,21 @@
                                     <textarea id="remarks" name="remarks" rows="2" class="form-control"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 40px;"
                                         placeholder="Additional remarks..."></textarea>
+                                </div>
+                            </div>
+
+
+                            <!-- Link (URL) -->
+                            <div class="row g-2 mt-1">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="link" style="font-size: 0.7rem; font-weight: 600;">
+                                            <i class="fas fa-link"></i> Link (URL)
+                                        </label>
+                                        <input type="url" id="link" name="link" class="form-control"
+                                            style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                            placeholder="https://example.com">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -113,7 +133,8 @@
                                         </label>
                                         <input type="file" id="store_media_upload" name="media_file" multiple
                                             style="display: none;" onchange="updateStoreFileLabel(this)">
-                                        <span id="storeFileName" style="font-size: 0.65rem; color: #6b7280;">No file selected</span>
+                                        <span id="storeFileName" style="font-size: 0.65rem; color: #6b7280;">No file
+                                            selected</span>
                                     </div>
                                 </div>
                             </div>

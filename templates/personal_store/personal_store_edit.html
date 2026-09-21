@@ -20,13 +20,15 @@
 
                     {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-primary" role="alert" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
+                    <div class="alert alert-primary" role="alert"
+                        style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
                         {{ message }}
                     </div>
                     {% endfor %}
                     {% endif %}
 
-                    <form method="POST" action="{% url 'personal_store:store_edit' item.id %}" enctype="multipart/form-data">
+                    <form method="POST" action="{% url 'personal_store:store_edit' item.id %}"
+                        enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <!-- Row 1: Name + Due Date -->
@@ -54,21 +56,30 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="status" style="font-size: 0.7rem; font-weight: 600;">Status</label>
-                                    <select id="status" name="status" class="form-select" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Pending" {% if item.status == 'Pending' %}selected{% endif %}>Pending</option>
-                                        <option value="In Progress" {% if item.status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                                        <option value="Closed" {% if item.status == 'Closed' %}selected{% endif %}>Closed</option>
+                                    <select id="status" name="status" class="form-select"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                        <option value="Pending" {% if item.status=='Pending' %}selected{% endif %}>
+                                            Pending</option>
+                                        <option value="In Progress" {% if item.status=='In Progress' %}selected{% endif
+                                            %}>In Progress</option>
+                                        <option value="Closed" {% if item.status=='Closed' %}selected{% endif %}>Closed
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="priority" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
-                                    <select id="priority" name="priority" class="form-select" style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High</option>
-                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>Urgent</option>
+                                    <select id="priority" name="priority" class="form-select"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
+                                        <option value="Low" {% if item.priority=='Low' %}selected{% endif %}>Low
+                                        </option>
+                                        <option value="Medium" {% if item.priority=='Medium' %}selected{% endif %}>
+                                            Medium</option>
+                                        <option value="High" {% if item.priority=='High' %}selected{% endif %}>High
+                                        </option>
+                                        <option value="Urgent" {% if item.priority=='Urgent' %}selected{% endif %}>
+                                            Urgent</option>
                                     </select>
                                 </div>
                             </div>
@@ -77,12 +88,15 @@
                         <div class="row g-2 mt-1">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description *</label>
+                                    <label for="description" style="font-size: 0.7rem; font-weight: 600;">Description
+                                        *</label>
                                     <textarea id="description" name="description" rows="5" class="form-control"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 80px;" required
                                         maxlength="5000">{{ item.description }}</textarea>
-                                    <div style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
-                                        <span id="charCount">{{ item.description|length|default:"0" }}</span> / 5000 characters
+                                    <div
+                                        style="font-size: 0.55rem; color: #6b7280; text-align: right; margin-top: 2px;">
+                                        <span id="charCount">{{ item.description|length|default:"0" }}</span> / 5000
+                                        characters
                                     </div>
                                 </div>
                             </div>
@@ -98,12 +112,30 @@
                             </div>
                         </div>
 
+
+                        <!-- Link (URL) -->
+                        <div class="row g-2 mt-1">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="link" style="font-size: 0.7rem; font-weight: 600;">
+                                        <i class="fas fa-link"></i> Link (URL)
+                                    </label>
+                                    <input type="url" id="link" name="link" class="form-control"
+                                        style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
+                                        placeholder="https://example.com" value="{{ item.link|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+
                         <!-- Completion Checkbox -->
                         <div class="row g-2 mt-2">
                             <div class="col-12">
                                 <div class="form-check">
-                                    <input type="checkbox" name="is_completed" id="is_completed" class="form-check-input" {% if item.is_completed %}checked{% endif %}>
-                                    <label class="form-check-label" for="is_completed" style="font-size: 0.75rem; font-weight: 600;">
+                                    <input type="checkbox" name="is_completed" id="is_completed"
+                                        class="form-check-input" {% if item.is_completed %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_completed"
+                                        style="font-size: 0.75rem; font-weight: 600;">
                                         <i class="fas fa-check-circle" style="color: #22c55e;"></i> Mark as Completed
                                     </label>
                                 </div>
@@ -119,11 +151,14 @@
                                     </label>
 
                                     {% if stored_files %}
-                                    <div style="margin-bottom: 4px; padding: 4px 10px; background: #f0fdf4; border-radius: 6px; border: 1px solid #86efac; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                                    <div
+                                        style="margin-bottom: 4px; padding: 4px 10px; background: #f0fdf4; border-radius: 6px; border: 1px solid #86efac; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
-                                            <i class="fas fa-check-circle" style="color: #16a34a; font-size: 0.8rem;"></i>
+                                            <i class="fas fa-check-circle"
+                                                style="color: #16a34a; font-size: 0.8rem;"></i>
                                             <span style="font-size: 0.7rem; font-weight: 500; color: #374151;">
-                                                {{ stored_files|length }} file{{ stored_files|length|pluralize }} attached
+                                                {{ stored_files|length }} file{{ stored_files|length|pluralize }}
+                                                attached
                                             </span>
                                         </div>
                                         <button type="button" class="eye-btn" onclick='openFileViewer([
@@ -137,17 +172,20 @@
                                     </div>
                                     <div style="margin-top: 4px;">
                                         <label style="font-size: 0.65rem; color: #dc2626; cursor: pointer;">
-                                            <input type="checkbox" name="media_clear" value="on" style="cursor: pointer;">
+                                            <input type="checkbox" name="media_clear" value="on"
+                                                style="cursor: pointer;">
                                             <i class="fas fa-trash-alt"></i> Remove all attached files
                                         </label>
                                     </div>
                                     {% else %}
-                                    <div style="padding: 4px 10px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; font-size: 0.7rem; color: #6b7280;">
+                                    <div
+                                        style="padding: 4px 10px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; font-size: 0.7rem; color: #6b7280;">
                                         <i class="fas fa-info-circle"></i> No files attached
                                     </div>
                                     {% endif %}
 
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                                    <div
+                                        style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
                                         <label for="media_file_upload" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
                                                padding: 3px 10px; background: #2563eb; color: white; border-radius: 4px; 
                                                font-size: 0.65rem; font-weight: 500;">
@@ -156,13 +194,15 @@
                                         </label>
                                         <input type="file" id="media_file_upload" name="media_file" multiple
                                             style="display: none;" onchange="updateStoreFileLabel(this)">
-                                        <span id="storeFileName" style="font-size: 0.6rem; color: #9ca3af;">No files selected</span>
+                                        <span id="storeFileName" style="font-size: 0.6rem; color: #9ca3af;">No files
+                                            selected</span>
                                     </div>
 
                                     <!-- Action selector -->
                                     <div style="margin-top: 4px; display: flex; gap: 10px; font-size: 0.65rem;">
                                         <label style="cursor: pointer;">
-                                            <input type="radio" name="file_action" value="replace" checked> Replace existing files
+                                            <input type="radio" name="file_action" value="replace" checked> Replace
+                                            existing files
                                         </label>
                                         <label style="cursor: pointer;">
                                             <input type="radio" name="file_action" value="add"> Add to existing files
@@ -176,7 +216,8 @@
                             <button type="submit" class="btn btn-primary" style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-save"></i> Update
                             </button>
-                            <a href="{% url 'personal_store:storage_view' %}" class="btn btn-outline-secondary" style="font-size: 0.7rem; padding: 4px 12px;">
+                            <a href="{% url 'personal_store:storage_view' %}" class="btn btn-outline-secondary"
+                                style="font-size: 0.7rem; padding: 4px 12px;">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         </div>
