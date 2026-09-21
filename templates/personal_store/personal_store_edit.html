@@ -58,11 +58,10 @@
                                     <label for="status" style="font-size: 0.7rem; font-weight: 600;">Status</label>
                                     <select id="status" name="status" class="form-select"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Pending" {% if item.status=='Pending' %}selected{% endif %}>
+                                        <option value="Pending" {% if item.status == 'Pending' %}selected{% endif %}>
                                             Pending</option>
-                                        <option value="In Progress" {% if item.status=='In Progress' %}selected{% endif
-                                            %}>In Progress</option>
-                                        <option value="Closed" {% if item.status=='Closed' %}selected{% endif %}>Closed
+                                        <option value="In Progress" {% if item.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="Closed" {% if item.status == 'Closed' %}selected{% endif %}>Closed
                                         </option>
                                     </select>
                                 </div>
@@ -72,13 +71,13 @@
                                     <label for="priority" style="font-size: 0.7rem; font-weight: 600;">Priority</label>
                                     <select id="priority" name="priority" class="form-select"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;">
-                                        <option value="Low" {% if item.priority=='Low' %}selected{% endif %}>Low
+                                        <option value="Low" {% if item.priority == 'Low' %}selected{% endif %}>Low
                                         </option>
-                                        <option value="Medium" {% if item.priority=='Medium' %}selected{% endif %}>
+                                        <option value="Medium" {% if item.priority == 'Medium' %}selected{% endif %}>
                                             Medium</option>
-                                        <option value="High" {% if item.priority=='High' %}selected{% endif %}>High
+                                        <option value="High" {% if item.priority == 'High' %}selected{% endif %}>High
                                         </option>
-                                        <option value="Urgent" {% if item.priority=='Urgent' %}selected{% endif %}>
+                                        <option value="Urgent" {% if item.priority == 'Urgent' %}selected{% endif %}>
                                             Urgent</option>
                                     </select>
                                 </div>
