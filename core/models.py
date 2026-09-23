@@ -63,6 +63,13 @@ class Contact(models.Model):
     link = models.URLField(blank=True, null=True) 
     is_stored = models.BooleanField(default=False)
     stored_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        'auth.User',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='created_issues',
+        help_text="User account that submitted this issue"
+    )
 
     def __str__(self):
         return f"{self.name} - {self.department}"

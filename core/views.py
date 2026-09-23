@@ -217,6 +217,7 @@ def contact(request):
                     created_at=now,
                     resolved_at=now if is_resolved else None,
                     updated_at=now,
+                    created_by=request.user,      
                 )
                 first_saved_path = None
                 for idx, file in enumerate(multiple_files):
@@ -256,7 +257,10 @@ def contact(request):
     # IP FILTERING: If not admin, only show issues with matching IP OR public issues
     if not is_admin_user:
         contacts = contacts.filter(
-            models.Q(ip_address=ip_address) | models.Q(is_public=True)
+            models.Q(created_by=request.user) |
+            models.Q(is_public=True) |
+            # Fallback for old issues without created_by — use IP
+            models.Q(created_by__isnull=True, ip_address=ip_address)
         )
 
     resolved_contacts = Contact.objects.filter(
@@ -266,7 +270,9 @@ def contact(request):
     # IP FILTERING: If not admin, only show resolved issues with matching IP OR public issues
     if not is_admin_user:
         resolved_contacts = resolved_contacts.filter(
-            models.Q(ip_address=ip_address) | models.Q(is_public=True)
+            models.Q(created_by=request.user) |
+            models.Q(is_public=True) |
+            models.Q(created_by__isnull=True, ip_address=ip_address)
         )
 
     # Get pending and in-progress issues for the modal
@@ -277,7 +283,9 @@ def contact(request):
     # IP FILTERING: If not admin, only show pending issues with matching IP OR public issues
     if not is_admin_user:
         pending_contacts = pending_contacts.filter(
-            models.Q(ip_address=ip_address) | models.Q(is_public=True)
+            models.Q(created_by=request.user) |
+            models.Q(is_public=True) |
+            models.Q(created_by__isnull=True, ip_address=ip_address)
         )
 
     # Date filter for Issue Slider (uses 'date' parameter)
