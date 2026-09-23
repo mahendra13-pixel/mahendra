@@ -724,12 +724,39 @@ def storage_view(request):
     search_query = request.GET.get("search")
     if search_query:
         stored_items = stored_items.filter(
+            # 1. Name
             models.Q(name__icontains=search_query)
+            # 2. Department
             | models.Q(department__icontains=search_query)
+            # 3. Description
             | models.Q(description__icontains=search_query)
+            # 4. Remarks
             | models.Q(remarks__icontains=search_query)
+            # 5. Extension / Phone
+            | models.Q(phone__icontains=search_query)
+            # 6. Link (URL)
+            | models.Q(link__icontains=search_query)
+            # 7. Priority
+            | models.Q(priority__icontains=search_query)
+            # 8. Status
+            | models.Q(status__icontains=search_query)
+            # 9. IP Address
+            | models.Q(ip_address__icontains=search_query)
+            # 10. Hostname
+            | models.Q(hostname__icontains=search_query)
+            # 11. Username
+            | models.Q(username__icontains=search_query)
+            # 12. OS Info
+            | models.Q(os_info__icontains=search_query)
+            # 13. Call Attended By
+            | models.Q(call_attended_by__icontains=search_query)
+            # 14. Handover To
+            | models.Q(handover_to__icontains=search_query)
+            # 15. Solved By
+            | models.Q(solved_by__icontains=search_query)
+            # 16. Assigned To
+            | models.Q(assigned_to__icontains=search_query)
         )
-
     paginator = Paginator(stored_items, 20)  # 20 items per page
     page_number = request.GET.get("page", 1)  # Get page from URL (?page=2)
     page_obj = paginator.get_page(page_number)
@@ -757,16 +784,27 @@ def storage_delete(request, pk):
         item.delete()
         messages.success(request, "✅ Item removed from storage")
 
-        # ✅ Rebuild the queryset the same way storage_view does
+            
         stored_items = Contact.objects.filter(is_stored=True).order_by("-stored_at")
         if current_search:
             stored_items = stored_items.filter(
-                models.Q(name__icontains=current_search) |
-                models.Q(department__icontains=current_search) |
-                models.Q(description__icontains=current_search) |
-                models.Q(remarks__icontains=current_search)
+                models.Q(name__icontains=current_search)
+                | models.Q(department__icontains=current_search)
+                | models.Q(description__icontains=current_search)
+                | models.Q(remarks__icontains=current_search)
+                | models.Q(phone__icontains=current_search)
+                | models.Q(link__icontains=current_search)
+                | models.Q(priority__icontains=current_search)
+                | models.Q(status__icontains=current_search)
+                | models.Q(ip_address__icontains=current_search)
+                | models.Q(hostname__icontains=current_search)
+                | models.Q(username__icontains=current_search)
+                | models.Q(os_info__icontains=current_search)
+                | models.Q(call_attended_by__icontains=current_search)
+                | models.Q(handover_to__icontains=current_search)
+                | models.Q(solved_by__icontains=current_search)
+                | models.Q(assigned_to__icontains=current_search)
             )
-
         # ✅ Check if the current page is now empty
         paginator = Paginator(stored_items, 20)
         total_pages = paginator.num_pages or 1
