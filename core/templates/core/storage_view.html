@@ -333,7 +333,7 @@
 
                 <form method="POST" action="{% url 'core:storage_delete' item.id %}"
                     style="display: inline; margin: 0;"
-                    onsubmit="return confirm('Delete this stored item?');">
+                    onsubmit="if (!confirm('Delete this stored item?')) return false; return confirm('Are you sure? This cannot be undone.');">
                     {% csrf_token %}
                     <input type="hidden" name="page" value="{{ page_obj.number }}">
                     {% if request.GET.search %}
