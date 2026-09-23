@@ -1,0 +1,371 @@
+<!-- ============================================
+     FILE VIEWER MODAL - GLOBAL
+     ============================================ -->
+<div class="file-viewer-modal" id="fileViewerModal">
+    <div class="file-viewer-content">
+        <div class="file-viewer-header">
+            <h5><i class="fas fa-paperclip"></i> Files <span id="viewerFileCount"
+                    style="font-size: 0.6rem; opacity: 0.7; margin-left: 6px;"></span></h5>
+            <button class="file-viewer-close" onclick="closeFileViewer()">&times;</button>
+        </div>
+        <div class="file-viewer-body" id="fileViewerBody">
+            <div style="text-align: center; color: #9ca3af; padding: 30px 0; font-size: 0.8rem;">
+                <i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                No files attached
+            </div>
+        </div>
+        <div class="file-viewer-footer">
+            <span class="info-text"><i class="fas fa-info-circle"></i> <span id="viewerFileCountFooter">0</span>
+                files</span>
+            <div style="display: flex; gap: 6px;">
+                <button class="btn-download-all" onclick="downloadAllViewerFiles()">
+                    <i class="fas fa-download"></i> Download All
+                </button>
+                <button class="btn-done" onclick="closeFileViewer()">
+                    <i class="fas fa-check"></i> Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // FILE VIEWER - USES TEMPLATE DATA DIRECTLY
+    // ============================================
+    let currentViewerFiles = [];
+    let currentContactId = null;
+    let currentIsStored = false;
+
+    /**
+     * Open the file viewer modal with file data
+     * @param {Array} filesData - Array of file objects: { name, size, url }
+     * @param {Number} contactId - The ID of the contact/item
+     * @param {Boolean} isStored - Whether this is a stored item
+     */
+    function openFileViewer(filesData, contactId = null, isStored = false) {
+        currentViewerFiles = filesData || [];
+        currentContactId = contactId;
+        currentIsStored = isStored;
+
+        const modal = document.getElementById('fileViewerModal');
+        const fileCount = document.getElementById('viewerFileCount');
+        const fileCountFooter = document.getElementById('viewerFileCountFooter');
+
+        if (!modal) {
+            console.error('File viewer modal not found');
+            alert('File viewer is loading. Please try again.');
+            return;
+        }
+
+        renderViewerFiles(currentViewerFiles);
+        fileCount.textContent = `(${currentViewerFiles.length})`;
+        fileCountFooter.textContent = currentViewerFiles.length;
+
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    /**
+     * Render files in the modal grid
+     */
+    function renderViewerFiles(files) {
+        const body = document.getElementById('fileViewerBody');
+
+        if (!files || files.length === 0) {
+            body.innerHTML = `
+            <div style="text-align: center; color: #9ca3af; padding: 30px 0; font-size: 0.8rem;">
+                <i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                No files attached
+            </div>
+        `;
+            return;
+        }
+
+        let html = '<div class="file-viewer-grid">';
+        files.forEach((file, index) => {
+            const icon = getFileIconFromName(file.name);
+            const size = formatFileSize(file.size);
+            html += `
+            <div class="file-viewer-item" data-index="${index}">
+                <div class="file-icon">${icon}</div>
+                <div class="file-name" title="${file.name}">${file.name}</div>
+                <div class="file-size">${size}</div>
+                <div class="file-actions">
+                    <a href="${file.url}" target="_blank" class="view-btn"><i class="fas fa-eye"></i> View</a>
+                    <a href="${file.url}" download class="download-btn"><i class="fas fa-download"></i></a>
+                    <button class="delete-btn" onclick="deleteViewerFile(${index})" title="Delete File">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        });
+        html += '</div>';
+        body.innerHTML = html;
+    }
+
+    /**
+     * Get appropriate icon for file type
+     */
+    function getFileIconFromName(filename) {
+        if (!filename) return '📄';
+        const ext = filename.slice(-4).toLowerCase();
+        const ext5 = filename.slice(-5).toLowerCase();
+
+        // Images
+        if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.ico'].includes(ext) ||
+            ['.jpeg'].includes(ext5)) return '🖼️';
+
+        // Videos
+        if (['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.flv', '.wmv'].includes(ext)) return '🎬';
+
+        // Audio
+        if (['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma'].includes(ext)) return '🎵';
+
+        // PDF
+        if (ext === '.pdf') return '📄';
+
+        // Excel/Spreadsheets
+        if (['.xls', '.xlsx', '.csv', '.ods'].includes(ext)) return '📊';
+
+        // Word/Documents
+        if (['.doc', '.docx', '.txt', '.rtf'].includes(ext)) return '📝';
+
+        // Archives
+        if (['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz'].includes(ext)) return '📦';
+
+        // Code files
+        if (['.py', '.js', '.html', '.css', '.php', '.java', '.cpp', '.c', '.go', '.rb'].includes(ext)) return '💻';
+
+        return '📄';
+    }
+
+    /**
+     * Format file size for display
+     */
+    function formatFileSize(bytes) {
+        if (!bytes || bytes === 0) return '0 KB';
+        const mb = bytes / 1024 / 1024;
+        if (mb > 1) return mb.toFixed(2) + ' MB';
+        const kb = bytes / 1024;
+        return kb.toFixed(1) + ' KB';
+    }
+
+    /**
+     * Close the file viewer modal
+     */
+    function closeFileViewer() {
+        document.getElementById('fileViewerModal').classList.remove('show');
+        document.body.style.overflow = '';
+        currentViewerFiles = [];
+        currentContactId = null;
+        currentIsStored = false;
+    }
+
+    /**
+     * Download all files in the viewer
+     */
+    function downloadAllViewerFiles() {
+        if (currentViewerFiles.length === 0) {
+            alert('No files to download');
+            return;
+        }
+        currentViewerFiles.forEach((file, index) => {
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = file.url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, index * 400);
+        });
+    }
+
+    /**
+     * Delete a single file from the viewer
+     */
+    function deleteViewerFile(index) {
+        if (!currentViewerFiles || currentViewerFiles.length === 0) {
+            return;
+        }
+
+        const file = currentViewerFiles[index];
+        if (!file) return;
+
+        if (!confirm(`Delete this file?\n\n"${file.name}"`)) {
+            return;
+        }
+        if (!confirm('Are you sure? This cannot be undone.')) {
+            return;
+        }
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                          document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+        // Determine endpoint based on context
+        let endpoint = '';
+        if (currentContactId) {
+            endpoint = `/personal/${currentContactId}/file/delete/${index}/`;
+        }
+
+        // If no contact ID, fallback to UI-only deletion
+        if (!endpoint) {
+            // Remove from array
+            currentViewerFiles.splice(index, 1);
+
+            // Re-render the files
+            renderViewerFiles(currentViewerFiles);
+
+            // Update file counts
+            updateFileCounts();
+
+            // Show notification
+            showViewerNotification(`✅ "${file.name}" removed from view`, 'success');
+
+            // If no files left, close modal after 1.5 seconds
+            if (currentViewerFiles.length === 0) {
+                setTimeout(() => {
+                    closeFileViewer();
+                }, 1500);
+            }
+            return;
+        }
+
+        // Send delete request to server
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(async response => {
+            const ct = response.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text.slice(0, 300));
+                throw new Error(`Server returned ${response.status} (not JSON)`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove from array
+                currentViewerFiles.splice(index, 1);
+
+                // Re-render the files
+                renderViewerFiles(currentViewerFiles);
+
+                // Update file counts
+                updateFileCounts();
+
+                // Show notification
+                showViewerNotification(`✅ "${file.name}" deleted successfully!`, 'success');
+
+                // If no files left, close modal after 1.5 seconds
+                if (currentViewerFiles.length === 0) {
+                    setTimeout(() => {
+                        closeFileViewer();
+                    }, 1500);
+                }
+            } else {
+                showViewerNotification(`❌ ${data.message}`, 'error');
+            }
+        })
+        .catch(error => {
+            showViewerNotification(`❌ Error: ${error.message}`, 'error');
+        });
+    }
+
+    /**
+     * Update file counts in the viewer
+     */
+    function updateFileCounts() {
+        const fileCount = document.getElementById('viewerFileCount');
+        const fileCountFooter = document.getElementById('viewerFileCountFooter');
+        if (fileCount) fileCount.textContent = `(${currentViewerFiles.length})`;
+        if (fileCountFooter) fileCountFooter.textContent = currentViewerFiles.length;
+    }
+
+    /**
+     * Show notification inside viewer
+     */
+    function showViewerNotification(message, type = 'info') {
+        const colors = {
+            success: '#22c55e',
+            error: '#ef4444',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+
+        // Remove existing notifications
+        const existing = document.querySelectorAll('.viewer-notification');
+        existing.forEach(el => el.remove());
+
+        const notification = document.createElement('div');
+        notification.className = 'viewer-notification';
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${colors[type] || colors.info};
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 99999;
+            animation: slideUp 0.3s ease;
+            max-width: 400px;
+            text-align: center;
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeFileViewer();
+        }
+    });
+
+    // Close on outside click
+    document.getElementById('fileViewerModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFileViewer();
+        }
+    });
+
+    // ============================================
+    // HELPER: Convert stored_files to file data
+    // ============================================
+    function buildFileData(storedFiles) {
+        const files = [];
+        if (storedFiles) {
+            storedFiles.forEach(function(sf) {
+                files.push({
+                    name: sf.file_name || sf.name || 'Unknown',
+                    size: sf.file_size || sf.size || 0,
+                    url: sf.file.url || sf.url || '#'
+                });
+            });
+        }
+        return files;
+    }
+</script>

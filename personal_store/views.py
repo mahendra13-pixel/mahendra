@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.urls import reverse
 from .models import PersonalItem, PersonalStoredFile
+from django.http import JsonResponse
 import socket
 
 def is_admin(user):
@@ -230,3 +231,32 @@ def get_client_ip(request):
         ip = "127.0.0.1"
 
     return ip    
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def personal_delete_file(request, pk, file_index):
+    """Delete a specific file from a personal store item"""
+    item = get_object_or_404(PersonalItem, pk=pk)
+    stored_files = item.stored_files.all().order_by("id")
+
+    if file_index < len(stored_files):
+        file_to_delete = stored_files[file_index]
+        file_name = file_to_delete.file_name
+
+        # Delete from DB + disk (via model override)
+        file_to_delete.delete()
+
+        # Re-sync media_file + counts
+        remaining = item.stored_files.all().order_by("id")
+        item.media_file = remaining.first().file if remaining.exists() else None
+        item.file_count = remaining.count()
+        item.is_multiple = item.file_count > 1
+        item.save()
+
+        return JsonResponse({
+            "status": "success",
+            "message": f"Deleted: {file_name}",
+            "file_count": item.file_count,
+        })
+
+    return JsonResponse({"status": "error", "message": "File not found"}, status=404)    
