@@ -26,13 +26,24 @@ def personal_storage_view(request):
     elif status_filter == 'completed':
         items = items.filter(is_completed=True)
 
-    # Search
+    # Search — covers every text field on the PersonalItem card
     search_query = request.GET.get('search')
     if search_query:
         items = items.filter(
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(remarks__icontains=search_query)
+            # 1. Name
+            Q(name__icontains=search_query)
+            # 2. Description
+            | Q(description__icontains=search_query)
+            # 3. Remarks
+            | Q(remarks__icontains=search_query)
+            # 4. Priority
+            | Q(priority__icontains=search_query)
+            # 5. Status
+            | Q(status__icontains=search_query)
+            # 6. Link (URL)
+            | Q(link__icontains=search_query)
+            # 7. IP Address
+            | Q(ip_address__icontains=search_query)
         )
 
     paginator = Paginator(items, 20)

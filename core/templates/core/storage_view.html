@@ -190,7 +190,7 @@
             <div style="flex: 1; min-width: 150px; position: relative;">
                 <i class="fas fa-search"
                     style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.8rem; z-index: 9999; pointer-events: none;"></i>
-                <input type="text" name="search" value="{{ request.GET.search|default:'' }}"
+                <input type="text" name="search" value="{{ request.GET.search|default:'' }}" id="searchInput"
                     placeholder="Search anything: name, department, description, remarks, IP, OS, priority..."
                     style="width: 100%; padding: 8px 12px 8px 32px; font-size: 0.8rem; border: 2px solid #d1d5db; border-radius: 6px; outline: none; background: #ffffff !important; color: #1f2937 !important; box-sizing: border-box; min-height: 38px; pointer-events: auto !important; z-index: 9999 !important; position: relative !important;">
             </div>
