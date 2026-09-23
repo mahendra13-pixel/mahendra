@@ -194,7 +194,10 @@
         const file = currentViewerFiles[index];
         if (!file) return;
 
-        if (!confirm(`Are you sure you want to delete "${file.name}"?`)) {
+        if (!confirm(`Delete this file?\n\n"${file.name}"`)) {
+            return;
+        }
+        if (!confirm('Are you sure? This cannot be undone.')) {
             return;
         }
 
@@ -241,7 +244,15 @@
                 'Content-Type': 'application/json',
             }
         })
-        .then(response => response.json())
+        .then(async response => {
+            const ct = response.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text.slice(0, 300));
+                throw new Error(`Server returned ${response.status} (not JSON)`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 // Remove from array
