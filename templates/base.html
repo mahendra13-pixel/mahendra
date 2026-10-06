@@ -252,48 +252,12 @@
                     </a>
                     {% if user.is_authenticated and user.is_staff %}
                     <a href="{% url 'personal_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
-                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️</a>
+                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️Personal store</a>
                     <a href="{% url 'personal_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
-                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️</a>
-                    <!-- qms -->
-                    <a href="http://192.168.0.63:7000/#/login?_k=4z3xlh" target="_blank" rel="noopener noreferrer"
-                        class="icon-link" title="Open System Login">
-                        qms
-                    </a>
-
-                    <!-- pacs -->
-                    <a href="http://192.168.0.48:8010/login?logout=success" target="_blank" rel="noopener noreferrer"
-                        class="icon-link" title="Open Link">
-                        pacs
-                    </a>
-
-                    <!-- uat -->
-                    <a href="http://192.168.0.56/TEST/Forms/fm_Login.aspx" target="_blank" rel="noopener noreferrer"
-                        class="icon-link test" title="TEST System">
-                        uat
-                    </a>
-
-                    <!-- SHIMS -->
-                    <a href="http://192.168.0.56/shims_local/forms/fm_login.aspx?_t=1790055296115" class="icon-link hospital"
-                        title="SHIMS - Hospital Management System" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-hospital"></i>
-                        <span class="brand-text">SHIMS</span>
-                    </a>
-
-                    <a href="http://192.168.0.56/shims_local/forms/fm_login.aspx?_t=1790055296115" class="icon-link hospital"
-                        title="SHIMS - Hospital Management System" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-hospital"></i>
-                        <span class="brand-text">SHIMS</span>
-                    </a>
-
+                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️personal store</a>
+                    
                     <span class="divider">|</span>
 
-                    <!-- Email -->
-                    <a href="https://mail.grandehospital.com/?_task=mail&_action=compose&_to=itteam@grandehospital.com"
-                        target="_blank" class="icon-link">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-
                     <!-- WhatsApp -->
                     <a href="https://wa.me/9779742386629" target="_blank" class="icon-link whatsapp"
                         title="Chat on WhatsApp">
@@ -305,30 +269,16 @@
                         <i class="fab fa-whatsapp"></i>
                     </a>
 
-                    <!-- Email -->
-                    <a href="https://mail.grandehospital.com/?_task=mail&_action=compose&_to=itteam@grandehospital.com"
-                        target="_blank" class="icon-link">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-
-                    <!-- Sheets -->
-                    <a href="https://docs.google.com/spreadsheets/d/1KRJYsfzWz8l4UYMevSEV39_FvLWStXavZw_UGkyukyo/edit?gid=0#gid=0"
-                        target="_blank" rel="noopener noreferrer" class="icon-link sheets"
-                        title="Open Google Sheets - IT Team">
-                        <i class="fas fa-table"></i>
-                    </a>
-
-                    <!-- W-EV -->
-                    <a href="http://192.168.10.150:19850/wevinsite/" target="_blank" rel="noopener noreferrer"
-                        class="icon-link" title="Open Wevin Site">
-                        W-EV
-                    </a>
                     {% endif %}
                     <a href="{% url 'ai:ai_links' %}" class="icon-link" title="AI Tools">
                         <i class="fas fa-robot"></i>
                         <span class="brand-text">AI</span>
                     </a>
 
+                    <a href="{% url 'ai:ai_links' %}" class="icon-link" title="AI Tools">
+                        <i class="fas fa-robot"></i>
+                        <span class="brand-text">AI</span>
+                    </a>
                     <a href="{% url 'ai:ai_links' %}" class="icon-link" title="AI Tools">
                         <i class="fas fa-robot"></i>
                         <span class="brand-text">AI</span>
@@ -362,12 +312,6 @@
                     </a>
                     <!-- SHIMS -->
                     {% if user.is_authenticated and user.is_staff %}
-                    <a href="http://192.168.0.56/shims_local/forms/fm_login.aspx?_t=1790055296115" class="icon-link hospital"
-                        title="SHIMS - Hospital Management System" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-hospital"></i>
-                        <span class="brand-text">SHIMS</span>
-                    </a>
-
                     <!-- INVENTORY -->
                     <a href="{% url 'inventory:management' %}" class="icon-link" title="Inventory"
                         style="font-size: 0.5rem; padding: 0.05rem 0.15rem !important; text-decoration: none; color: inherit; display: inline-block; line-height: 0.8; font-weight: 700; letter-spacing: 0.3px;">
