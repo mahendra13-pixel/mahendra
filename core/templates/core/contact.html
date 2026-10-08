@@ -54,7 +54,16 @@
                 </span>
                 <span class="issue-details">
                     <i class="fas fa-building"></i> {{ contact.department }} &nbsp;|&nbsp;
-                    <i class="fas fa-phone"></i> {{ contact.phone }} &nbsp;|&nbsp;
+                    <i class="fas fa-link"></i>
+                    {% if contact.link %}
+                    <a href="{{ contact.link }}" target="_blank" rel="noopener noreferrer"
+                    style="color:#2563eb; text-decoration:underline;" title="{{ contact.link }}">
+                        Open Link
+                    </a>
+                    {% else %}
+                    N/A
+                    {% endif %}
+                    &nbsp;|&nbsp;
                     <i class="fas fa-flag"></i> {{ contact.priority }}
                 </span>
                 <span class="issue-details" style="margin-top: 6px; opacity: 0.8;">
@@ -440,7 +449,17 @@
                             style="padding:12px; font-size:12px; border:1px solid #ddd; border-radius:8px;">
                             <h6 style="margin-bottom:6px; font-size:0.9rem;">{{ contact.department }}</h6>
                             <p style="margin:2px 0;"><strong>Name:</strong> {{ contact.name }}</p>
-                            <p style="margin:2px 0;"><strong>Ext:</strong> {{ contact.phone }}</p>
+                            <p style="margin:2px 0;">
+                                <strong>Link:</strong>
+                                {% if contact.link %}
+                                <a href="{{ contact.link }}" target="_blank" rel="noopener noreferrer"
+                                style="color:#2563eb; text-decoration:underline;" title="{{ contact.link }}">
+                                    Open Link
+                                </a>
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </p>
                             <p style="margin:2px 0;"><strong>IP:</strong> {{ contact.ip_address }}</p>
                             <p style="margin:2px 0;"><strong>OS:</strong> {{ contact.os_info|default:"N/A" }}</p>
                             <p style="margin:2px 0;"><strong>Attended By:</strong> {{ contact.call_attended_by|default:"N/A" }}</p>
