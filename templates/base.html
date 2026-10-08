@@ -251,6 +251,10 @@
                         <span class="brand-text">Developer</span>
                     </a>
                     {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'link_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
+                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🔗 Link store</a>
+                    <a href="{% url 'link_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
+                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🔗 Link store</a>    
                     <a href="{% url 'personal_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
                         style="font-size: 0.6rem; text-decoration: none; color: inherit;">🗂️Personal store</a>
                     <a href="{% url 'personal_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
