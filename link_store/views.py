@@ -11,6 +11,7 @@ import os
 
 
 MAX_LINKS = 9
+FILE_SUFFIXES = ['', '_b', '_c', '_d']   # 4 files per slot
 
 
 def is_admin(user):
@@ -47,28 +48,31 @@ def link_store_view(request):
                     setattr(card, f"link_url_{i}",
                             request.POST.get(f"link_url_{i}", "").strip() or None)
 
-                    clear_flag = request.POST.get(f"clear_file_{i}") == "on"
-                    new_file = request.FILES.get(f"link_file_{i}")
+                    # Loop over 4 file suffixes for this slot
+                    for suffix in FILE_SUFFIXES:
+                        field_name = f"link_file_{i}{suffix}"
+                        clear_flag = request.POST.get(f"clear_file_{i}{suffix}") == "on"
+                        new_file = request.FILES.get(field_name)
 
-                    if clear_flag:
-                        old = getattr(card, f"link_file_{i}", None)
-                        if old:
-                            try:
-                                if os.path.isfile(old.path):
-                                    os.remove(old.path)
-                            except Exception:
-                                pass
-                        setattr(card, f"link_file_{i}", None)
+                        if clear_flag:
+                            old = getattr(card, field_name, None)
+                            if old:
+                                try:
+                                    if os.path.isfile(old.path):
+                                        os.remove(old.path)
+                                except Exception:
+                                    pass
+                            setattr(card, field_name, None)
 
-                    if new_file:
-                        old = getattr(card, f"link_file_{i}", None)
-                        if old:
-                            try:
-                                if os.path.isfile(old.path):
-                                    os.remove(old.path)
-                            except Exception:
-                                pass
-                        setattr(card, f"link_file_{i}", new_file)
+                        if new_file:
+                            old = getattr(card, field_name, None)
+                            if old:
+                                try:
+                                    if os.path.isfile(old.path):
+                                        os.remove(old.path)
+                                except Exception:
+                                    pass
+                            setattr(card, field_name, new_file)
 
                 card.updated_at = timezone.localtime(timezone.now())
                 card.save()
@@ -85,12 +89,18 @@ def link_store_view(request):
     if edit_id:
         editing_card = get_object_or_404(LinkCard, pk=edit_id)
         for i in range(1, MAX_LINKS + 1):
+            files = []
+            for suffix in FILE_SUFFIXES:
+                files.append({
+                    "suffix": suffix,
+                    "file": getattr(editing_card, f"link_file_{i}{suffix}", None),
+                })
             edit_slots.append({
                 "index": i,
                 "name": getattr(editing_card, f"link_name_{i}", "") or "",
                 "desc": getattr(editing_card, f"link_desc_{i}", "") or "",
-                "url": getattr(editing_card, f"link_url_{i}", "") or "",
-                "file": getattr(editing_card, f"link_file_{i}", None),
+                "url":  getattr(editing_card, f"link_url_{i}", "") or "",
+                "files": files,
             })
 
     # ---------- DETAIL MODE ----------
@@ -126,9 +136,18 @@ def link_store_view(request):
 
 @login_required(login_url="/admin/login/")
 @user_passes_test(is_admin)
-def link_delete_file(request, pk, slot):
+def link_delete_file(request, pk, slot, suffix=''):
+    """Delete one file. URL pattern includes slot; suffix passed via query string."""
     card = get_object_or_404(LinkCard, pk=pk)
-    field_name = f"link_file_{slot}"
+
+    # If suffix not in URL, read from query string
+    if not suffix:
+        suffix = request.GET.get("suffix", "")
+
+    if suffix not in FILE_SUFFIXES:
+        return JsonResponse({"status": "error", "message": "Invalid suffix"}, status=400)
+
+    field_name = f"link_file_{slot}{suffix}"
     f = getattr(card, field_name, None)
 
     if not f:

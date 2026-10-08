@@ -22,18 +22,23 @@
     }
     .slot-title { font-size: 0.75rem; font-weight: 700; color: #1f2937; margin-bottom: 2px; }
     .slot-desc { font-size: 0.7rem; color: #4b5563; margin-bottom: 4px; white-space: pre-wrap; }
-    .slot-url { font-size: 0.7rem; color: #2563eb; text-decoration: none; word-break: break-all; }
-    .slot-file { font-size: 0.7rem; color: #059669; text-decoration: none; margin-left: 6px; }
+    .slot-url { font-size: 0.7rem; color: #2563eb; text-decoration: none; word-break: break-all; display: block; }
+    .slot-file { font-size: 0.7rem; color: #059669; text-decoration: none; margin-left: 6px; display: inline-block; }
     .slot-num {
         display: inline-block; background: #eef2ff; color: #4338ca;
         border-radius: 4px; padding: 0 5px; font-size: 0.65rem; font-weight: 700; margin-right: 4px;
     }
     .form-slot {
-        border: 1px dashed #d1d5db; border-radius: 8px;
-        padding: 8px 10px; margin-bottom: 8px; background: #fafafa;
+        border: 1px dashed #d1d5db; border-radius: 6px;
+        padding: 4px 8px; margin-bottom: 4px; background: #fafafa;
     }
-    .form-slot-title { font-size: 0.7rem; font-weight: 700; color: #374151; margin-bottom: 4px; }
-    .compact-input { font-size: 0.75rem; padding: 4px 8px; min-height: 30px; }
+    .form-slot-title { font-size: 0.65rem; font-weight: 700; color: #374151; margin-bottom: 2px; }
+    .compact-input { font-size: 0.72rem; padding: 2px 6px; min-height: 24px; }
+    .file-pill {
+        font-size: 0.65rem; padding: 3px 8px; border-radius: 12px;
+        background: #ecfdf5; border: 1px solid #86efac; color: #065f46;
+        display: inline-block; margin-right: 4px; margin-top: 3px;
+    }
 </style>
 
 <div class="container py-3">
@@ -107,7 +112,8 @@
                             required value="{% if editing_card %}{{ editing_card.name }}{% endif %}">
                     </div>
 
-                    <!-- 9 slots -->
+                    <!-- EDIT MODE: 9 slots with pre-filled values and 4 file inputs -->
+                    {% if editing_card %}
                     {% for slot in edit_slots %}
                     <div class="form-slot">
                         <div class="form-slot-title">
@@ -126,29 +132,34 @@
                                 <textarea name="link_desc_{{ slot.index }}" rows="2" class="form-control compact-input"
                                     placeholder="Description">{{ slot.desc }}</textarea>
                             </div>
+
+                            {% for f in slot.files %}
                             <div class="col-12 mt-1">
                                 <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File (optional)
+                                    <i class="fas fa-paperclip"></i> File {{ forloop.counter }} (optional)
                                 </label>
-                                <input type="file" name="link_file_{{ slot.index }}" class="form-control compact-input">
+                                <input type="file" name="link_file_{{ slot.index }}{{ f.suffix }}"
+                                    class="form-control compact-input">
 
-                                {% if slot.file %}
+                                {% if f.file %}
                                 <div style="margin-top: 4px; font-size: 0.65rem;">
                                     <i class="fas fa-file" style="color:#059669;"></i>
-                                    <a href="{{ slot.file.url }}" target="_blank" style="color:#059669;">
-                                        {{ slot.file.name|slice:"13:" }}
+                                    <a href="{{ f.file.url }}" target="_blank" style="color:#059669;">
+                                        {{ f.file.name|slice:"13:" }}
                                     </a>
                                     <label style="margin-left: 8px; color:#dc2626; cursor:pointer;">
-                                        <input type="checkbox" name="clear_file_{{ slot.index }}"> Clear
+                                        <input type="checkbox" name="clear_file_{{ slot.index }}{{ f.suffix }}"> Clear
                                     </label>
                                 </div>
                                 {% endif %}
                             </div>
+                            {% endfor %}
                         </div>
                     </div>
                     {% endfor %}
+                    {% endif %}
 
-                    <!-- If creating new, show empty slots -->
+                    <!-- CREATE MODE: 9 empty slots with 4 file inputs each -->
                     {% if not editing_card %}
                     {% for i in max_links %}
                     <div class="form-slot">
@@ -168,11 +179,30 @@
                                 <textarea name="link_desc_{{ i }}" rows="2" class="form-control compact-input"
                                     placeholder="Description"></textarea>
                             </div>
+
                             <div class="col-12 mt-1">
                                 <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File (optional)
+                                    <i class="fas fa-paperclip"></i> File 1 (optional)
                                 </label>
                                 <input type="file" name="link_file_{{ i }}" class="form-control compact-input">
+                            </div>
+                            <div class="col-12 mt-1">
+                                <label style="font-size: 0.65rem; color: #6b7280;">
+                                    <i class="fas fa-paperclip"></i> File 2 (optional)
+                                </label>
+                                <input type="file" name="link_file_{{ i }}_b" class="form-control compact-input">
+                            </div>
+                            <div class="col-12 mt-1">
+                                <label style="font-size: 0.65rem; color: #6b7280;">
+                                    <i class="fas fa-paperclip"></i> File 3 (optional)
+                                </label>
+                                <input type="file" name="link_file_{{ i }}_c" class="form-control compact-input">
+                            </div>
+                            <div class="col-12 mt-1">
+                                <label style="font-size: 0.65rem; color: #6b7280;">
+                                    <i class="fas fa-paperclip"></i> File 4 (optional)
+                                </label>
+                                <input type="file" name="link_file_{{ i }}_d" class="form-control compact-input">
                             </div>
                         </div>
                     </div>
@@ -318,11 +348,12 @@
                             <i class="fas fa-external-link-alt"></i> {{ slot.url }}
                         </a>
                         {% endif %}
-                        {% if slot.file %}
-                        <a href="{{ slot.file.url }}" target="_blank" rel="noopener noreferrer" class="slot-file">
-                            <i class="fas fa-paperclip"></i> {{ slot.file.name|slice:"13:" }}
+
+                        {% for f in slot.files %}
+                        <a href="{{ f.url }}" target="_blank" rel="noopener noreferrer" class="slot-file">
+                            <i class="fas fa-paperclip"></i> {{ f.name|slice:"13:" }}
                         </a>
-                        {% endif %}
+                        {% endfor %}
                     </div>
                     {% endfor %}
                 {% else %}
