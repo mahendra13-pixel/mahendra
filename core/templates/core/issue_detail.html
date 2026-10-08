@@ -41,8 +41,17 @@
                                     <td>{{ contact.department }}</td>
                                 </tr>
                                 <tr>
-                                    <th style="white-space: nowrap;">Extension</th>
-                                    <td>{{ contact.phone }}</td>
+                                    <th style="white-space: nowrap;">Link</th>
+                                    <td>
+                                        {% if contact.link %}
+                                        <a href="{{ contact.link }}" target="_blank" rel="noopener noreferrer"
+                                        style="color:#2563eb; text-decoration:underline;" title="{{ contact.link }}">
+                                            <i class="fas fa-external-link-alt"></i> {{ contact.link|truncatechars:60 }}
+                                        </a>
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th style="white-space: nowrap;">IP Address</th>

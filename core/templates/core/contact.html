@@ -146,12 +146,14 @@
             </div>
 
             <!-- Row 2: Phone + Priority -->
+            <!-- Row 2: Link + Priority -->
             <div class="form-row">
-                <div class="form-group">
-                    <label for="phone">Extension Number </label>
+                <div class="form-group" style="min-width: 0;">
+                    <label for="link">Link</label>
                     <div class="input-icon">
-                        <i class="fas fa-phone"></i>
-                        <input type="text" id="phone1" name="phone" placeholder="11201">
+                        <i class="fas fa-link"></i>
+                        <input type="url" id="link" name="link" placeholder="https://..."
+                            style="min-width: 0; width: 100%;">
                     </div>
                 </div>
 
@@ -572,7 +574,17 @@
 
             <h5>{{ contact.department }}</h5>
             <p><strong>Name:</strong> {{ contact.name }}</p>
-            <p><strong>Ext:</strong> {{ contact.phone }}</p>
+            <p>
+                <strong>Link:</strong>
+                {% if contact.link %}
+                <a href="{{ contact.link }}" target="_blank" rel="noopener noreferrer"
+                style="color:#2563eb; text-decoration:underline;" title="{{ contact.link }}">
+                    <i class="fas fa-external-link-alt"></i> Open Link
+                </a>
+                {% else %}
+                N/A
+                {% endif %}
+            </p>
             <p><strong>IP:</strong> {{ contact.ip_address }}</p>
             <p><strong>Hostname:</strong> {{ contact.hostname|default:"N/A" }}</p>
             <p><strong>Username:</strong> {{ contact.username|default:"N/A" }}</p>

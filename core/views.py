@@ -152,6 +152,7 @@ def contact(request):
         priority = request.POST.get("priority")
         message = request.POST.get("message")
         department = request.POST.get("department", "General")
+        link = request.POST.get("link") or None
 
         # Get multiple selections and join them with comma
         call_attended_by = ", ".join(request.POST.getlist("call_attended_by"))
@@ -202,6 +203,7 @@ def contact(request):
                     os_info=os_info,
                     priority=priority,
                     message=message,
+                    link=link,        
                     call_attended_by=call_attended_by,
                     handover_to=handover_to,
                     solved_by=solved_by,
@@ -434,6 +436,7 @@ def issue_edit(request, pk):
         contact.solved_by = ", ".join(request.POST.getlist("solved_by"))
         contact.assigned_to = ", ".join(request.POST.getlist("assigned_to"))
         contact.remarks = request.POST.get("remarks", "")
+        contact.link = request.POST.get("link") or None
 
         # ============================================================
         # ✅ HANDLE FILE OPERATIONS
@@ -1127,7 +1130,8 @@ def store_edit(request, pk):
         priority = request.POST.get("priority")
         remarks = request.POST.get("remarks", "")
         description = request.POST.get("description")
-        link = request.POST.get("link") or None
+        link_primary = request.POST.get("link_primary") or None
+        link_secondary = request.POST.get("link_secondary") or None
 
         # Update the item
         item.name = name
@@ -1136,7 +1140,7 @@ def store_edit(request, pk):
         item.priority = priority
         item.remarks = remarks
         item.description = description
-        item.link = link 
+        item.link = link_primary or link_secondary
 
         # ============================================================
         # ✅ HANDLE FILE OPERATIONS (ADD/REPLACE/DELETE)

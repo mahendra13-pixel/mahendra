@@ -55,10 +55,12 @@
                         <div class="row g-2 mt-1">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="phone" style="font-size: 0.7rem; font-weight: 600;">Phone</label>
-                                    <input type="text" id="phone" name="phone" class="form-control"
+                                    <label for="link_primary" style="font-size: 0.7rem; font-weight: 600;">
+                                        <i class="fas fa-link"></i> Link (URL)
+                                    </label>
+                                    <input type="url" id="link_primary" name="link_primary" class="form-control"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
-                                        value="{{ item.phone }}">
+                                        value="{{ item.link|default:'' }}" placeholder="https://example.com">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -115,10 +117,10 @@
                         <div class="row g-2 mt-1">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="link" style="font-size: 0.7rem; font-weight: 600;">
+                                    <label for="link_secondary" style="font-size: 0.7rem; font-weight: 600;">
                                         <i class="fas fa-link"></i> Link (URL)
                                     </label>
-                                    <input type="url" id="link" name="link" class="form-control"
+                                    <input type="url" id="link_secondary" name="link_secondary" class="form-control"
                                         style="font-size: 0.75rem; padding: 4px 8px; min-height: 30px;"
                                         placeholder="https://example.com" value="{{ item.link|default:'' }}">
                                 </div>
