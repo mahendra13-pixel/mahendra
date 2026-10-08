@@ -34,5 +34,6 @@ urlpatterns = [
     path('recordings/', include('recordings.urls')),
     path('personal/', include('personal_store.urls')),
     path('ai/', include('ai.urls')),
+    path('link_store/', include('link_store.urls', namespace='link_store')),
 
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

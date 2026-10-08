@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Link Store{% endblock %}
+
+{% block content %}
+<style>
+    .link-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+    .link-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .slot-box {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        background: #fafafa;
+    }
+    .slot-title { font-size: 0.75rem; font-weight: 700; color: #1f2937; margin-bottom: 2px; }
+    .slot-desc { font-size: 0.7rem; color: #4b5563; margin-bottom: 4px; white-space: pre-wrap; }
+    .slot-url { font-size: 0.7rem; color: #2563eb; text-decoration: none; word-break: break-all; }
+    .slot-file { font-size: 0.7rem; color: #059669; text-decoration: none; margin-left: 6px; }
+    .slot-num {
+        display: inline-block; background: #eef2ff; color: #4338ca;
+        border-radius: 4px; padding: 0 5px; font-size: 0.65rem; font-weight: 700; margin-right: 4px;
+    }
+    .form-slot {
+        border: 1px dashed #d1d5db; border-radius: 8px;
+        padding: 8px 10px; margin-bottom: 8px; background: #fafafa;
+    }
+    .form-slot-title { font-size: 0.7rem; font-weight: 700; color: #374151; margin-bottom: 4px; }
+    .compact-input { font-size: 0.75rem; padding: 4px 8px; min-height: 30px; }
+</style>
+
+<div class="container py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 style="font-size: 1.1rem; margin: 0;">
+            <i class="fas fa-link" style="color: #7c3aed;"></i> Link Store
+        </h4>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="openNewForm()"
+                style="font-size: 0.7rem; padding: 4px 12px;">
+                <i class="fas fa-plus"></i> New
+            </button>
+            <a href="{% url 'core:contact' %}" class="btn btn-sm btn-outline-secondary"
+                style="font-size: 0.7rem; padding: 4px 12px;">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div style="margin-bottom: 12px; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <form method="GET" action="" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 150px; position: relative;">
+                <i class="fas fa-search"
+                    style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.8rem; pointer-events: none;"></i>
+                <input type="text" name="search" value="{{ search_query }}"
+                    placeholder="Search card name, or any link name / description / URL..."
+                    style="width: 100%; padding: 8px 12px 8px 32px; font-size: 0.8rem; border: 2px solid #d1d5db; border-radius: 6px; outline: none; background: #fff; color: #1f2937; box-sizing: border-box; min-height: 38px;">
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="padding: 8px 16px; font-size: 0.8rem; border: none; border-radius: 6px; background: #2563eb; color: #fff; min-height: 38px;">
+                <i class="fas fa-search"></i> Search
+            </button>
+            {% if search_query %}
+            <a href="?" class="btn btn-outline-secondary"
+                style="padding: 8px 14px; font-size: 0.8rem; text-decoration: none; border: 1px solid #6b7280; border-radius: 6px; color: #6b7280; background: #fff; min-height: 38px;">
+                <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-primary" role="alert" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom: 8px;">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- NEW / EDIT FORM -->
+    <div id="cardFormWrapper" style="display: {% if editing_card %}block{% else %}none{% endif %}; margin-bottom: 16px;">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-primary text-white fw-bold py-2" style="font-size: 0.9rem;">
+                <i class="fas fa-edit"></i>
+                <span id="formTitle">{% if editing_card %}Edit Card{% else %}New Card{% endif %}</span>
+                <button type="button" class="btn-close btn-close-white float-end" onclick="closeForm()"></button>
+            </div>
+            <div class="card-body p-3">
+                <form method="POST" enctype="multipart/form-data" id="cardForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="save_card" value="1">
+                    <input type="hidden" name="card_id" id="cardIdField"
+                        value="{% if editing_card %}{{ editing_card.id }}{% endif %}">
+
+                    <!-- Card name -->
+                    <div class="mb-3">
+                        <label style="font-size: 0.7rem; font-weight: 600;">Card Name *</label>
+                        <input type="text" name="name" id="cardNameField" class="form-control compact-input"
+                            required value="{% if editing_card %}{{ editing_card.name }}{% endif %}">
+                    </div>
+
+                    <!-- 9 slots -->
+                    {% for slot in edit_slots %}
+                    <div class="form-slot">
+                        <div class="form-slot-title">
+                            <span class="slot-num">{{ slot.index }}</span> Link {{ slot.index }}
+                        </div>
+                        <div class="row g-1">
+                            <div class="col-md-6">
+                                <input type="text" name="link_name_{{ slot.index }}" class="form-control compact-input"
+                                    placeholder="Name" value="{{ slot.name }}">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="url" name="link_url_{{ slot.index }}" class="form-control compact-input"
+                                    placeholder="https://..." value="{{ slot.url }}">
+                            </div>
+                            <div class="col-12 mt-1">
+                                <textarea name="link_desc_{{ slot.index }}" rows="2" class="form-control compact-input"
+                                    placeholder="Description">{{ slot.desc }}</textarea>
+                            </div>
+                            <div class="col-12 mt-1">
+                                <label style="font-size: 0.65rem; color: #6b7280;">
+                                    <i class="fas fa-paperclip"></i> File (optional)
+                                </label>
+                                <input type="file" name="link_file_{{ slot.index }}" class="form-control compact-input">
+
+                                {% if slot.file %}
+                                <div style="margin-top: 4px; font-size: 0.65rem;">
+                                    <i class="fas fa-file" style="color:#059669;"></i>
+                                    <a href="{{ slot.file.url }}" target="_blank" style="color:#059669;">
+                                        {{ slot.file.name|slice:"13:" }}
+                                    </a>
+                                    <label style="margin-left: 8px; color:#dc2626; cursor:pointer;">
+                                        <input type="checkbox" name="clear_file_{{ slot.index }}"> Clear
+                                    </label>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- If creating new, show empty slots -->
+                    {% if not editing_card %}
+                    {% for i in max_links %}
+                    <div class="form-slot">
+                        <div class="form-slot-title">
+                            <span class="slot-num">{{ i }}</span> Link {{ i }}
+                        </div>
+                        <div class="row g-1">
+                            <div class="col-md-6">
+                                <input type="text" name="link_name_{{ i }}" class="form-control compact-input"
+                                    placeholder="Name">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="url" name="link_url_{{ i }}" class="form-control compact-input"
+                                    placeholder="https://...">
+                            </div>
+                            <div class="col-12 mt-1">
+                                <textarea name="link_desc_{{ i }}" rows="2" class="form-control compact-input"
+                                    placeholder="Description"></textarea>
+                            </div>
+                            <div class="col-12 mt-1">
+                                <label style="font-size: 0.65rem; color: #6b7280;">
+                                    <i class="fas fa-paperclip"></i> File (optional)
+                                </label>
+                                <input type="file" name="link_file_{{ i }}" class="form-control compact-input">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary"
+                            style="font-size: 0.75rem; padding: 5px 14px;">
+                            <i class="fas fa-save"></i> Save Card
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary"
+                            style="font-size: 0.75rem; padding: 5px 14px;" onclick="closeForm()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIST OF CARDS -->
+    {% if page_obj %}
+    <div style="font-size: 0.7rem; color: #6b7280; margin-bottom: 8px;">
+        <i class="fas fa-filter"></i> Showing {{ page_obj.start_index }} - {{ page_obj.end_index }}
+        of {{ page_obj.paginator.count }} card{{ page_obj.paginator.count|pluralize }}
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+        {% for card in page_obj %}
+        <div class="link-card">
+            <!-- Header -->
+            <div style="background: #f3f4f6; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">
+                    {{ card.name }}
+                </span>
+                <span class="badge bg-primary" style="font-size: 0.55rem; padding: 1px 7px;">
+                    {{ card.link_count }} / 9
+                </span>
+            </div>
+
+            <!-- Preview -->
+            <div style="padding: 8px 10px;">
+                {% with slots=card.filled_slots %}
+                    {% if slots %}
+                        {% for slot in slots|slice:":3" %}
+                        <div style="font-size: 0.65rem; color: #374151; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <span class="slot-num">{{ slot.index }}</span>
+                            {{ slot.name|default:"(no name)" }}
+                        </div>
+                        {% endfor %}
+                        {% if slots|length > 3 %}
+                        <div style="font-size: 0.6rem; color: #9ca3af;">+ {{ slots|length|add:"-3" }} more...</div>
+                        {% endif %}
+                    {% else %}
+                        <div style="font-size: 0.65rem; color: #9ca3af;">No links filled</div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #f9fafb; padding: 5px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb; flex-wrap: wrap;">
+                <a href="?view={{ card.id }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                    class="btn btn-sm btn-outline-info" style="font-size: 0.55rem; padding: 2px 8px;">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                <a href="?edit={{ card.id }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                    class="btn btn-sm btn-outline-primary" style="font-size: 0.55rem; padding: 2px 8px;">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <form method="POST" style="display: inline; margin: 0;"
+                    onsubmit="return confirm('Permanently delete this card and all its files?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_id" value="{{ card.id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                        style="font-size: 0.55rem; padding: 2px 8px;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">Prev</a>
+        {% endif %}
+        <span class="btn btn-sm btn-secondary disabled" style="font-size: 0.7rem;">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;">Last</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+        <i class="fas fa-inbox" style="font-size: 3rem; color: #d1d5db; display: block; margin-bottom: 15px;"></i>
+        <p style="font-size: 1rem; margin-bottom: 4px;">No cards yet</p>
+        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="openNewForm()"
+            style="font-size: 0.7rem; padding: 4px 14px;">
+            <i class="fas fa-plus"></i> Create your first card
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- =============================== -->
+<!-- DETAIL MODAL (View)             -->
+<!-- =============================== -->
+{% if viewing_card %}
+<div id="detailOverlay"
+     style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99998; display: flex; align-items: center; justify-content: center; padding: 12px;">
+    <div style="background: #fff; border-radius: 12px; width: 100%; max-width: 720px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #f3f4f6; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 0.9rem;"><i class="fas fa-link"></i> {{ viewing_card.name }}</strong>
+            <a href="?{% if search_query %}search={{ search_query }}{% endif %}"
+               class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
+                <i class="fas fa-times"></i> Close
+            </a>
+        </div>
+        <div style="padding: 12px 16px; overflow-y: auto;">
+            {% with slots=viewing_card.filled_slots %}
+                {% if slots %}
+                    {% for slot in slots %}
+                    <div class="slot-box">
+                        <div class="slot-title">
+                            <span class="slot-num">{{ slot.index }}</span>
+                            {{ slot.name|default:"(no name)" }}
+                        </div>
+                        {% if slot.desc %}
+                        <div class="slot-desc">{{ slot.desc }}</div>
+                        {% endif %}
+                        {% if slot.url %}
+                        <a href="{{ slot.url }}" target="_blank" rel="noopener noreferrer" class="slot-url">
+                            <i class="fas fa-external-link-alt"></i> {{ slot.url }}
+                        </a>
+                        {% endif %}
+                        {% if slot.file %}
+                        <a href="{{ slot.file.url }}" target="_blank" rel="noopener noreferrer" class="slot-file">
+                            <i class="fas fa-paperclip"></i> {{ slot.file.name|slice:"13:" }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; color:#9ca3af; padding: 20px; font-size: 0.8rem;">
+                        No links filled in this card
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div style="padding: 8px 16px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.7rem; color: #6b7280;">
+                <i class="fas fa-clock"></i> {{ viewing_card.created_at|date:"Y-m-d H:i" }}
+            </span>
+            <div>
+                <a href="?edit={{ viewing_card.id }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                    class="btn btn-sm btn-outline-primary" style="font-size: 0.7rem;">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="?{% if search_query %}search={{ search_query }}{% endif %}"
+                    class="btn btn-sm btn-secondary" style="font-size: 0.7rem;">
+                    <i class="fas fa-check"></i> Done
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- =============================== -->
+<!-- FILE VIEWER MODAL               -->
+<!-- =============================== -->
+{% include 'link_store/includes/file_viewer_modal.html' %}
+
+<script>
+    function openNewForm() {
+        document.getElementById('cardIdField').value = '';
+        document.getElementById('cardNameField').value = '';
+        document.getElementById('formTitle').textContent = 'New Card';
+        document.getElementById('cardFormWrapper').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeForm() {
+        const cardId = document.getElementById('cardIdField').value;
+        if (cardId) {
+            window.location.href = "?{% if search_query %}search={{ search_query }}{% endif %}";
+        } else {
+            document.getElementById('cardFormWrapper').style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

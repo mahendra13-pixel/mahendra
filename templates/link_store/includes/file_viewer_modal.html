@@ -1,0 +1,53 @@
+<!-- LINK STORE — FILE VIEWER MODAL -->
+<div class="file-viewer-modal" id="fileViewerModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:99999; align-items:center; justify-content:center; padding:12px;">
+    <div style="background:#fff; border-radius:12px; width:100%; max-width:600px; max-height:80vh; overflow:hidden; display:flex; flex-direction:column;">
+        <div style="background:#f3f4f6; padding:10px 16px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:0.9rem;"><i class="fas fa-paperclip"></i> Files</strong>
+            <button type="button" class="btn btn-sm btn-outline-secondary" style="font-size:0.65rem;" onclick="closeFileViewer()">&times;</button>
+        </div>
+        <div id="fileViewerBody" style="padding:12px 16px; overflow-y:auto;">
+            <div style="text-align:center; color:#9ca3af; padding:30px; font-size:0.8rem;">
+                No files
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let viewerFiles = [];
+
+    function openFileViewer(files) {
+        viewerFiles = files || [];
+        const modal = document.getElementById('fileViewerModal');
+        const body = document.getElementById('fileViewerBody');
+
+        if (!viewerFiles.length) {
+            body.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:30px;font-size:0.8rem;">No files attached</div>`;
+        } else {
+            let html = '';
+            viewerFiles.forEach(f => {
+                html += `
+                    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+                        <div style="font-size:0.75rem;">
+                            <i class="fas fa-file"></i> ${f.name}
+                            <span style="color:#9ca3af;font-size:0.65rem;">(${(f.size/1024).toFixed(1)} KB)</span>
+                        </div>
+                        <div>
+                            <a href="${f.url}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:0.6rem;padding:1px 6px;">View</a>
+                            <a href="${f.url}" download class="btn btn-sm btn-outline-success" style="font-size:0.6rem;padding:1px 6px;">DL</a>
+                        </div>
+                    </div>`;
+            });
+            body.innerHTML = html;
+        }
+        modal.style.display = 'flex';
+    }
+
+    function closeFileViewer() {
+        document.getElementById('fileViewerModal').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeFileViewer();
+    });
+</script>
