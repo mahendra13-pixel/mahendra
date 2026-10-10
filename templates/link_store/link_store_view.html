@@ -68,6 +68,95 @@
         border-radius: 3px;
         cursor: pointer;
     }
+
+    /* ============================================
+       MOBILE RESPONSIVENESS — desktop unaffected
+       ============================================ */
+    @media (max-width: 768px) {
+        /* Stack slots vertically on tablets and phones */
+        .slots-grid {
+            grid-template-columns: 1fr;
+        }
+
+        /* Stack file inputs vertically on smaller screens */
+        .file-row {
+            flex-direction: column;
+            gap: 4px;
+        }
+        .file-row input[type="file"] {
+            min-height: 30px;
+            font-size: 0.7rem;
+            padding: 4px 6px;
+        }
+        .file-row input[type="file"]::file-selector-button {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+        }
+
+        /* Bigger tap targets in form */
+        .compact-input {
+            min-height: 34px;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
+        .form-slot-title {
+            font-size: 0.75rem;
+        }
+        .slot-num {
+            font-size: 0.7rem;
+        }
+
+        /* Detail modal padding tweak */
+        #detailOverlay > div {
+            max-height: 95vh;
+        }
+    }
+
+    @media (max-width: 480px) {
+        /* Full-width form action buttons */
+        #cardForm > .d-flex.gap-2.mt-3 {
+            flex-direction: column;
+        }
+        #cardForm > .d-flex.gap-2.mt-3 .btn {
+            width: 100%;
+        }
+
+        /* Header wraps on tiny screens */
+        .container.py-3 > .d-flex:first-child {
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .container.py-3 > .d-flex:first-child h4 {
+            font-size: 1rem;
+        }
+
+        /* Search bar stacks */
+        .container.py-3 > div[style*="f9fafb"] form {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        .container.py-3 > div[style*="f9fafb"] form > div {
+            width: 100%;
+        }
+        .container.py-3 > div[style*="f9fafb"] form > button,
+        .container.py-3 > div[style*="f9fafb"] form > a {
+            width: 100%;
+        }
+
+        /* Detail modal footer wraps cleanly */
+        #detailOverlay > div > div:last-child {
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        #detailOverlay > div > div:last-child > div {
+            display: flex;
+            gap: 4px;
+            width: 100%;
+        }
+        #detailOverlay > div > div:last-child > div > a {
+            flex: 1;
+        }
+    }
 </style>
 
 <div class="container py-3">
