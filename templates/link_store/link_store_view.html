@@ -45,32 +45,97 @@
         grid-template-columns: 1fr 1fr;
         gap: 6px;
     }
-    /* Compact file inputs — 4 across, tiny */
+    /* Compact file inputs — 4 across, tiny, icon-only, HORIZONTAL always */
     .file-row {
         display: flex;
+        flex-direction: row;
+        gap: 3px;
+        margin-top: 3px;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+    .file-row input[type="file"] {
+        flex: 1 1 0;
+        width: 0;
+        min-width: 0;
+        max-width: 32px;
+        height: 22px;
+        font-size: 0;
+        padding: 0;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: #f3f4f6;
+        cursor: pointer;
+        overflow: hidden;
+        box-sizing: border-box;
+        text-indent: -9999px;
+        color: transparent;
+    }
+    .file-row input[type="file"]::file-selector-button {
+        width: 100%;
+        height: 100%;
+        font-size: 0.7rem;
+        padding: 0;
+        margin: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        text-indent: 0;
+        color: #374151;
+        line-height: 22px;
+        text-align: center;
+    }
+    .file-row input[type="file"]::-webkit-file-upload-button {
+        width: 100%;
+        height: 100%;
+        font-size: 0.7rem;
+        padding: 0;
+        margin: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: #374151;
+        line-height: 22px;
+        text-align: center;
+    }
+
+    /* Uploaded file chips — horizontal, tight */
+    .uploaded-files-row {
+        display: flex;
+        flex-wrap: wrap;
         gap: 3px;
         margin-top: 3px;
     }
-    .file-row input[type="file"] {
-        flex: 1;
+    .uploaded-file-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
         font-size: 0.6rem;
-        padding: 1px 2px;
-        min-height: 20px;
-        line-height: 1;
-        overflow: hidden;
+        padding: 1px 5px;
+        border: 1px solid #86efac;
+        background: #ecfdf5;
+        color: #065f46;
+        border-radius: 4px;
+        text-decoration: none;
+        max-width: 100%;
     }
-    .file-row input[type="file"]::file-selector-button {
-        font-size: 0.55rem;
-        padding: 1px 4px;
-        margin-right: 3px;
-        border: none;
-        background: #e5e7eb;
-        border-radius: 3px;
+    .uploaded-file-chip span.fname {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 90px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .uploaded-file-chip label {
+        color: #dc2626;
         cursor: pointer;
+        margin-left: 2px;
+        font-size: 0.6rem;
     }
 
     /* ============================================
-       MOBILE RESPONSIVENESS — desktop unaffected
+    MOBILE RESPONSIVENESS — desktop unaffected
        ============================================ */
     @media (max-width: 768px) {
         /* Stack slots vertically on tablets and phones */
@@ -78,19 +143,22 @@
             grid-template-columns: 1fr;
         }
 
-        /* Stack file inputs vertically on smaller screens */
+        /* File inputs stay HORIZONTAL and tiny — no stacking */
         .file-row {
-            flex-direction: column;
-            gap: 4px;
+            flex-direction: row;
+            gap: 3px;
         }
         .file-row input[type="file"] {
-            min-height: 30px;
-            font-size: 0.7rem;
-            padding: 4px 6px;
+            max-width: 34px;
+            height: 24px;
         }
         .file-row input[type="file"]::file-selector-button {
-            font-size: 0.65rem;
-            padding: 3px 8px;
+            font-size: 0.75rem;
+            line-height: 24px;
+        }
+        .file-row input[type="file"]::-webkit-file-upload-button {
+            font-size: 0.75rem;
+            line-height: 24px;
         }
 
         /* Bigger tap targets in form */
@@ -109,6 +177,15 @@
         /* Detail modal padding tweak */
         #detailOverlay > div {
             max-height: 95vh;
+        }
+
+        /* Uploaded file chips — slightly bigger text on mobile */
+        .uploaded-file-chip {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+        }
+        .uploaded-file-chip span.fname {
+            max-width: 100px;
         }
     }
 
@@ -155,6 +232,15 @@
         }
         #detailOverlay > div > div:last-child > div > a {
             flex: 1;
+        }
+
+        /* File inputs stay horizontal and tight */
+        .file-row {
+            gap: 2px;
+        }
+        .file-row input[type="file"] {
+            max-width: 30px;
+            height: 22px;
         }
     }
 </style>
@@ -254,19 +340,23 @@
                                 {% endfor %}
                             </div>
 
-                            {% for f in slot.files %}
-                            {% if f.file %}
-                            <div style="font-size: 0.6rem; margin-top: 2px;">
-                                <i class="fas fa-file" style="color:#059669;"></i>
-                                <a href="{{ f.file.url }}" target="_blank" style="color:#059669;">
-                                    {{ f.file.name|slice:"13:"|truncatechars:12 }}
-                                </a>
-                                <label style="color:#dc2626; cursor:pointer; margin-left: 4px;">
-                                    <input type="checkbox" name="clear_file_{{ slot.index }}{{ f.suffix }}"> ✕
-                                </label>
+                            {% if slot.files %}
+                            <div class="uploaded-files-row">
+                                {% for f in slot.files %}
+                                {% if f.file %}
+                                <span class="uploaded-file-chip">
+                                    <i class="fas fa-file"></i>
+                                    <a href="{{ f.file.url }}" target="_blank" style="color:#065f46; text-decoration:none;">
+                                        <span class="fname" title="{{ f.file.name|slice:'13:' }}">{{ f.file.name|slice:"13:"|truncatechars:12 }}</span>
+                                    </a>
+                                    <label>
+                                        <input type="checkbox" name="clear_file_{{ slot.index }}{{ f.suffix }}"> ✕
+                                    </label>
+                                </span>
+                                {% endif %}
+                                {% endfor %}
                             </div>
                             {% endif %}
-                            {% endfor %}
                         </div>
                         {% endfor %}
                         {% endif %}
