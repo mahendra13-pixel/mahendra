@@ -13,6 +13,189 @@
     </div>
 </div>
 
+<style>
+    /* ============================================
+       FILE VIEWER — BASE (desktop)
+       ============================================ */
+    .fv-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    .fv-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 6px 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+    .fv-info {
+        font-size: 0.72rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+    .fv-info i {
+        font-size: 0.7rem;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+    .fv-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+        flex: 1;
+    }
+    .fv-size {
+        color: #9ca3af;
+        font-size: 0.6rem;
+        flex-shrink: 0;
+    }
+    .fv-actions {
+        display: flex;
+        gap: 3px;
+        flex-shrink: 0;
+    }
+    .fv-actions a {
+        font-size: 0.6rem;
+        padding: 1px 6px;
+        border-radius: 4px;
+        text-decoration: none;
+        border: 1px solid;
+        line-height: 1.4;
+        white-space: nowrap;
+        transition: background 0.15s ease;
+    }
+    .fv-view {
+        color: #2563eb;
+        border-color: #2563eb;
+    }
+    .fv-view:hover {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+    .fv-dl {
+        color: #059669;
+        border-color: #059669;
+    }
+    .fv-dl:hover {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    /* ============================================
+       TABLET (≤ 768px)
+       ============================================ */
+    @media (max-width: 768px) {
+        .fv-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        .fv-item {
+            padding: 5px 7px;
+        }
+        .fv-info {
+            font-size: 0.7rem;
+        }
+        .fv-actions a {
+            font-size: 0.58rem;
+            padding: 1px 5px;
+        }
+    }
+
+    /* ============================================
+       MOBILE (≤ 480px) — super compact
+       ============================================ */
+    @media (max-width: 480px) {
+        /* Modal container */
+        #fileViewerModal {
+            padding: 6px !important;
+        }
+        #fileViewerModal > div {
+            max-height: 92vh;
+            border-radius: 10px;
+        }
+
+        /* Modal header — shrink */
+        #fileViewerModal > div > div:first-child {
+            padding: 6px 10px !important;
+        }
+        #fileViewerModal > div > div:first-child strong {
+            font-size: 0.75rem;
+        }
+        #fileViewerModal > div > div:first-child button {
+            font-size: 0.65rem;
+            padding: 1px 6px;
+        }
+
+        /* Body padding */
+        #fileViewerBody {
+            padding: 8px 10px !important;
+        }
+
+        /* Grid — single column, tight */
+        .fv-grid {
+            grid-template-columns: 1fr;
+            gap: 4px;
+        }
+        .fv-item {
+            padding: 3px 6px;
+            gap: 3px;
+            border-radius: 6px;
+        }
+        .fv-info {
+            font-size: 0.68rem;
+            gap: 2px;
+        }
+        .fv-info i {
+            font-size: 0.65rem;
+        }
+        .fv-size {
+            font-size: 0.55rem;
+        }
+        .fv-actions {
+            gap: 2px;
+        }
+        .fv-actions a {
+            font-size: 0.55rem;
+            padding: 0 5px;
+            line-height: 1.6;
+        }
+    }
+
+    /* ============================================
+       EXTRA TINY (≤ 360px) — extremely compact
+       ============================================ */
+    @media (max-width: 360px) {
+        .fv-info {
+            font-size: 0.62rem;
+        }
+        .fv-info i {
+            font-size: 0.6rem;
+        }
+        .fv-size {
+            font-size: 0.5rem;
+        }
+        .fv-actions a {
+            font-size: 0.5rem;
+            padding: 0 3px;
+        }
+        .fv-item {
+            padding: 2px 5px;
+        }
+    }
+</style>
+
 <script>
     let viewerFiles = [];
 
@@ -24,20 +207,22 @@
         if (!viewerFiles.length) {
             body.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:30px;font-size:0.8rem;">No files attached</div>`;
         } else {
-            let html = '';
+            let html = '<div class="fv-grid">';
             viewerFiles.forEach(f => {
                 html += `
-                    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
-                        <div style="font-size:0.75rem;">
-                            <i class="fas fa-file"></i> ${f.name}
-                            <span style="color:#9ca3af;font-size:0.65rem;">(${(f.size/1024).toFixed(1)} KB)</span>
+                    <div class="fv-item">
+                        <div class="fv-info">
+                            <i class="fas fa-file"></i>
+                            <span class="fv-name" title="${f.name}">${f.name}</span>
+                            <span class="fv-size">(${(f.size/1024).toFixed(1)} KB)</span>
                         </div>
-                        <div>
-                            <a href="${f.url}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:0.6rem;padding:1px 6px;">View</a>
-                            <a href="${f.url}" download class="btn btn-sm btn-outline-success" style="font-size:0.6rem;padding:1px 6px;">DL</a>
+                        <div class="fv-actions">
+                            <a href="${f.url}" target="_blank" rel="noopener noreferrer" class="fv-view">View</a>
+                            <a href="${f.url}" download class="fv-dl">DL</a>
                         </div>
                     </div>`;
             });
+            html += '</div>';
             body.innerHTML = html;
         }
         modal.style.display = 'flex';
