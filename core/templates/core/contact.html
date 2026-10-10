@@ -309,32 +309,10 @@
                     <i class="fas fa-database"></i> Storage
                 </a>
                 {% if user.is_authenticated and user.is_staff %}
-                    <a href="{% url 'visits:visits_list' %}" class="icon-link" title="Visit Logs">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="brand-text"></span>
-                    </a>
-                    <a href="{% url 'recordings:recorder' %}" target="_blank"
-                        class="icon-link"
-                        title="Screen Recorder"
-                        style="
-                            display: inline-flex;
-                            align-items: center;
-                            justify-content: center;
-                            width: 18px;
-                            height: 18px;
-                            min-width: 18px;
-                            border-radius: 50%;
-                            background: #16a34a;
-                            color: white;
-                            font-size: 0.55rem;
-                            text-decoration: none;
-                            margin-left: 4px;
-                            vertical-align: middle;
-                            transition: all 0.15s ease;
-                        "
-                        onmouseover="this.style.background='#15803d'; this.style.transform='scale(1.15)';"
-                        onmouseout="this.style.background='#16a34a'; this.style.transform='scale(1)';">
-                        <i class="fas fa-video"></i>
+                    <a href="{% url 'link_store:storage_view' %}" target="_blank" rel="noopener noreferrer"
+                        style="font-size: 0.6rem; text-decoration: none; color: inherit;">🔗 Link store</a>
+                    <a href="{% url 'ai:ai_links' %}" class="icon-link" title="AI Tools">
+                        <span class="brand-text">AI</span>
                     </a>
                     {% endif %}
             </div>
@@ -344,9 +322,9 @@
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <!-- File Upload Icon - Small & Compact -->
                     <label for="multiple_files" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; 
-                           padding: 4px 10px; background: #f3f4f6; border-radius: 16px; 
-                           border: 1px solid #d1d5db; font-size: 0.7rem; 
-                           transition: all 0.2s ease;">
+                            padding: 4px 10px; background: #f3f4f6; border-radius: 16px; 
+                            border: 1px solid #d1d5db; font-size: 0.7rem; 
+                            transition: all 0.2s ease;">
                         <i class="fas fa-paperclip" style="font-size: 0.8rem; color: #6b7280;"></i>
                         <span style="font-weight: 500; color: #374151;">Add Files</span>
                     </label>
@@ -554,8 +532,8 @@
 {% endif %}
 
 <!-- ============================================
-     ISSUE LISTS - HORIZONTAL SLIDER
-     ============================================ -->
+    ISSUE LISTS - HORIZONTAL SLIDER
+    ============================================ -->
 <section class="issue-slider-wrapper">
 
     <!-- ✅ Show count info for Issue Slider - ADD THIS -->
@@ -670,7 +648,7 @@
                     <button type="submit" class="btn btn-sm 
                         {% if contact.is_public %}btn-success{% else %}btn-outline-secondary{% endif %}"
                         style="padding: 2px 8px; font-size: 0.55rem; 
-                               {% if contact.is_public %}background-color: #22c55e; border-color: #22c55e; color: white;{% else %}color: #6b7280;{% endif %}"
+                                {% if contact.is_public %}background-color: #22c55e; border-color: #22c55e; color: white;{% else %}color: #6b7280;{% endif %}"
                         title="{% if contact.is_public %}Make Private (visible only to original IP){% else %}Make Public (visible to everyone){% endif %}">
                         {% if contact.is_public %}
                         <i class="fas fa-globe" style="color: white;"></i> Public
