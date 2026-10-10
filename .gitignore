@@ -18,7 +18,11 @@ venv.bak/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/static/
+/static/*
+!/static/images
+/static/images/*
+!/static/images/
+!/static/images/**
 /staticfiles/
 /media/
 
@@ -60,3 +64,10 @@ staticfiles/admin/js/vendor/
 *.backup
 *.corrupted.*
 db.sqlite3
+
+# Allow website source images
+!/static/images/**/*.jpg
+!/static/images/**/*.jpeg
+!/static/images/**/*.png
+!/static/images/**/*.gif
+!/static/images/**/*.ico
