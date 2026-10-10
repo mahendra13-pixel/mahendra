@@ -30,7 +30,7 @@
     }
     .form-slot {
         border: 1px dashed #d1d5db; border-radius: 6px;
-        padding: 4px 8px; margin-bottom: 4px; background: #fafafa;
+        padding: 4px 6px; margin-bottom: 0; background: #fafafa;
     }
     .form-slot-title { font-size: 0.65rem; font-weight: 700; color: #374151; margin-bottom: 2px; }
     .compact-input { font-size: 0.72rem; padding: 2px 6px; min-height: 24px; }
@@ -38,6 +38,35 @@
         font-size: 0.65rem; padding: 3px 8px; border-radius: 12px;
         background: #ecfdf5; border: 1px solid #86efac; color: #065f46;
         display: inline-block; margin-right: 4px; margin-top: 3px;
+    }
+    /* 2-column slot grid */
+    .slots-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    /* Compact file inputs — 4 across, tiny */
+    .file-row {
+        display: flex;
+        gap: 3px;
+        margin-top: 3px;
+    }
+    .file-row input[type="file"] {
+        flex: 1;
+        font-size: 0.6rem;
+        padding: 1px 2px;
+        min-height: 20px;
+        line-height: 1;
+        overflow: hidden;
+    }
+    .file-row input[type="file"]::file-selector-button {
+        font-size: 0.55rem;
+        padding: 1px 4px;
+        margin-right: 3px;
+        border: none;
+        background: #e5e7eb;
+        border-radius: 3px;
+        cursor: pointer;
     }
 </style>
 
@@ -112,102 +141,72 @@
                             required value="{% if editing_card %}{{ editing_card.name }}{% endif %}">
                     </div>
 
-                    <!-- EDIT MODE: 9 slots with pre-filled values and 4 file inputs -->
-                    {% if editing_card %}
-                    {% for slot in edit_slots %}
-                    <div class="form-slot">
-                        <div class="form-slot-title">
-                            <span class="slot-num">{{ slot.index }}</span> Link {{ slot.index }}
-                        </div>
-                        <div class="row g-1">
-                            <div class="col-md-6">
-                                <input type="text" name="link_name_{{ slot.index }}" class="form-control compact-input"
-                                    placeholder="Name" value="{{ slot.name }}">
+                    <!-- 2-COLUMN SLOT GRID -->
+                    <div class="slots-grid">
+
+                        <!-- EDIT MODE: pre-filled slots -->
+                        {% if editing_card %}
+                        {% for slot in edit_slots %}
+                        <div class="form-slot">
+                            <div class="form-slot-title">
+                                <span class="slot-num">{{ slot.index }}</span> Link {{ slot.index }}
                             </div>
-                            <div class="col-md-6">
-                                <input type="url" name="link_url_{{ slot.index }}" class="form-control compact-input"
-                                    placeholder="https://..." value="{{ slot.url }}">
-                            </div>
-                            <div class="col-12 mt-1">
-                                <textarea name="link_desc_{{ slot.index }}" rows="2" class="form-control compact-input"
-                                    placeholder="Description">{{ slot.desc }}</textarea>
+                            <input type="text" name="link_name_{{ slot.index }}" class="form-control compact-input"
+                                placeholder="Name" value="{{ slot.name }}">
+                            <input type="url" name="link_url_{{ slot.index }}" class="form-control compact-input mt-1"
+                                placeholder="https://..." value="{{ slot.url }}">
+                            <textarea name="link_desc_{{ slot.index }}" rows="1" class="form-control compact-input mt-1"
+                                placeholder="Description">{{ slot.desc }}</textarea>
+
+                            <div class="file-row">
+                                {% for f in slot.files %}
+                                <input type="file" name="link_file_{{ slot.index }}{{ f.suffix }}"
+                                    class="form-control" title="File {{ forloop.counter }}">
+                                {% endfor %}
                             </div>
 
                             {% for f in slot.files %}
-                            <div class="col-12 mt-1">
-                                <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File {{ forloop.counter }} (optional)
+                            {% if f.file %}
+                            <div style="font-size: 0.6rem; margin-top: 2px;">
+                                <i class="fas fa-file" style="color:#059669;"></i>
+                                <a href="{{ f.file.url }}" target="_blank" style="color:#059669;">
+                                    {{ f.file.name|slice:"13:"|truncatechars:12 }}
+                                </a>
+                                <label style="color:#dc2626; cursor:pointer; margin-left: 4px;">
+                                    <input type="checkbox" name="clear_file_{{ slot.index }}{{ f.suffix }}"> ✕
                                 </label>
-                                <input type="file" name="link_file_{{ slot.index }}{{ f.suffix }}"
-                                    class="form-control compact-input">
-
-                                {% if f.file %}
-                                <div style="margin-top: 4px; font-size: 0.65rem;">
-                                    <i class="fas fa-file" style="color:#059669;"></i>
-                                    <a href="{{ f.file.url }}" target="_blank" style="color:#059669;">
-                                        {{ f.file.name|slice:"13:" }}
-                                    </a>
-                                    <label style="margin-left: 8px; color:#dc2626; cursor:pointer;">
-                                        <input type="checkbox" name="clear_file_{{ slot.index }}{{ f.suffix }}"> Clear
-                                    </label>
-                                </div>
-                                {% endif %}
                             </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
+                        {% endfor %}
+                        {% endif %}
 
-                    <!-- CREATE MODE: 9 empty slots with 4 file inputs each -->
-                    {% if not editing_card %}
-                    {% for i in max_links %}
-                    <div class="form-slot">
-                        <div class="form-slot-title">
-                            <span class="slot-num">{{ i }}</span> Link {{ i }}
-                        </div>
-                        <div class="row g-1">
-                            <div class="col-md-6">
-                                <input type="text" name="link_name_{{ i }}" class="form-control compact-input"
-                                    placeholder="Name">
+                        <!-- CREATE MODE: 9 empty slots -->
+                        {% if not editing_card %}
+                        {% for i in max_links %}
+                        <div class="form-slot">
+                            <div class="form-slot-title">
+                                <span class="slot-num">{{ i }}</span> Link {{ i }}
                             </div>
-                            <div class="col-md-6">
-                                <input type="url" name="link_url_{{ i }}" class="form-control compact-input"
-                                    placeholder="https://...">
-                            </div>
-                            <div class="col-12 mt-1">
-                                <textarea name="link_desc_{{ i }}" rows="2" class="form-control compact-input"
-                                    placeholder="Description"></textarea>
-                            </div>
+                            <input type="text" name="link_name_{{ i }}" class="form-control compact-input"
+                                placeholder="Name">
+                            <input type="url" name="link_url_{{ i }}" class="form-control compact-input mt-1"
+                                placeholder="https://...">
+                            <textarea name="link_desc_{{ i }}" rows="1" class="form-control compact-input mt-1"
+                                placeholder="Description"></textarea>
 
-                            <div class="col-12 mt-1">
-                                <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File 1 (optional)
-                                </label>
-                                <input type="file" name="link_file_{{ i }}" class="form-control compact-input">
-                            </div>
-                            <div class="col-12 mt-1">
-                                <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File 2 (optional)
-                                </label>
-                                <input type="file" name="link_file_{{ i }}_b" class="form-control compact-input">
-                            </div>
-                            <div class="col-12 mt-1">
-                                <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File 3 (optional)
-                                </label>
-                                <input type="file" name="link_file_{{ i }}_c" class="form-control compact-input">
-                            </div>
-                            <div class="col-12 mt-1">
-                                <label style="font-size: 0.65rem; color: #6b7280;">
-                                    <i class="fas fa-paperclip"></i> File 4 (optional)
-                                </label>
-                                <input type="file" name="link_file_{{ i }}_d" class="form-control compact-input">
+                            <div class="file-row">
+                                <input type="file" name="link_file_{{ i }}" class="form-control" title="File 1">
+                                <input type="file" name="link_file_{{ i }}_b" class="form-control" title="File 2">
+                                <input type="file" name="link_file_{{ i }}_c" class="form-control" title="File 3">
+                                <input type="file" name="link_file_{{ i }}_d" class="form-control" title="File 4">
                             </div>
                         </div>
+                        {% endfor %}
+                        {% endif %}
+
                     </div>
-                    {% endfor %}
-                    {% endif %}
 
                     <div class="d-flex gap-2 mt-3">
                         <button type="submit" class="btn btn-primary"
@@ -234,7 +233,6 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
         {% for card in page_obj %}
         <div class="link-card">
-            <!-- Header -->
             <div style="background: #f3f4f6; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
                 <span style="font-size: 0.75rem; font-weight: 700; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">
                     {{ card.name }}
@@ -244,7 +242,6 @@
                 </span>
             </div>
 
-            <!-- Preview -->
             <div style="padding: 8px 10px;">
                 {% with slots=card.filled_slots %}
                     {% if slots %}
@@ -263,7 +260,6 @@
                 {% endwith %}
             </div>
 
-            <!-- Footer -->
             <div style="background: #f9fafb; padding: 5px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb; flex-wrap: wrap;">
                 <a href="?view={{ card.id }}{% if search_query %}&search={{ search_query }}{% endif %}"
                     class="btn btn-sm btn-outline-info" style="font-size: 0.55rem; padding: 2px 8px;">
@@ -287,7 +283,6 @@
         {% endfor %}
     </div>
 
-    <!-- Pagination -->
     <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
         {% if page_obj.has_previous %}
         <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}"
@@ -317,17 +312,15 @@
     {% endif %}
 </div>
 
-<!-- =============================== -->
-<!-- DETAIL MODAL (View)             -->
-<!-- =============================== -->
+<!-- DETAIL MODAL -->
 {% if viewing_card %}
 <div id="detailOverlay"
-     style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99998; display: flex; align-items: center; justify-content: center; padding: 12px;">
+    style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99998; display: flex; align-items: center; justify-content: center; padding: 12px;">
     <div style="background: #fff; border-radius: 12px; width: 100%; max-width: 720px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column;">
         <div style="background: #f3f4f6; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
             <strong style="font-size: 0.9rem;"><i class="fas fa-link"></i> {{ viewing_card.name }}</strong>
             <a href="?{% if search_query %}search={{ search_query }}{% endif %}"
-               class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
+                class="btn btn-sm btn-outline-secondary" style="font-size: 0.65rem;">
                 <i class="fas fa-times"></i> Close
             </a>
         </div>
@@ -382,9 +375,7 @@
 </div>
 {% endif %}
 
-<!-- =============================== -->
-<!-- FILE VIEWER MODAL               -->
-<!-- =============================== -->
+<!-- FILE VIEWER MODAL -->
 {% include 'link_store/includes/file_viewer_modal.html' %}
 
 <script>
