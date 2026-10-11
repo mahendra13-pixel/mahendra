@@ -11,21 +11,20 @@
                 <div
                     class="card-header bg-warning text-dark fw-bold fs-5 rounded-top-3 py-2 d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-list-check"></i> Personal Item Details</span>
-                    <div class="d-flex align-items-center gap-2">
-                        {% if stored_files %}
+                        <div class="d-flex align-items-center gap-2">
+                        {% if telegram_files %}
                         <button type="button" class="eye-btn" onclick='openFileViewer([
-    {% for sf in stored_files %}
-    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    {% for tf in telegram_files %}
+    { name: "{{ tf.file_name|escapejs }}", size: {{ tf.file_size|default:0 }}, url: "{% url 'personal_store:serve_personal_file' item.id tf.slot_key %}" }{% if not forloop.last %},{% endif %}
     {% endfor %}
-], {{ item.id }}, true)' style="font-size: 0.6rem; padding: 2px 10px;">
+])' style="font-size: 0.6rem; padding: 2px 10px;">
                             <i class="fas fa-eye"></i> Files
-                            <span class="badge-count">{{ stored_files|length }}</span>
+                            <span class="badge-count">{{ telegram_files|length }}</span>
                         </button>
                         {% endif %}
                         <span class="fs-6 fw-normal text-muted"><i class="fas fa-user-shield"></i> Admin Only</span>
                     </div>
                 </div>
-
                 <div class="card-body p-4">
                     <!-- Name -->
                     <div class="mb-3">
@@ -171,7 +170,7 @@
                         </a>
                         <form method="POST" action="{% url 'personal_store:storage_delete' item.id %}"
                             style="display: inline;"
-                            onsubmit="return confirm('Permanently delete this item and all its files from disk?');">
+                            onsubmit="return confirm('Permanently delete this item and all its files?');">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-danger"
                                 style="font-size: 0.7rem; padding: 4px 14px;">
