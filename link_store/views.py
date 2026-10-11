@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from .models import LinkCard
 from filemanager.telegram_storage import (
     upload_to_telegram,
@@ -13,6 +13,7 @@ from filemanager.telegram_storage import (
     get_telegram_file_url,
 )
 from filemanager.utils import sanitize_filename
+import requests
 import os
 
 
@@ -201,7 +202,7 @@ def link_delete_file(request, pk, slot, suffix=''):
 @login_required(login_url="/admin/login/")
 @user_passes_test(is_admin)
 def serve_telegram_file(request, pk, slot_key):
-    """Redirect to the direct Telegram download URL for a file."""
+    """Proxy the Telegram file through Django so it displays inline."""
     card = get_object_or_404(LinkCard, pk=pk)
     tg_map = card.get_telegram_map()
 
@@ -212,8 +213,45 @@ def serve_telegram_file(request, pk, slot_key):
     if not file_id:
         raise Http404("File ID missing")
 
+    # Resolve Telegram URL
     url = get_telegram_file_url(file_id)
     if not url:
         raise Http404("Could not resolve Telegram URL")
 
-    return redirect(url)
+    # Fetch the file from Telegram
+    try:
+        r = requests.get(url, timeout=60)
+        if r.status_code != 200:
+            raise Http404("Telegram returned an error")
+    except Exception:
+        raise Http404("Could not fetch file from Telegram")
+
+    content_type = r.headers.get('Content-Type', 'application/octet-stream')
+
+    # Guess content type from extension for inline viewing
+    filename = tg_map[slot_key].get('file_name', 'file')
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+
+    type_map = {
+        'pdf': 'application/pdf',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+        'svg': 'image/svg+xml',
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
+        'mp3': 'audio/mpeg',
+        'wav': 'audio/wav',
+        'txt': 'text/plain; charset=utf-8',
+        'html': 'text/html; charset=utf-8',
+        'json': 'application/json',
+    }
+
+    if ext in type_map:
+        content_type = type_map[ext]
+
+    response = HttpResponse(r.content, content_type=content_type)
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
