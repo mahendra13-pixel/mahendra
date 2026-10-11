@@ -1,6 +1,12 @@
 import os
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+
+def validate_file_size_20mb(value):
+    limit = 20 * 1024 * 1024  # 20 MB in bytes
+    if value.size > limit:
+        raise ValidationError(f'File too large. Max size is 20 MB. Your file: {value.size / 1024 / 1024:.2f} MB')
 
 class Contact(models.Model):
     PRIORITY_CHOICES = [
@@ -36,7 +42,7 @@ class Contact(models.Model):
     date = models.DateField(auto_now_add=True, null=True, blank=True)
     time = models.TimeField(auto_now_add=True, null=True, blank=True)
     message = models.TextField(blank=True, null=True)
-    media_file = models.FileField(upload_to='media_files/', null=True, blank=True, verbose_name="Media File (Image/Video)")
+    media_file = models.FileField(upload_to='media_files/', null=True, blank=True, validators=[validate_file_size_20mb], verbose_name="Media File (Image/Video)")
     is_public = models.BooleanField(default=False)
     
     # NEW FIELDS: Track single vs multiple files
@@ -84,7 +90,7 @@ class Contact(models.Model):
 class StoredFile(models.Model):
     """Individual files for stored items"""
     contact = models.ForeignKey('Contact', on_delete=models.CASCADE, related_name='stored_files')
-    file = models.FileField(upload_to='stored_files/')
+    file = models.FileField(upload_to='stored_files/', validators=[validate_file_size_20mb])
     file_name = models.CharField(max_length=255)
     file_size = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

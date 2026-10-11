@@ -153,9 +153,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL='/media/'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824
-FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
+FILE_UPLOAD_MAX_MEMORY_SIZE = 6291456
 # Authentication redirects
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'

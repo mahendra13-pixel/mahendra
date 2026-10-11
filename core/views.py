@@ -457,8 +457,8 @@ def issue_edit(request, pk):
         elif request.FILES.getlist("edit_multiple_files"):
             multiple_files = request.FILES.getlist("edit_multiple_files")
 
-            # Validate file sizes (500 MB limit)
-            MAX_SIZE = 1024 * 1024 * 1024
+            # Validate file sizes (20 MB limit)
+            MAX_SIZE = 20 * 1024 * 1024
             for file in multiple_files:
                 if file.size > MAX_SIZE:
                     messages.error(request, f"File '{file.name}' exceeds 1 GB limit.")
@@ -1172,7 +1172,7 @@ def store_edit(request, pk):
             file_count = 0
 
             # Validate file sizes
-            MAX_SIZE = 1024 * 1024 * 1024
+            MAX_SIZE = 20 * 1024 * 1024
             for file in multiple_files:
                 if file.size > MAX_SIZE:
                     messages.error(request, f"File '{file.name}' exceeds 1 GB limit.")
@@ -1218,7 +1218,7 @@ def store_edit(request, pk):
             multiple_files = request.FILES.getlist("media_file")
 
             # Validate file sizes
-            MAX_SIZE = 1024 * 1024 * 1024
+            MAX_SIZE = 20 * 1024 * 1024
             for file in multiple_files:
                 if file.size > MAX_SIZE:
                     messages.error(request, f"File '{file.name}' exceeds 1 GB limit.")

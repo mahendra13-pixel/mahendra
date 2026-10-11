@@ -41,6 +41,19 @@ def link_store_view(request):
                     card = LinkCard(name=request.POST.get("name", "").strip())
 
                 for i in range(1, MAX_LINKS + 1):
+                    # ============================================================
+                    # ENFORCE 20 MB UPLOAD LIMIT PER FILE
+                    # ============================================================
+                    MAX_SIZE = 20 * 1024 * 1024  # 20 MB
+                    for suffix in FILE_SUFFIXES:
+                        check_file = request.FILES.get(f"link_file_{i}{suffix}")
+                        if check_file and check_file.size > MAX_SIZE:
+                            messages.error(
+                                request,
+                                f"❌ '{check_file.name}' is {check_file.size / 1024 / 1024:.1f} MB. Max allowed: 20 MB."
+                            )
+                            return redirect("link_store:storage_view")
+
                     setattr(card, f"link_name_{i}",
                             request.POST.get(f"link_name_{i}", "").strip() or None)
                     setattr(card, f"link_desc_{i}",
