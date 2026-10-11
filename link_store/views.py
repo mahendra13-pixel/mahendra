@@ -5,13 +5,20 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from .models import LinkCard
+from filemanager.telegram_storage import (
+    upload_to_telegram,
+    delete_telegram_message,
+    get_telegram_file_url,
+)
+from filemanager.utils import sanitize_filename
 import os
 
 
 MAX_LINKS = 9
 FILE_SUFFIXES = ['', '_b', '_c', '_d']   # 4 files per slot
+MAX_FILE_SIZE = 20 * 1024 * 1024          # 20 MB
 
 
 def is_admin(user):
@@ -25,6 +32,13 @@ def link_store_view(request):
     # ---------- DELETE ----------
     if request.method == "POST" and "delete_id" in request.POST:
         card = get_object_or_404(LinkCard, pk=request.POST["delete_id"])
+
+        # Delete all Telegram files attached to this card
+        tg_map = card.get_telegram_map()
+        for slot_key, info in tg_map.items():
+            if info and info.get('message_id'):
+                delete_telegram_message(info.get('message_id'))
+
         card.delete()
         messages.success(request, "✅ Link card permanently deleted.")
         return redirect("link_store:storage_view")
@@ -44,10 +58,9 @@ def link_store_view(request):
                     # ============================================================
                     # ENFORCE 20 MB UPLOAD LIMIT PER FILE
                     # ============================================================
-                    MAX_SIZE = 20 * 1024 * 1024  # 20 MB
                     for suffix in FILE_SUFFIXES:
                         check_file = request.FILES.get(f"link_file_{i}{suffix}")
-                        if check_file and check_file.size > MAX_SIZE:
+                        if check_file and check_file.size > MAX_FILE_SIZE:
                             messages.error(
                                 request,
                                 f"❌ '{check_file.name}' is {check_file.size / 1024 / 1024:.1f} MB. Max allowed: 20 MB."
@@ -61,31 +74,37 @@ def link_store_view(request):
                     setattr(card, f"link_url_{i}",
                             request.POST.get(f"link_url_{i}", "").strip() or None)
 
-                    # Loop over 4 file suffixes for this slot
+                    # ============================================================
+                    # HANDLE TELEGRAM FILE OPERATIONS (upload / clear)
+                    # ============================================================
                     for suffix in FILE_SUFFIXES:
-                        field_name = f"link_file_{i}{suffix}"
+                        slot_key = f"{i}{suffix}"
                         clear_flag = request.POST.get(f"clear_file_{i}{suffix}") == "on"
-                        new_file = request.FILES.get(field_name)
+                        new_file = request.FILES.get(f"link_file_{i}{suffix}")
 
-                        if clear_flag:
-                            old = getattr(card, field_name, None)
-                            if old:
-                                try:
-                                    if os.path.isfile(old.path):
-                                        os.remove(old.path)
-                                except Exception:
-                                    pass
-                            setattr(card, field_name, None)
+                        tg_map = card.get_telegram_map()
 
+                        # CLEAR: delete from Telegram
+                        if clear_flag and slot_key in tg_map:
+                            delete_telegram_message(tg_map[slot_key].get('message_id'))
+                            card.remove_telegram_file(slot_key)
+
+                        # UPLOAD NEW: replace old if any
                         if new_file:
-                            old = getattr(card, field_name, None)
-                            if old:
-                                try:
-                                    if os.path.isfile(old.path):
-                                        os.remove(old.path)
-                                except Exception:
-                                    pass
-                            setattr(card, field_name, new_file)
+                            if slot_key in tg_map:
+                                delete_telegram_message(tg_map[slot_key].get('message_id'))
+
+                            info = upload_to_telegram(
+                                new_file,
+                                filename=sanitize_filename(new_file.name)
+                            )
+                            if info:
+                                card.set_telegram_file(slot_key, info)
+                            else:
+                                messages.warning(
+                                    request,
+                                    f"⚠️ Could not upload '{new_file.name}' to Telegram."
+                                )
 
                 card.updated_at = timezone.localtime(timezone.now())
                 card.save()
@@ -101,12 +120,15 @@ def link_store_view(request):
     edit_slots = []
     if edit_id:
         editing_card = get_object_or_404(LinkCard, pk=edit_id)
+        tg_map = editing_card.get_telegram_map()
         for i in range(1, MAX_LINKS + 1):
             files = []
             for suffix in FILE_SUFFIXES:
+                slot_key = f"{i}{suffix}"
                 files.append({
                     "suffix": suffix,
-                    "file": getattr(editing_card, f"link_file_{i}{suffix}", None),
+                    "slot_key": slot_key,
+                    "telegram_info": tg_map.get(slot_key),
                 })
             edit_slots.append({
                 "index": i,
@@ -160,19 +182,38 @@ def link_delete_file(request, pk, slot, suffix=''):
     if suffix not in FILE_SUFFIXES:
         return JsonResponse({"status": "error", "message": "Invalid suffix"}, status=400)
 
-    field_name = f"link_file_{slot}{suffix}"
-    f = getattr(card, field_name, None)
+    slot_key = f"{slot}{suffix}"
+    tg_map = card.get_telegram_map()
 
-    if not f:
+    if slot_key not in tg_map:
         return JsonResponse({"status": "error", "message": "No file found"}, status=404)
 
-    try:
-        if os.path.isfile(f.path):
-            os.remove(f.path)
-    except Exception:
-        pass
+    # Delete the Telegram message (and its file)
+    delete_telegram_message(tg_map[slot_key].get('message_id'))
 
-    setattr(card, field_name, None)
+    # Remove from the map
+    card.remove_telegram_file(slot_key)
     card.save()
 
     return JsonResponse({"status": "success", "message": "File deleted."})
+
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def serve_telegram_file(request, pk, slot_key):
+    """Redirect to the direct Telegram download URL for a file."""
+    card = get_object_or_404(LinkCard, pk=pk)
+    tg_map = card.get_telegram_map()
+
+    if slot_key not in tg_map:
+        raise Http404("File not found")
+
+    file_id = tg_map[slot_key].get('file_id')
+    if not file_id:
+        raise Http404("File ID missing")
+
+    url = get_telegram_file_url(file_id)
+    if not url:
+        raise Http404("Could not resolve Telegram URL")
+
+    return redirect(url)

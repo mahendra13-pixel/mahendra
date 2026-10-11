@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 import os
+import json
 
 def validate_file_size_20mb(value):
     """Reject files larger than 20 MB."""
@@ -94,7 +95,8 @@ class LinkCard(models.Model):
     link_file_9_b = models.FileField(upload_to='link_files/', blank=True, null=True, validators=[validate_file_size_20mb])
     link_file_9_c = models.FileField(upload_to='link_files/', blank=True, null=True, validators=[validate_file_size_20mb])
     link_file_9_d = models.FileField(upload_to='link_files/', blank=True, null=True, validators=[validate_file_size_20mb])
-
+    
+    telegram_files = models.TextField(blank=True, null=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -103,20 +105,22 @@ class LinkCard(models.Model):
 
     @property
     def link_count(self):
+        tg_map = self.get_telegram_map()
         count = 0
         for i in range(1, 10):
-            if (getattr(self, f'link_name_{i}')
-                    or getattr(self, f'link_desc_{i}')
-                    or getattr(self, f'link_url_{i}')
-                    or getattr(self, f'link_file_{i}')
-                    or getattr(self, f'link_file_{i}_b')
-                    or getattr(self, f'link_file_{i}_c')
-                    or getattr(self, f'link_file_{i}_d')):
+            has_text = (
+                getattr(self, f'link_name_{i}')
+                or getattr(self, f'link_desc_{i}')
+                or getattr(self, f'link_url_{i}')
+            )
+            has_file = any(f"{i}{suffix}" in tg_map for suffix in ['', '_b', '_c', '_d'])
+            if has_text or has_file:
                 count += 1
         return count
 
     def filled_slots(self):
-        """Return list of dicts for only the filled slots."""
+        """Return list of dicts for only the filled slots (Telegram-backed)."""
+        tg_map = self.get_telegram_map()
         slots = []
         for i in range(1, 10):
             name = getattr(self, f'link_name_{i}')
@@ -125,9 +129,15 @@ class LinkCard(models.Model):
 
             files = []
             for suffix in ['', '_b', '_c', '_d']:
-                f = getattr(self, f'link_file_{i}{suffix}', None)
-                if f:
-                    files.append(f)
+                slot_key = f"{i}{suffix}"
+                info = tg_map.get(slot_key)
+                if info:
+                    files.append({
+                        'slot_key': slot_key,
+                        'name': info.get('file_name', 'file'),
+                        'size': info.get('file_size', 0),
+                        'suffix': suffix,
+                    })
 
             if name or desc or url or files:
                 slots.append({
@@ -138,8 +148,38 @@ class LinkCard(models.Model):
                     'files': files,
                 })
         return slots
+    
+    def get_telegram_map(self):
+        if not self.telegram_files:
+            return {}
+        try:
+            return json.loads(self.telegram_files)
+        except (json.JSONDecodeError, TypeError):
+            return {}
+
+    def set_telegram_file(self, slot_key, info):
+        """Save a Telegram file entry for a slot."""
+        data = self.get_telegram_map()
+        data[slot_key] = info
+        self.telegram_files = json.dumps(data)
+
+    def remove_telegram_file(self, slot_key):
+        """Remove a slot from the Telegram map."""
+        data = self.get_telegram_map()
+        data.pop(slot_key, None)
+        self.telegram_files = json.dumps(data)
 
     def delete(self, *args, **kwargs):
+        try:
+            from filemanager.telegram_storage import delete_telegram_message
+            tg_map = self.get_telegram_map()
+            for slot_key, info in tg_map.items():
+                if info and info.get('message_id'):
+                    delete_telegram_message(info.get('message_id'))
+        except Exception:
+            pass
+
+        
         for i in range(1, 10):
             for suffix in ['', '_b', '_c', '_d']:
                 f = getattr(self, f'link_file_{i}{suffix}', None)
@@ -149,4 +189,5 @@ class LinkCard(models.Model):
                             os.remove(f.path)
                     except Exception:
                         pass
+
         super().delete(*args, **kwargs)

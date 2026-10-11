@@ -343,11 +343,14 @@
                             {% if slot.files %}
                             <div class="uploaded-files-row">
                                 {% for f in slot.files %}
-                                {% if f.file %}
+                                {% if f.telegram_info %}
                                 <span class="uploaded-file-chip">
                                     <i class="fas fa-file"></i>
-                                    <a href="{{ f.file.url }}" target="_blank" style="color:#065f46; text-decoration:none;">
-                                        <span class="fname" title="{{ f.file.name|slice:'13:' }}">{{ f.file.name|slice:"13:"|truncatechars:12 }}</span>
+                                    <a href="{% url 'link_store:serve_telegram_file' editing_card.id f.slot_key %}"
+                                        target="_blank" style="color:#065f46; text-decoration:none;">
+                                        <span class="fname" title="{{ f.telegram_info.file_name }}">
+                                            {{ f.telegram_info.file_name|truncatechars:15 }}
+                                        </span>
                                     </a>
                                     <label>
                                         <input type="checkbox" name="clear_file_{{ slot.index }}{{ f.suffix }}"> ✕
@@ -522,8 +525,9 @@
                         {% endif %}
 
                         {% for f in slot.files %}
-                        <a href="{{ f.url }}" target="_blank" rel="noopener noreferrer" class="slot-file">
-                            <i class="fas fa-paperclip"></i> {{ f.name|slice:"13:" }}
+                        <a href="{% url 'link_store:serve_telegram_file' viewing_card.id f.slot_key %}"
+                            target="_blank" rel="noopener noreferrer" class="slot-file">
+                            <i class="fas fa-paperclip"></i> {{ f.name }}
                         </a>
                         {% endfor %}
                     </div>
