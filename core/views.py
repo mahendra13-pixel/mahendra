@@ -237,28 +237,25 @@ def contact(request):
                     updated_at=now,
                     created_by=request.user,      
                 )
-                first_saved_path = None
+                # ✅ Telegram-only upload (no local disk save)
                 for idx, file in enumerate(multiple_files):
-                    saved_path = save_file_hybrid(file, "stored_files")
-                    if idx == 0:
-                        first_saved_path = saved_path
-                    StoredFile.objects.create(
-                        contact=contact,
-                        file=saved_path,
-                        file_name=sanitize_filename(file.name),
-                        file_size=file.size,
-                    )
-
-                    # ✅ NEW: mirror upload to Telegram
                     slot_key = str(idx + 1)
-                    info = upload_to_telegram(
-                        file, filename=sanitize_filename(file.name)
-                    )
-                    if info:
-                        contact.set_telegram_file(slot_key, info)
-                if first_saved_path:
-                    contact.media_file = first_saved_path
-                    contact.save(update_fields=["media_file"])
+                    try:
+                        info = upload_to_telegram(
+                            file, filename=sanitize_filename(file.name)
+                        )
+                        if info:
+                            contact.set_telegram_file(slot_key, info)
+                        else:
+                            messages.warning(
+                                request,
+                                f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                            )
+                    except Exception as tg_err:
+                        messages.warning(
+                            request,
+                            f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                        )
                 contact.save(update_fields=["telegram_files"])
 
             if action == "resolve":
@@ -442,8 +439,7 @@ def issue_edit(request, pk):
             stored_files.append(virtual)
 
     # Total file count
-    total_files = len(stored_files)
-
+    total_files = len(stored_files) + len(contact.get_telegram_map())
     # ============================================================
 
     if request.method == "POST":
@@ -527,36 +523,33 @@ def issue_edit(request, pk):
                 # Don't delete media_file yet, keep for backward compatibility
                 # But we'll update it later
 
-                # Create StoredFile records for each new file
                 existing_keys = list(contact.get_telegram_map().keys())
                 next_index = 1
                 for file in multiple_files:
-                    saved_path = save_file_hybrid(file, "stored_files")
-                    StoredFile.objects.create(
-                        contact=contact,
-                        file=saved_path,
-                        file_name=sanitize_filename(file.name),
-                        file_size=file.size,
-                    )
-
-                    # ✅ NEW: mirror upload to Telegram (next free slot)
+                    # ✅ Telegram-only upload (next free slot)
                     while str(next_index) in existing_keys:
                         next_index += 1
                     slot_key = str(next_index)
                     next_index += 1
-                    info = upload_to_telegram(
-                        file, filename=sanitize_filename(file.name)
-                    )
-                    if info:
-                        contact.set_telegram_file(slot_key, info)
+                    try:
+                        info = upload_to_telegram(
+                            file, filename=sanitize_filename(file.name)
+                        )
+                        if info:
+                            contact.set_telegram_file(slot_key, info)
+                        else:
+                            messages.warning(
+                                request,
+                                f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                            )
+                    except Exception as tg_err:
+                        messages.warning(
+                            request,
+                            f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                        )
 
-            # Update contact's media_file (point to first file for backward compatibility)
-            all_files = StoredFile.objects.filter(contact=contact)
-            if all_files.exists():
-                contact.media_file = all_files.first().file
-
-            # Update file count
-            contact.file_count = StoredFile.objects.filter(contact=contact).count()
+            # Update file count from Telegram map
+            contact.file_count = len(contact.get_telegram_map())
             contact.is_multiple = contact.file_count > 1
 
         # ============================================================
@@ -574,24 +567,26 @@ def issue_edit(request, pk):
             contact.telegram_files = ''
 
             file = request.FILES.get("media_file")
-            saved_path = save_file_hybrid(file, "stored_files")
-            contact.media_file = saved_path
             contact.is_multiple = False
             contact.file_count = 1
 
-            StoredFile.objects.create(
-                contact=contact,
-                file=saved_path,
-                file_name=sanitize_filename(file.name),
-                file_size=file.size,
-            )
-
-            # ✅ NEW: upload single file to Telegram as slot "1"
-            info = upload_to_telegram(
-                file, filename=sanitize_filename(file.name)
-            )
-            if info:
-                contact.set_telegram_file("1", info)
+            # ✅ Telegram-only upload as slot "1"
+            try:
+                info = upload_to_telegram(
+                    file, filename=sanitize_filename(file.name)
+                )
+                if info:
+                    contact.set_telegram_file("1", info)
+                else:
+                    messages.warning(
+                        request,
+                        f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                    )
+            except Exception as tg_err:
+                messages.warning(
+                    request,
+                    f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                )
 
         elif request.POST.get("media_clear") == "on":
             if contact.media_file:
@@ -755,28 +750,25 @@ def store_submit(request):
                     updated_at=now,
                 )
 
-                first_saved_path = None
+                # ✅ Telegram-only upload (no local disk save)
                 for idx, file in enumerate(multiple_files):
-                    saved_path = save_file_hybrid(file, "stored_files")
-                    if idx == 0:
-                        first_saved_path = saved_path
-                    StoredFile.objects.create(
-                        contact=contact,
-                        file=saved_path,
-                        file_name=sanitize_filename(file.name),
-                        file_size=file.size,
-                    )
-
-                    # ✅ NEW: mirror upload to Telegram
                     slot_key = str(idx + 1)
-                    info = upload_to_telegram(
-                        file, filename=sanitize_filename(file.name)
-                    )
-                    if info:
-                        contact.set_telegram_file(slot_key, info)
-                if first_saved_path:
-                    contact.media_file = first_saved_path
-                    contact.save(update_fields=["media_file"])
+                    try:
+                        info = upload_to_telegram(
+                            file, filename=sanitize_filename(file.name)
+                        )
+                        if info:
+                            contact.set_telegram_file(slot_key, info)
+                        else:
+                            messages.warning(
+                                request,
+                                f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                            )
+                    except Exception as tg_err:
+                        messages.warning(
+                            request,
+                            f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                        )
                 contact.save(update_fields=["telegram_files"])
 
             if file_count == 0:
@@ -1199,7 +1191,7 @@ def store_edit(request, pk):
             virtual.is_legacy = True
             stored_files.append(virtual)
 
-    total_files = len(stored_files)
+    total_files = len(stored_files) + len(item.get_telegram_map())
 
     if request.method == "POST":
         # ============================================================
@@ -1289,28 +1281,25 @@ def store_edit(request, pk):
                         delete_telegram_message(_info.get('message_id'))
                 item.telegram_files = ''
 
-                first_saved_path = None
+                # ✅ Telegram-only upload (replace mode)
                 for idx, file in enumerate(multiple_files):
-                    saved_path = save_file_hybrid(file, "stored_files")
-                    if idx == 0:
-                        first_saved_path = saved_path
-                    StoredFile.objects.create(
-                        contact=item,
-                        file=saved_path,
-                        file_name=sanitize_filename(file.name),
-                        file_size=file.size,
-                    )
-
-                    # ✅ NEW: mirror upload to Telegram
                     slot_key = str(idx + 1)
-                    info = upload_to_telegram(
-                        file, filename=sanitize_filename(file.name)
-                    )
-                    if info:
-                        item.set_telegram_file(slot_key, info)
-
-                if first_saved_path:
-                    item.media_file = first_saved_path
+                    try:
+                        info = upload_to_telegram(
+                            file, filename=sanitize_filename(file.name)
+                        )
+                        if info:
+                            item.set_telegram_file(slot_key, info)
+                        else:
+                            messages.warning(
+                                request,
+                                f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                            )
+                    except Exception as tg_err:
+                        messages.warning(
+                            request,
+                            f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                        )
 
         # ADD: Keep existing files and upload new ones
         elif (
@@ -1358,32 +1347,30 @@ def store_edit(request, pk):
             next_index = 1
             with transaction.atomic():
                 for file in multiple_files:
-                    saved_path = save_file_hybrid(file, "stored_files")
-                    StoredFile.objects.create(
-                        contact=item,
-                        file=saved_path,  # ✅ Chunked!
-                        file_name=sanitize_filename(file.name),  # ✅ Sanitized!
-                        file_size=file.size,
-                    )
-
-                    # ✅ NEW: mirror upload to Telegram (next free slot)
+                    # ✅ Telegram-only upload (next free slot)
                     while str(next_index) in existing_keys:
                         next_index += 1
                     slot_key = str(next_index)
                     next_index += 1
-                    info = upload_to_telegram(
-                        file, filename=sanitize_filename(file.name)
-                    )
-                    if info:
-                        item.set_telegram_file(slot_key, info)
-                        
-            # Update contact's media_file (point to first file)
-            all_files = StoredFile.objects.filter(contact=item)
-            if all_files.exists():
-                item.media_file = all_files.first().file
+                    try:
+                        info = upload_to_telegram(
+                            file, filename=sanitize_filename(file.name)
+                        )
+                        if info:
+                            item.set_telegram_file(slot_key, info)
+                        else:
+                            messages.warning(
+                                request,
+                                f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                            )
+                    except Exception as tg_err:
+                        messages.warning(
+                            request,
+                            f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                        )
 
-            # Update file count
-            item.file_count = StoredFile.objects.filter(contact=item).count()
+            # Update file count from Telegram map
+            item.file_count = len(item.get_telegram_map())
             item.is_multiple = item.file_count > 1
 
         elif request.FILES.get("media_file"):
@@ -1400,24 +1387,26 @@ def store_edit(request, pk):
             item.telegram_files = ''
 
             file = request.FILES.get("media_file")
-            saved_path = save_file_hybrid(file, "stored_files")
-            item.media_file = saved_path
             item.is_multiple = False
             item.file_count = 1
 
-            StoredFile.objects.create(
-                contact=item,
-                file=saved_path,
-                file_name=sanitize_filename(file.name),
-                file_size=file.size,
-            )
-
-            # ✅ NEW: upload single file to Telegram as slot "1"
-            info = upload_to_telegram(
-                file, filename=sanitize_filename(file.name)
-            )
-            if info:
-                item.set_telegram_file("1", info)
+            # ✅ Telegram-only upload as slot "1"
+            try:
+                info = upload_to_telegram(
+                    file, filename=sanitize_filename(file.name)
+                )
+                if info:
+                    item.set_telegram_file("1", info)
+                else:
+                    messages.warning(
+                        request,
+                        f"⚠️ '{file.name}' could not be uploaded to Telegram."
+                    )
+            except Exception as tg_err:
+                messages.warning(
+                    request,
+                    f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
+                )
 
         # ============================================================
         # ✅ SAVE AND REDIRECT
@@ -1452,31 +1441,32 @@ def store_edit(request, pk):
 
 @login_required(login_url="/accounts/login/")
 def get_zip_contents(request, pk):
-    """Get contents of a stored item - admins see all, normal users only for public items"""
     is_admin_user = request.user.is_authenticated and (
         request.user.is_staff or request.user.is_superuser
     )
-
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
-
-    # Non-admins can only fetch files from public items
     if not is_admin_user and not item.is_public:
         return JsonResponse({"files": [], "error": "private"})
 
-    stored_files = StoredFile.objects.filter(contact=item)
-
     files = []
-    for sf in stored_files:
-        files.append(
-            {
-                "name": sf.file_name,
-                "size": sf.file_size,
-                "url": sf.file.url,
-            }
-        )
+
+    # ✅ Legacy local files (for old cards)
+    for sf in StoredFile.objects.filter(contact=item):
+        files.append({
+            "name": sf.file_name,
+            "size": sf.file_size,
+            "url": sf.file.url,
+        })
+
+    # ✅ Telegram files (for new cards)
+    for slot_key, info in item.get_telegram_map().items():
+        files.append({
+            "name": info.get("file_name", "file"),
+            "size": info.get("file_size", 0),
+            "url": reverse("core:serve_stored_telegram_file", args=[item.pk, slot_key]),
+        })
 
     return JsonResponse({"files": files})
-
 
 # core/views.py - Add these functions
 
