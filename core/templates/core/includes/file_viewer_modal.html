@@ -205,12 +205,16 @@
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                           document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 
-        // Determine endpoint based on context
-        let endpoint = '';
-        if (currentContactId && currentIsStored) {
-            endpoint = `/storage/${currentContactId}/file/delete/${index}/`;
-        } else if (currentContactId && !currentIsStored) {
-            endpoint = `/issue/${currentContactId}/file/delete/${index}/`;
+        // ✅ Prefer explicit per-file delete URL (supports local + Telegram)
+        let endpoint = file.delete_url || '';
+
+        // Legacy fallback: use contactId + isStored
+        if (!endpoint) {
+            if (currentContactId && currentIsStored) {
+                endpoint = `/storage/${currentContactId}/file/delete/${index}/`;
+            } else if (currentContactId && !currentIsStored) {
+                endpoint = `/issue/${currentContactId}/file/delete/${index}/`;
+            }
         }
 
         // If no contact ID, fallback to UI-only deletion
