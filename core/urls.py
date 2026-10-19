@@ -32,5 +32,9 @@ urlpatterns = [
     path('autocomplete/', views.autocomplete_suggestions, name='autocomplete'),
     path('storage-toggle-public/<int:pk>/', 
      views.toggle_public_storage, 
-     name='toggle_public_storage'),     
+     name='toggle_public_storage'),
+    path('storage/<int:pk>/tg/<str:slot_key>/', views.serve_stored_telegram_file, name='serve_stored_telegram_file'),
+    path('issue/<int:pk>/tg/<str:slot_key>/', views.serve_issue_telegram_file, name='serve_issue_telegram_file'),
+    path('storage/<int:pk>/tg-delete/<str:slot_key>/', views.delete_stored_telegram_file, name='delete_stored_telegram_file'),
+    path('issue/<int:pk>/tg-delete/<str:slot_key>/', views.delete_issue_telegram_file, name='delete_issue_telegram_file'),      
 ]

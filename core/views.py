@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.utils import timezone
 from .models import Contact
 from django.db import models
@@ -14,10 +14,16 @@ from io import BytesIO
 from datetime import datetime
 import socket
 import getpass
+import requests
 from django.urls import reverse 
 from django.core.paginator import Paginator
 from .models import StoredFile
 from django.http import JsonResponse
+from filemanager.telegram_storage import (
+    upload_to_telegram,
+    delete_telegram_message,
+    get_telegram_file_url,
+)
 
 
 # Helper function to check if user is admin
@@ -190,7 +196,17 @@ def contact(request):
                 media_file = multiple_files[0]  # First file as cover
                 is_multiple = True
         # ============================================================
-
+        
+        # ✅ NEW: enforce 20 MB per file (matches personal_store)
+        MAX_FILE_SIZE = 20 * 1024 * 1024
+        for f in multiple_files:
+            if f.size > MAX_FILE_SIZE:
+                messages.error(
+                    request,
+                    f"❌ '{f.name}' is {f.size / 1024 / 1024:.1f} MB. Max allowed: 20 MB."
+                )
+                return redirect("core:contact")
+            
         try:
             with transaction.atomic():
                 contact = Contact.objects.create(
@@ -232,9 +248,18 @@ def contact(request):
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+
+                    # ✅ NEW: mirror upload to Telegram
+                    slot_key = str(idx + 1)
+                    info = upload_to_telegram(
+                        file, filename=sanitize_filename(file.name)
+                    )
+                    if info:
+                        contact.set_telegram_file(slot_key, info)
                 if first_saved_path:
                     contact.media_file = first_saved_path
                     contact.save(update_fields=["media_file"])
+                contact.save(update_fields=["telegram_files"])
 
             if action == "resolve":
                 messages.success(
@@ -450,6 +475,13 @@ def issue_edit(request, pk):
             if contact.media_file:
                 contact.media_file.delete(save=False)
                 contact.media_file = None
+
+            # ✅ NEW: delete all Telegram files
+            for _sk, _info in contact.get_telegram_map().items():
+                if _info and _info.get('message_id'):
+                    delete_telegram_message(_info.get('message_id'))
+            contact.telegram_files = ''
+
             contact.is_multiple = False
             contact.file_count = 0
 
@@ -496,6 +528,8 @@ def issue_edit(request, pk):
                 # But we'll update it later
 
                 # Create StoredFile records for each new file
+                existing_keys = list(contact.get_telegram_map().keys())
+                next_index = 1
                 for file in multiple_files:
                     saved_path = save_file_hybrid(file, "stored_files")
                     StoredFile.objects.create(
@@ -504,6 +538,17 @@ def issue_edit(request, pk):
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+
+                    # ✅ NEW: mirror upload to Telegram (next free slot)
+                    while str(next_index) in existing_keys:
+                        next_index += 1
+                    slot_key = str(next_index)
+                    next_index += 1
+                    info = upload_to_telegram(
+                        file, filename=sanitize_filename(file.name)
+                    )
+                    if info:
+                        contact.set_telegram_file(slot_key, info)
 
             # Update contact's media_file (point to first file for backward compatibility)
             all_files = StoredFile.objects.filter(contact=contact)
@@ -516,12 +561,17 @@ def issue_edit(request, pk):
 
         # ============================================================
         # ✅ HANDLE SINGLE FILE UPLOAD (Backward compatibility)
-        # ============================================================
         elif request.FILES.get("media_file"):
             # Delete all existing files
             StoredFile.objects.filter(contact=contact).delete()
             if contact.media_file:
                 contact.media_file.delete(save=False)
+
+            # ✅ NEW: clear Telegram map
+            for _sk, _info in contact.get_telegram_map().items():
+                if _info and _info.get('message_id'):
+                    delete_telegram_message(_info.get('message_id'))
+            contact.telegram_files = ''
 
             file = request.FILES.get("media_file")
             saved_path = save_file_hybrid(file, "stored_files")
@@ -536,14 +586,27 @@ def issue_edit(request, pk):
                 file_size=file.size,
             )
 
+            # ✅ NEW: upload single file to Telegram as slot "1"
+            info = upload_to_telegram(
+                file, filename=sanitize_filename(file.name)
+            )
+            if info:
+                contact.set_telegram_file("1", info)
+
         elif request.POST.get("media_clear") == "on":
             if contact.media_file:
                 contact.media_file.delete(save=False)
                 contact.media_file = None
             StoredFile.objects.filter(contact=contact).delete()
+
+            # ✅ NEW: clear Telegram map
+            for _sk, _info in contact.get_telegram_map().items():
+                if _info and _info.get('message_id'):
+                    delete_telegram_message(_info.get('message_id'))
+            contact.telegram_files = ''
+
             contact.is_multiple = False
             contact.file_count = 0
-
         # ============================================================
 
         contact.status = request.POST.get("status")
@@ -660,7 +723,16 @@ def store_submit(request):
             else:
                 media_file = multiple_files[0]  # First file as cover
                 is_multiple = True
-
+                
+        MAX_FILE_SIZE = 20 * 1024 * 1024
+        for f in multiple_files:
+            if f.size > MAX_FILE_SIZE:
+                messages.error(
+                    request,
+                    f"❌ '{f.name}' is {f.size / 1024 / 1024:.1f} MB. Max allowed: 20 MB."
+                )
+                return redirect("core:contact")
+        
         try:
             with transaction.atomic():
                 contact = Contact.objects.create(
@@ -694,9 +766,18 @@ def store_submit(request):
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+
+                    # ✅ NEW: mirror upload to Telegram
+                    slot_key = str(idx + 1)
+                    info = upload_to_telegram(
+                        file, filename=sanitize_filename(file.name)
+                    )
+                    if info:
+                        contact.set_telegram_file(slot_key, info)
                 if first_saved_path:
                     contact.media_file = first_saved_path
                     contact.save(update_fields=["media_file"])
+                contact.save(update_fields=["telegram_files"])
 
             if file_count == 0:
                 messages.success(request, f"✅ Issue '{name}' stored successfully!")
@@ -1152,6 +1233,13 @@ def store_edit(request, pk):
             if item.media_file:
                 item.media_file.delete(save=False)
                 item.media_file = None
+
+            # ✅ NEW: clear Telegram map
+            for _sk, _info in item.get_telegram_map().items():
+                if _info and _info.get('message_id'):
+                    delete_telegram_message(_info.get('message_id'))
+            item.telegram_files = ''
+
             item.is_multiple = False
             item.file_count = 0
 
@@ -1195,6 +1283,12 @@ def store_edit(request, pk):
                 item.is_multiple = is_multiple
                 item.file_count = file_count
 
+                # ✅ NEW: clear old Telegram map (replace semantics)
+                for _sk, _info in item.get_telegram_map().items():
+                    if _info and _info.get('message_id'):
+                        delete_telegram_message(_info.get('message_id'))
+                item.telegram_files = ''
+
                 first_saved_path = None
                 for idx, file in enumerate(multiple_files):
                     saved_path = save_file_hybrid(file, "stored_files")
@@ -1206,6 +1300,14 @@ def store_edit(request, pk):
                         file_name=sanitize_filename(file.name),
                         file_size=file.size,
                     )
+
+                    # ✅ NEW: mirror upload to Telegram
+                    slot_key = str(idx + 1)
+                    info = upload_to_telegram(
+                        file, filename=sanitize_filename(file.name)
+                    )
+                    if info:
+                        item.set_telegram_file(slot_key, info)
 
                 if first_saved_path:
                     item.media_file = first_saved_path
@@ -1252,6 +1354,8 @@ def store_edit(request, pk):
                     item.media_file = None   
 
             # Create StoredFile records for each new file
+            existing_keys = list(item.get_telegram_map().keys())
+            next_index = 1
             with transaction.atomic():
                 for file in multiple_files:
                     saved_path = save_file_hybrid(file, "stored_files")
@@ -1262,6 +1366,17 @@ def store_edit(request, pk):
                         file_size=file.size,
                     )
 
+                    # ✅ NEW: mirror upload to Telegram (next free slot)
+                    while str(next_index) in existing_keys:
+                        next_index += 1
+                    slot_key = str(next_index)
+                    next_index += 1
+                    info = upload_to_telegram(
+                        file, filename=sanitize_filename(file.name)
+                    )
+                    if info:
+                        item.set_telegram_file(slot_key, info)
+                        
             # Update contact's media_file (point to first file)
             all_files = StoredFile.objects.filter(contact=item)
             if all_files.exists():
@@ -1271,13 +1386,18 @@ def store_edit(request, pk):
             item.file_count = StoredFile.objects.filter(contact=item).count()
             item.is_multiple = item.file_count > 1
 
-        # Single file upload (backward compatibility - REPLACE)
         elif request.FILES.get("media_file"):
             # Delete all existing files
             StoredFile.objects.filter(contact=item).delete()
             if item.media_file:
                 item.media_file.delete(save=False)
                 item.media_file = None
+
+            # ✅ NEW: clear Telegram map
+            for _sk, _info in item.get_telegram_map().items():
+                if _info and _info.get('message_id'):
+                    delete_telegram_message(_info.get('message_id'))
+            item.telegram_files = ''
 
             file = request.FILES.get("media_file")
             saved_path = save_file_hybrid(file, "stored_files")
@@ -1291,6 +1411,13 @@ def store_edit(request, pk):
                 file_name=sanitize_filename(file.name),
                 file_size=file.size,
             )
+
+            # ✅ NEW: upload single file to Telegram as slot "1"
+            info = upload_to_telegram(
+                file, filename=sanitize_filename(file.name)
+            )
+            if info:
+                item.set_telegram_file("1", info)
 
         # ============================================================
         # ✅ SAVE AND REDIRECT
@@ -1540,3 +1667,103 @@ def toggle_public_storage(request, pk):
     if search:
         url += f"&search={search}"
     return redirect(url)
+
+
+# ============================================================
+# ✅ NEW: Telegram file serving + deletion for core
+# ============================================================
+
+def _serve_telegram_file(contact, slot_key):
+    """Shared helper: fetch Telegram file and return HttpResponse."""
+    tg_map = contact.get_telegram_map()
+    if slot_key not in tg_map:
+        raise Http404("File not found")
+    file_id = tg_map[slot_key].get('file_id')
+    if not file_id:
+        raise Http404("File ID missing")
+    url = get_telegram_file_url(file_id)
+    if not url:
+        raise Http404("Could not resolve Telegram URL")
+    try:
+        r = requests.get(url, timeout=60)
+        if r.status_code != 200:
+            raise Http404("Telegram returned an error")
+    except Http404:
+        raise
+    except Exception:
+        raise Http404("Could not fetch file from Telegram")
+
+    content_type = r.headers.get('Content-Type', 'application/octet-stream')
+    filename = tg_map[slot_key].get('file_name', 'file')
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    type_map = {
+        'pdf': 'application/pdf', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+        'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp',
+        'svg': 'image/svg+xml', 'mp4': 'video/mp4', 'webm': 'video/webm',
+        'mp3': 'audio/mpeg', 'wav': 'audio/wav',
+        'txt': 'text/plain; charset=utf-8',
+        'html': 'text/html; charset=utf-8', 'json': 'application/json',
+    }
+    if ext in type_map:
+        content_type = type_map[ext]
+    response = HttpResponse(r.content, content_type=content_type)
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
+
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def serve_stored_telegram_file(request, pk, slot_key):
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    return _serve_telegram_file(item, slot_key)
+
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def serve_issue_telegram_file(request, pk, slot_key):
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    return _serve_telegram_file(contact, slot_key)
+
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def delete_stored_telegram_file(request, pk, slot_key):
+    item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    tg_map = item.get_telegram_map()
+    info = tg_map.get(slot_key)
+    if not info:
+        return JsonResponse({"status": "error", "message": "File not found"}, status=404)
+    file_name = info.get('file_name', 'file')
+    if info.get('message_id'):
+        delete_telegram_message(info['message_id'])
+    item.remove_telegram_file(slot_key)
+    item.file_count = len(item.get_telegram_map())
+    item.is_multiple = item.file_count > 1
+    item.save()
+    return JsonResponse({
+        "status": "success",
+        "message": f"Deleted: {file_name}",
+        "file_count": item.file_count,
+    })
+
+
+@login_required(login_url="/admin/login/")
+@user_passes_test(is_admin)
+def delete_issue_telegram_file(request, pk, slot_key):
+    contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    tg_map = contact.get_telegram_map()
+    info = tg_map.get(slot_key)
+    if not info:
+        return JsonResponse({"status": "error", "message": "File not found"}, status=404)
+    file_name = info.get('file_name', 'file')
+    if info.get('message_id'):
+        delete_telegram_message(info['message_id'])
+    contact.remove_telegram_file(slot_key)
+    contact.file_count = len(contact.get_telegram_map())
+    contact.is_multiple = contact.file_count > 1
+    contact.save()
+    return JsonResponse({
+        "status": "success",
+        "message": f"Deleted: {file_name}",
+        "file_count": contact.file_count,
+    })
