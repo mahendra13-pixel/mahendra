@@ -1522,18 +1522,25 @@ def delete_stored_file(request, pk, file_index):
 def delete_stored_all_files(request, pk):
     """
     Delete ALL files from a stored item
-    - Deletes all StoredFile records from database
-    - Deletes all physical files from storage
+    - Deletes all StoredFile records from database (signal cleans disk files)
+    - Deletes legacy media_file
+    - Deletes all Telegram files
     """
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
 
-    # Delete all StoredFile records
+    # Delete all local StoredFile rows (signal cleans disk files)
     StoredFile.objects.filter(contact=item).order_by("id").delete()
 
     # Delete legacy media_file
     if item.media_file:
         item.media_file.delete(save=False)
         item.media_file = None
+
+    # ✅ NEW: delete all Telegram files
+    for _sk, _info in item.get_telegram_map().items():
+        if _info and _info.get('message_id'):
+            delete_telegram_message(_info.get('message_id'))
+    item.telegram_files = ''
 
     # Update flags
     item.is_multiple = False
@@ -1586,18 +1593,25 @@ def delete_issue_file(request, pk, file_index):
 def delete_issue_all_files(request, pk):
     """
     Delete ALL files from a regular issue
-    - Deletes all StoredFile records from database
-    - Deletes all physical files from storage
+    - Deletes all StoredFile records from database (signal cleans disk files)
+    - Deletes legacy media_file
+    - Deletes all Telegram files
     """
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
 
-    # Delete all StoredFile records
+    # Delete all local StoredFile rows (signal cleans disk files)
     StoredFile.objects.filter(contact=contact).order_by("id").delete()
 
     # Delete legacy media_file
     if contact.media_file:
         contact.media_file.delete(save=False)
         contact.media_file = None
+
+    # ✅ NEW: delete all Telegram files
+    for _sk, _info in contact.get_telegram_map().items():
+        if _info and _info.get('message_id'):
+            delete_telegram_message(_info.get('message_id'))
+    contact.telegram_files = ''
 
     # Update flags
     contact.is_multiple = False

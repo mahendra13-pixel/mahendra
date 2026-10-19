@@ -473,14 +473,17 @@
 
                             <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;">
                                 <!-- EYE BUTTON - View Files -->
-                                {% if contact.stored_files.exists or contact.media_file %}
+                                {% if contact.stored_files.exists or contact.media_file or contact.telegram_files %}
                                 <button type="button" class="eye-btn" onclick='openFileViewer([
     {% for sf in contact.stored_files.all %}
-    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size|default:0 }}, url: "{{ sf.file.url }}", delete_url: "{% url "core:delete_issue_file" contact.id forloop.counter0 %}" }{% if not forloop.last or contact.get_telegram_map %},{% endif %}
+    {% endfor %}
+    {% for slot_key, info in contact.get_telegram_map.items %}
+    { name: "{{ info.file_name|escapejs }}", size: {{ info.file_size|default:0 }}, url: "{% url "core:serve_issue_telegram_file" contact.id slot_key %}", delete_url: "{% url "core:delete_issue_telegram_file" contact.id slot_key %}" }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ], {{ contact.id }}, false)' style="font-size: 0.5rem; padding: 2px 6px; flex: 1;">
                                     <i class="fas fa-eye"></i> Files
-                                    <span class="badge-count">{{ contact.stored_files.count }}</span>
+                                    <span class="badge-count">{{ contact.stored_files.count|add:contact.get_telegram_map|length }}</span>
                                 </button>
                                 {% endif %}
 
@@ -620,14 +623,17 @@
 
             <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;">
                 <!-- EYE BUTTON - View Files -->
-                {% if contact.stored_files.exists or contact.media_file %}
+                {% if contact.stored_files.exists or contact.media_file or contact.telegram_files %}
                 <button type="button" class="eye-btn" onclick='openFileViewer([
     {% for sf in contact.stored_files.all %}
-    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size|default:0 }}, url: "{{ sf.file.url }}", delete_url: "{% url "core:delete_issue_file" contact.id forloop.counter0 %}" }{% if not forloop.last or contact.get_telegram_map %},{% endif %}
+    {% endfor %}
+    {% for slot_key, info in contact.get_telegram_map.items %}
+    { name: "{{ info.file_name|escapejs }}", size: {{ info.file_size|default:0 }}, url: "{% url "core:serve_issue_telegram_file" contact.id slot_key %}", delete_url: "{% url "core:delete_issue_telegram_file" contact.id slot_key %}" }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ], {{ contact.id }}, false)' style="font-size: 0.55rem; padding: 2px 8px;">
                     <i class="fas fa-eye"></i> Files
-                    <span class="badge-count">{{ contact.stored_files.count }}</span>
+                    <span class="badge-count">{{ contact.stored_files.count|add:contact.get_telegram_map|length }}</span>
                 </button>
                 {% endif %}
 
