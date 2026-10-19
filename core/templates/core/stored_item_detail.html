@@ -13,14 +13,17 @@
                     <span><i class="fas fa-archive"></i> Stored Item Details</span>
                     <div class="d-flex align-items-center gap-2">
                         <!-- EYE BUTTON - Compact -->
-                        {% if stored_files %}
+                        {% if stored_files or item.telegram_files %}
                         <button type="button" class="eye-btn" onclick='openFileViewer([
     {% for sf in stored_files %}
-    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size }}, url: "{{ sf.file.url }}" }{% if not forloop.last %},{% endif %}
+    { name: "{{ sf.file_name|escapejs }}", size: {{ sf.file_size|default:0 }}, url: "{{ sf.file.url }}", delete_url: "{% url "core:delete_stored_file" item.id forloop.counter0 %}" }{% if not forloop.last or item.get_telegram_map %},{% endif %}
+    {% endfor %}
+    {% for slot_key, info in item.get_telegram_map.items %}
+    { name: "{{ info.file_name|escapejs }}", size: {{ info.file_size|default:0 }}, url: "{% url "core:serve_stored_telegram_file" item.id slot_key %}", delete_url: "{% url "core:delete_stored_telegram_file" item.id slot_key %}" }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ], {{ item.id }}, true)' style="font-size: 0.6rem; padding: 2px 10px;">
                             <i class="fas fa-eye"></i> Files
-                            <span class="badge-count">{{ stored_files|length }}</span>
+                            <span class="badge-count">{{ stored_files|length|add:item.get_telegram_map|length }}</span>
                         </button>
                         {% endif %}
                         <span class="fs-6 fw-normal text-muted"><i class="fas fa-database"></i> Storage</span>
