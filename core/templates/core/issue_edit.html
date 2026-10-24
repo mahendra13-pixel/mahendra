@@ -202,7 +202,9 @@
                                     <div style="display: flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-check-circle" style="color: #16a34a; font-size: 0.8rem;"></i>
                                         <span style="font-size: 0.7rem; font-weight: 500; color: #374151;">
-                                            {{ stored_files|length|add:contact.get_telegram_map|length }} file attached
+                                            {% with sf_count=stored_files|length tg_count=contact.get_telegram_map|length %}
+                                            {{ sf_count|add:tg_count }} file attached
+                                            {% endwith %}
                                             {% if has_legacy_file %}
                                             <span style="font-size: 0.55rem; color: #6b7280;">(includes legacy
                                                 file)</span>
@@ -218,7 +220,9 @@
     {% endfor %}
 ], {{ contact.id }}, false)' style="font-size: 0.6rem; padding: 2px 10px;">
                                         <i class="fas fa-eye"></i> View Files
-                                        <span class="badge-count">{{ stored_files|length|add:contact.get_telegram_map|length }}</span>
+                                        {% with sf_count=stored_files|length tg_count=contact.get_telegram_map|length %}
+                                        <span class="badge-count">{{ sf_count|add:tg_count }}</span>
+                                        {% endwith %}
                                     </button>
                                 </div>
 
