@@ -47,8 +47,13 @@
         <button type="submit">Log In</button>
     </form>
 
+    <!-- ✅ NEW: Register Section -->
     <p class="help-text">
-        Contact your administrator if you don't have an account.
+        Don't have an account?
     </p>
+        <a href="{% url 'accounts:register' %}" style="display: block; text-align: center; padding: 10px 20px; background: #1f6f4a; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: Arial; font-size: 1rem; margin-top: 10px;">
+        Sign Up
+    </a>
+</div>
 </div>
 {% endblock %}

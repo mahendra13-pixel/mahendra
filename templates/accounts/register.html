@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .register-container {
+        font-family: Arial;
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+    .register-container input {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+    }
+    /* Green button with padding and box */
+    .register-container button {
+        padding: 10px 20px;
+        background: #1f6f4a;
+        color: white;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+    .register-container button:hover {
+        background: #175a3c;
+    }
+    .register-container .errorlist {
+        color: red;
+        font-size: 0.8rem;
+        list-style-type: none;
+        padding: 0;
+        margin: 0 0 10px 0;
+    }
+    .register-container p.help-text {
+        margin-top: 20px;
+        color: #666;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    /* Login link styled as a button (matches login page) */
+    .login-link {
+        display: block;
+        text-align: center;
+        padding: 10px;
+        background: #f3f4f6;
+        color: #1f2937;
+        text-decoration: none;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        font-weight: bold;
+        font-family: Arial;
+        margin-top: 10px;
+    }
+    .login-link:hover {
+        background: #e5e7eb;
+    }
+    .register-container .helptext {
+        font-size: 0.7rem;
+        color: #6b7280;
+        display: block;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="register-container">
+    <h2>Register Your Account</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div style="margin-bottom: 5px;">
+                <label style="font-weight: bold; font-size: 0.9rem;">{{ field.label }}:</label>
+                {{ field }}
+                
+                {% if field.errors %}
+                    <ul class="errorlist">
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                
+                {% if field.help_text %}
+                    <span class="helptext">{{ field.help_text|safe }}</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <p class="help-text">
+        Already have an account?
+    </p>
+    <a href="{% url 'accounts:login' %}" class="login-link">
+        Log In
+    </a>
+</div>
+{% endblock %}
