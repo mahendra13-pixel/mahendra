@@ -343,7 +343,22 @@
                     </button>
                 </form>
                 {% endif %}  
-            
+                
+                {% if is_admin_user or item.created_by == request.user %}
+                <form method="POST" action="{% url 'core:storage_delete' item.id %}"
+                    style="display: inline; margin: 0;"
+                    onsubmit="if (!confirm('Delete this stored item?')) return false; return confirm('Are you sure? This cannot be undone.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                    {% if request.GET.search %}
+                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                    {% endif %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                        style="font-size: 0.5rem; padding: 1px 6px;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

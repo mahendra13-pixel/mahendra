@@ -1456,7 +1456,7 @@ def get_zip_contents(request, pk):
         request.user.is_staff or request.user.is_superuser
     )
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
-    if not is_admin_user and not item.is_public:
+    if not is_admin_user and not item.is_public and item.created_by != request.user:
         return JsonResponse({"files": [], "error": "private"})
 
     files = []
@@ -1482,8 +1482,7 @@ def get_zip_contents(request, pk):
 # core/views.py - Add these functions
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def delete_stored_file(request, pk, file_index):
     """
     Delete a specific file from a stored item
@@ -1491,6 +1490,9 @@ def delete_stored_file(request, pk, file_index):
     - Deletes physical file from storage
     """
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    if not is_admin(request.user) and not item.is_public and item.created_by != request.user:
+        return JsonResponse({"status": "error", "message": "Permission denied."}, status=403)
+
     stored_files = StoredFile.objects.filter(contact=item).order_by("id")
 
     if file_index < len(stored_files):
@@ -1553,8 +1555,7 @@ def delete_stored_all_files(request, pk):
     )
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def delete_issue_file(request, pk, file_index):
     """
     Delete a specific file from a regular issue
@@ -1562,6 +1563,10 @@ def delete_issue_file(request, pk, file_index):
     - Deletes physical file from storage
     """
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    
+    if not is_admin(request.user) and not contact.is_public and contact.created_by != request.user:
+        return JsonResponse({"status": "error", "message": "Permission denied."}, status=403)
+
     stored_files = StoredFile.objects.filter(contact=contact).order_by("id")
 
     if file_index < len(stored_files):
@@ -1589,8 +1594,7 @@ def delete_issue_file(request, pk, file_index):
     return JsonResponse({"status": "error", "message": "File not found"}, status=404)
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def delete_issue_all_files(request, pk):
     """
     Delete ALL files from a regular issue
@@ -1747,10 +1751,14 @@ def serve_issue_telegram_file(request, pk, slot_key):
         
     return _serve_telegram_file(contact, slot_key)
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def delete_stored_telegram_file(request, pk, slot_key):
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    
+    # ✅ NEW: Normal users can only delete their own or public files
+    if not is_admin(request.user) and not item.is_public and item.created_by != request.user:
+        return JsonResponse({"status": "error", "message": "Permission denied."}, status=403)
+    
     tg_map = item.get_telegram_map()
     info = tg_map.get(slot_key)
     if not info:
@@ -1769,10 +1777,14 @@ def delete_stored_telegram_file(request, pk, slot_key):
     })
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def delete_issue_telegram_file(request, pk, slot_key):
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    
+    # ✅ NEW: Normal users can only delete their own or public files
+    if not is_admin(request.user) and not contact.is_public and contact.created_by != request.user:
+        return JsonResponse({"status": "error", "message": "Permission denied."}, status=403)
+    
     tg_map = contact.get_telegram_map()
     info = tg_map.get(slot_key)
     if not info:
