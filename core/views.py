@@ -1726,19 +1726,26 @@ def _serve_telegram_file(contact, slot_key):
     return response
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def serve_stored_telegram_file(request, pk, slot_key):
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    
+    # ✅ NEW: Normal users can only serve their own or public files
+    if not is_admin(request.user) and not item.is_public and item.created_by != request.user:
+        raise Http404("You do not have permission to view this file.")
+        
     return _serve_telegram_file(item, slot_key)
 
-
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def serve_issue_telegram_file(request, pk, slot_key):
     contact = get_object_or_404(Contact, pk=pk, is_stored=False)
+    
+    # ✅ NEW: Normal users can only serve their own or public files
+    # (Assuming issues have the same logic)
+    if not is_admin(request.user) and not contact.is_public and contact.created_by != request.user:
+        raise Http404("You do not have permission to view this file.")
+        
     return _serve_telegram_file(contact, slot_key)
-
 
 @login_required(login_url="/admin/login/")
 @user_passes_test(is_admin)
