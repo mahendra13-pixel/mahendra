@@ -170,7 +170,7 @@
             <i class="fas fa-database" style="color: #7c3aed;"></i> Storage
         </h4>
         <div style="display: flex; gap: 8px;">
-            {% if is_admin_user %}
+            {% if user.is_authenticated %}
             <a href="{% url 'core:store_issue' %}" class="btn btn-sm btn-primary"
                 style="font-size: 0.7rem; padding: 4px 12px;">
                 <i class="fas fa-plus"></i> New
@@ -268,7 +268,7 @@
 
                 <!-- File Attachment with Eye Button -->
                 <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-                    {% if is_admin_user or item.is_public %}
+                    {% if is_admin_user or item.is_public or item.created_by == request.user %}
                     {% if item.stored_files.exists or item.media_file or item.telegram_files %}
                     <button type="button" class="eye-btn" onclick='openFileViewer([
     {% for sf in item.stored_files.all %}
@@ -303,7 +303,7 @@
 
             <!-- Card Footer -->
             <div style="background: #f9fafb; padding: 4px 8px; display: flex; gap: 4px; border-top: 1px solid #e5e7eb;">
-                {% if is_admin_user %}
+                {% if is_admin_user or item.created_by == request.user %}
                 <a href="{% url 'core:store_edit' item.id %}" class="btn btn-sm btn-outline-primary"
                     style="font-size: 0.5rem; padding: 1px 6px; text-decoration: none;">
                     <i class="fas fa-edit"></i> Edit
@@ -339,24 +339,11 @@
                         <i class="fas fa-globe"></i>
                         {% else %}
                         <i class="fas fa-eye-slash"></i>
-                        {% endif %}
+                        {% endif %}      
                     </button>
                 </form>
-
-                <form method="POST" action="{% url 'core:storage_delete' item.id %}"
-                    style="display: inline; margin: 0;"
-                    onsubmit="if (!confirm('Delete this stored item?')) return false; return confirm('Are you sure? This cannot be undone.');">
-                    {% csrf_token %}
-                    <input type="hidden" name="page" value="{{ page_obj.number }}">
-                    {% if request.GET.search %}
-                    <input type="hidden" name="search" value="{{ request.GET.search }}">
-                    {% endif %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                        style="font-size: 0.5rem; padding: 1px 6px;">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </form>
-                {% endif %}
+                {% endif %}  
+            
             </div>
         </div>
         {% endfor %}
@@ -405,7 +392,7 @@
             No items in storage
             {% endif %}
         </p>
-        {% if is_admin_user %}
+        {% if user.is_authenticated %}
         <p style="font-size: 0.8rem; color: #9ca3af;">Click "New" to store an issue</p>
         <a href="{% url 'core:store_issue' %}" class="btn btn-primary btn-sm mt-2"
             style="font-size: 0.7rem; padding: 4px 14px;">

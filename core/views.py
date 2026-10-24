@@ -682,16 +682,14 @@ def toggle_public_issue(request, pk):
     return redirect(url)
 
 # Store Issue - Open Store Form (Anyone can access)
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def store_issue(request):
     """Open the store form page - Anyone can access"""
     return render(request, "core/store_form.html")
 
 
 # Submit Store Issue (Anyone can submit)
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def store_submit(request):
     """Submit an issue to storage - Anyone can submit"""
     if request.method == "POST":
@@ -745,6 +743,7 @@ def store_submit(request):
                     file_count=file_count,
                     status="Stored",
                     is_stored=True,
+                    created_by=request.user, 
                     stored_at=now,
                     created_at=now,
                     updated_at=now,
@@ -795,8 +794,10 @@ def storage_view(request):
     )
     stored_items = Contact.objects.filter(is_stored=True).order_by("-stored_at")
     if not is_admin_user:
-        stored_items = stored_items.filter(is_public=True)
-
+        stored_items = stored_items.filter(
+            models.Q(created_by=request.user) | 
+            models.Q(is_public=True)
+        )
     search_query = request.GET.get("search")
     if search_query:
         stored_items = stored_items.filter(
@@ -853,6 +854,11 @@ def storage_view(request):
 def storage_delete(request, pk):
     """Delete a stored item - ADMIN ONLY"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    
+    if not is_admin(request.user) and item.created_by != request.user:
+        messages.error(request, "🔒 You do not have permission to delete this item.")
+        return redirect("core:storage_view")
+    
     if request.method == "POST":
         current_page = int(request.POST.get("page", 1) or 1)
         current_search = request.POST.get("search", "").strip()
@@ -1125,10 +1131,12 @@ def stored_item_detail(request, pk):
 
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
 
-    # Non-admins can only open public stored items
-    if not is_admin_user and not item.is_public:
-        messages.error(request, "🔒 This item is private.")
-        return redirect("core:storage_view")
+
+    # Non-admins can only open their own items or public items
+    if not is_admin_user:
+        if not item.is_public and item.created_by != request.user:
+            messages.error(request, "🔒 This item is private.")
+            return redirect("core:storage_view")
 
     stored_files = StoredFile.objects.filter(contact=item)
 
@@ -1143,11 +1151,14 @@ def stored_item_detail(request, pk):
     )
 
 
-### Edit Stored Item - Admin Only
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def store_edit(request, pk):
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+
+    # ✅ NEW: Normal users can only edit their own items. Admins can edit any.
+    if not is_admin(request.user) and item.created_by != request.user:
+        messages.error(request, "🔒 You do not have permission to edit this item.")
+        return redirect("core:storage_view")
 
     # ✅ Get ALL files - BOTH old and new
     stored_files_qs = StoredFile.objects.filter(contact=item).order_by("id")
