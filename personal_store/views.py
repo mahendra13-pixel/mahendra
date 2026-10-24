@@ -108,19 +108,25 @@ def personal_store_submit(request):
                     updated_at=now,
                 )
 
-                # Upload each file to Telegram
+                # Upload each file to Telegram (per-file try/except for resilience)
                 for idx, file in enumerate(multiple_files):
                     slot_key = str(idx + 1)  # "1", "2", "3", ...
-                    info = upload_to_telegram(
-                        file,
-                        filename=sanitize_filename(file.name)
-                    )
-                    if info:
-                        item.set_telegram_file(slot_key, info)
-                    else:
+                    try:
+                        info = upload_to_telegram(
+                            file,
+                            filename=sanitize_filename(file.name)
+                        )
+                        if info:
+                            item.set_telegram_file(slot_key, info)
+                        else:
+                            messages.warning(
+                                request,
+                                f"⚠️ Could not upload '{file.name}' to Telegram."
+                            )
+                    except Exception as tg_err:
                         messages.warning(
                             request,
-                            f"⚠️ Could not upload '{file.name}' to Telegram."
+                            f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
                         )
 
                 item.file_count = len(multiple_files)
@@ -161,20 +167,11 @@ def toggle_completion(request, pk):
 def personal_storage_delete(request, pk):
     item = get_object_or_404(PersonalItem, pk=pk)
     if request.method == "POST":
-        # Delete all Telegram files attached to this item
-        tg_map = item.get_telegram_map()
-        for slot_key, info in tg_map.items():
-            if info and info.get('message_id'):
-                delete_telegram_message(info.get('message_id'))
-
-        # Delete associated legacy local files
-        for stored_file in item.stored_files.all():
-            stored_file.delete()
-
-        # Delete the item itself (calls custom delete method)
+        # item.delete() handles: TG messages + legacy StoredFile rows + media_file + DB row
         item.delete()
 
         messages.success(request, "✅ Item permanently deleted.")
+        
         # Preserve page + search
         page = request.POST.get("page", 1)
         search = request.POST.get("search", "").strip()
@@ -253,16 +250,22 @@ def personal_store_edit(request, pk):
                 slot_key = str(next_index)
                 next_index += 1
 
-                info = upload_to_telegram(
-                    file,
-                    filename=sanitize_filename(file.name)
-                )
-                if info:
-                    item.set_telegram_file(slot_key, info)
-                else:
+                try:
+                    info = upload_to_telegram(
+                        file,
+                        filename=sanitize_filename(file.name)
+                    )
+                    if info:
+                        item.set_telegram_file(slot_key, info)
+                    else:
+                        messages.warning(
+                            request,
+                            f"⚠️ Could not upload '{file.name}' to Telegram."
+                        )
+                except Exception as tg_err:
                     messages.warning(
                         request,
-                        f"⚠️ Could not upload '{file.name}' to Telegram."
+                        f"⚠️ '{file.name}' Telegram upload failed: {tg_err}"
                     )
 
             item.file_count = len(item.get_telegram_map())
@@ -318,33 +321,33 @@ def get_client_ip(request):
 
 @login_required(login_url="/admin/login/")
 @user_passes_test(is_admin)
-def personal_delete_file(request, pk, file_index):
+def personal_delete_file(request, pk, slot_key):
     """Delete a specific Telegram file from a personal store item."""
     item = get_object_or_404(PersonalItem, pk=pk)
     tg_map = item.get_telegram_map()
-    slot_keys = sorted(tg_map.keys(), key=lambda x: int(x) if x.isdigit() else 0)
 
-    if 0 <= file_index < len(slot_keys):
-        slot_key = slot_keys[file_index]
-        info = tg_map[slot_key]
-        file_name = info.get('file_name', 'file')
+    info = tg_map.get(slot_key)
+    if not info:
+        return JsonResponse({"status": "error", "message": "File not found"}, status=404)
 
-        # Delete the Telegram message
-        delete_telegram_message(info.get('message_id'))
+    file_name = info.get('file_name', 'file')
 
-        # Remove from map
-        item.remove_telegram_file(slot_key)
-        item.file_count = len(item.get_telegram_map())
-        item.is_multiple = item.file_count > 1
-        item.save()
+    # Delete the Telegram message
+    message_id = info.get('message_id')
+    if message_id:
+        delete_telegram_message(message_id)
 
-        return JsonResponse({
-            "status": "success",
-            "message": f"Deleted: {file_name}",
-            "file_count": item.file_count,
-        })
+    # Remove from map
+    item.remove_telegram_file(slot_key)
+    item.file_count = len(item.get_telegram_map())
+    item.is_multiple = item.file_count > 1
+    item.save()
 
-    return JsonResponse({"status": "error", "message": "File not found"}, status=404)
+    return JsonResponse({
+        "status": "success",
+        "message": f"Deleted: {file_name}",
+        "file_count": item.file_count,
+    })
 
 
 @login_required(login_url="/admin/login/")

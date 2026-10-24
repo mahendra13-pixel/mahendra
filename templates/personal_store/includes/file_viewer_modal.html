@@ -205,10 +205,10 @@
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                           document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 
-        // Determine endpoint based on context
-        let endpoint = '';
-        if (currentContactId) {
-            endpoint = `/personal/${currentContactId}/file/delete/${index}/`;
+        // Determine endpoint: per-file delete_url takes priority (Fix 3)
+        let endpoint = file.delete_url || '';
+        if (!endpoint && currentContactId) {
+            endpoint = `/personal/${currentContactId}/file/delete/${encodeURIComponent(file.slot_key ?? index)}/`;
         }
 
         // If no contact ID, fallback to UI-only deletion
@@ -362,7 +362,9 @@
                 files.push({
                     name: sf.file_name || sf.name || 'Unknown',
                     size: sf.file_size || sf.size || 0,
-                    url: sf.file.url || sf.url || '#'
+                    url: sf.file.url || sf.url || '#',
+                    delete_url: sf.delete_url || '',
+                    slot_key: sf.slot_key ?? null
                 });
             });
         }
