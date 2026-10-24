@@ -849,8 +849,7 @@ def storage_view(request):
 
 
 # Delete stored item (ADMIN ONLY)
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def storage_delete(request, pk):
     """Delete a stored item - ADMIN ONLY"""
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
@@ -1520,8 +1519,7 @@ def delete_stored_file(request, pk, file_index):
     return JsonResponse({"status": "error", "message": "File not found"}, status=404)
 
 
-@login_required(login_url="/admin/login/")
-@user_passes_test(is_admin)
+@login_required(login_url="/accounts/login/")
 def delete_stored_all_files(request, pk):
     """
     Delete ALL files from a stored item
@@ -1530,6 +1528,8 @@ def delete_stored_all_files(request, pk):
     - Deletes all Telegram files
     """
     item = get_object_or_404(Contact, pk=pk, is_stored=True)
+    if not is_admin(request.user) and not item.is_public and item.created_by != request.user:
+        return JsonResponse({"status": "error", "message": "Permission denied."}, status=403)
 
     # Delete all local StoredFile rows (signal cleans disk files)
     StoredFile.objects.filter(contact=item).order_by("id").delete()
