@@ -113,59 +113,35 @@
                         <div class="row">
                             <!-- Call Attended By -->
                             <div class="col-md-3 mb-2">
-                                <label for="call_attended_by" style="font-size: 0.7rem; font-weight: 600;">Call Attended
-                                    By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="call_attended_by" name="call_attended_by" multiple
-                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
-                                    <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.call_attended_by %}selected{% endif %}>Mahendra Kunwar</option>
-                                    <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.call_attended_by %}selected{% endif %}>Ram Kumar Badal</option>
-                                    <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.call_attended_by %}selected{% endif %}>Binaya Kunwar</option>
-                                    <option value="Subash Dahal" {% if "Subash Dahal" in contact.call_attended_by %}selected{% endif %}>Subash Dahal</option>
-                                    <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.call_attended_by %}selected{% endif %}>Ashish Adhikari</option>
-                                </select>
-                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <label for="call_attended_by" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Call Attended By</label>
+                                <input type="text" id="call_attended_by" name="call_attended_by" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;"
+                                    value="{{ contact.call_attended_by|default:'' }}" placeholder="Type name...">
                             </div>
 
                             <!-- Assigned To -->
                             <div class="col-md-3 mb-2">
-                                <label for="assigned_to" style="font-size: 0.7rem; font-weight: 600;">Assigned To <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="assigned_to" name="assigned_to" multiple
-                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
-                                    <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.assigned_to %}selected{% endif %}>Mahendra Kunwar</option>
-                                    <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.assigned_to %}selected{% endif %}>Ram Kumar Badal</option>
-                                    <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.assigned_to %}selected{% endif %}>Binaya Kunwar</option>
-                                    <option value="Subash Dahal" {% if "Subash Dahal" in contact.assigned_to %}selected{% endif %}>Subash Dahal</option>
-                                    <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.assigned_to %}selected{% endif %}>Ashish Adhikari</option>
-                                </select>
-                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <label for="assigned_to" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Assigned To</label>
+                                <input type="text" id="assigned_to" name="assigned_to" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;"
+                                    value="{{ contact.assigned_to|default:'' }}" placeholder="Type name...">
                             </div>
+
 
                             <!-- Handover To -->
                             <div class="col-md-3 mb-2">
-                                <label for="handover_to" style="font-size: 0.7rem; font-weight: 600;">Handover To <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="handover_to" name="handover_to" multiple
-                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
-                                    <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.handover_to %}selected{% endif %}>Mahendra Kunwar</option>
-                                    <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.handover_to %}selected{% endif %}>Ram Kumar Badal</option>
-                                    <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.handover_to %}selected{% endif %}>Binaya Kunwar</option>
-                                    <option value="Subash Dahal" {% if "Subash Dahal" in contact.handover_to %}selected{% endif %}>Subash Dahal</option>
-                                    <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.handover_to %}selected{% endif %}>Ashish Adhikari</option>
-                                </select>
-                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <label for="handover_to" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Handover To</label>
+                                <input type="text" id="handover_to" name="handover_to" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;"
+                                    value="{{ contact.handover_to|default:'' }}" placeholder="Type name...">
                             </div>
 
                             <!-- Solved By -->
                             <div class="col-md-3 mb-2">
-                                <label for="solved_by" style="font-size: 0.7rem; font-weight: 600;">Solved By <small style="font-weight:normal; color:#6b7280; font-size:0.6rem;">(Ctrl+Click)</small></label>
-                                <select id="solved_by" name="solved_by" multiple
-                                    style="height: auto; min-height: 32px; padding: 2px 6px; width: 100%; border: 1.5px solid #ced4da; border-radius: 6px; font-size: 0.75rem; background: #fff; color: #212529;">
-                                    <option value="Mahendra Kunwar" {% if "Mahendra Kunwar" in contact.solved_by %}selected{% endif %}>Mahendra Kunwar</option>
-                                    <option value="Ram Kumar Badal" {% if "Ram Kumar Badal" in contact.solved_by %}selected{% endif %}>Ram Kumar Badal</option>
-                                    <option value="Binaya Kunwar" {% if "Binaya Kunwar" in contact.solved_by %}selected{% endif %}>Binaya Kunwar</option>
-                                    <option value="Subash Dahal" {% if "Subash Dahal" in contact.solved_by %}selected{% endif %}>Subash Dahal</option>
-                                    <option value="Ashish Adhikari" {% if "Ashish Adhikari" in contact.solved_by %}selected{% endif %}>Ashish Adhikari</option>
-                                </select>
-                                <small class="text-muted" style="font-size: 0.55rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                <label for="solved_by" class="form-label" style="font-size: 0.7rem; font-weight: 600;">Solved By</label>
+                                <input type="text" id="solved_by" name="solved_by" class="form-control"
+                                    style="font-size: 0.75rem; padding: 4px 8px; min-height: 32px;"
+                                    value="{{ contact.solved_by|default:'' }}" placeholder="Type name...">
                             </div>
                         </div>
 
