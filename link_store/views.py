@@ -33,13 +33,7 @@ def link_store_view(request):
     # ---------- DELETE ----------
     if request.method == "POST" and "delete_id" in request.POST:
         card = get_object_or_404(LinkCard, pk=request.POST["delete_id"])
-
-        # Delete all Telegram files attached to this card
-        tg_map = card.get_telegram_map()
-        for slot_key, info in tg_map.items():
-            if info and info.get('message_id'):
-                delete_telegram_message(info.get('message_id'))
-
+        # card.delete() handles: TG messages + all 36 legacy FileFields + DB row
         card.delete()
         messages.success(request, "✅ Link card permanently deleted.")
         return redirect("link_store:storage_view")
@@ -90,23 +84,30 @@ def link_store_view(request):
                             delete_telegram_message(tg_map[slot_key].get('message_id'))
                             card.remove_telegram_file(slot_key)
 
-                        # UPLOAD NEW: replace old if any
+                        # UPLOAD NEW: replace old if any (per-file try/except for resilience)
                         if new_file:
-                            if slot_key in tg_map:
-                                delete_telegram_message(tg_map[slot_key].get('message_id'))
+                            try:
+                                # Re-fetch map (may have been mutated by clear above)
+                                tg_map = card.get_telegram_map()
+                                if slot_key in tg_map:
+                                    delete_telegram_message(tg_map[slot_key].get('message_id'))
 
-                            info = upload_to_telegram(
-                                new_file,
-                                filename=sanitize_filename(new_file.name)
-                            )
-                            if info:
-                                card.set_telegram_file(slot_key, info)
-                            else:
+                                info = upload_to_telegram(
+                                    new_file,
+                                    filename=sanitize_filename(new_file.name)
+                                )
+                                if info:
+                                    card.set_telegram_file(slot_key, info)
+                                else:
+                                    messages.warning(
+                                        request,
+                                        f"⚠️ Could not upload '{new_file.name}' to Telegram."
+                                    )
+                            except Exception as tg_err:
                                 messages.warning(
                                     request,
-                                    f"⚠️ Could not upload '{new_file.name}' to Telegram."
+                                    f"⚠️ '{new_file.name}' Telegram upload failed: {tg_err}"
                                 )
-
                 card.updated_at = timezone.localtime(timezone.now())
                 card.save()
                 messages.success(request, "✅ Link card saved successfully.")
@@ -190,7 +191,9 @@ def link_delete_file(request, pk, slot, suffix=''):
         return JsonResponse({"status": "error", "message": "No file found"}, status=404)
 
     # Delete the Telegram message (and its file)
-    delete_telegram_message(tg_map[slot_key].get('message_id'))
+    message_id = tg_map[slot_key].get('message_id')
+    if message_id:
+        delete_telegram_message(message_id)
 
     # Remove from the map
     card.remove_telegram_file(slot_key)
@@ -223,6 +226,8 @@ def serve_telegram_file(request, pk, slot_key):
         r = requests.get(url, timeout=60)
         if r.status_code != 200:
             raise Http404("Telegram returned an error")
+    except Http404:
+        raise
     except Exception:
         raise Http404("Could not fetch file from Telegram")
 
