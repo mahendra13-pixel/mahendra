@@ -134,7 +134,7 @@
                             style="font-size: 0.7rem; padding: 4px 14px;">
                             <i class="fas fa-arrow-left"></i> Back to Storage
                         </a>
-                        {% if is_admin_user %}
+                        {% if is_admin_user or item.created_by == request.user %}
                         <form method="POST" action="{% url 'core:storage_delete' item.id %}" style="display: inline;"
                             onsubmit="return confirm('Delete this stored item?');">
                             {% csrf_token %}
