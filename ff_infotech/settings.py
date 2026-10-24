@@ -56,7 +56,6 @@ EXTERNAL_APPS = [
     'core',
     'latest_export',
     'filemanager',
-    'visits',
     'recordings',
     'personal_store', 
     'ai',
@@ -74,7 +73,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'visits.middleware.VisitTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'ff_infotech.urls'

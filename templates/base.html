@@ -351,18 +351,7 @@
                     <a href="https://www.ezyzip.com/convert-folder-to-zip.html" target="_blank">
                         📦
                     </a>
-                    <!-- Visit Logs (admin only) -->
-                    {% if user.is_authenticated and user.is_staff %}
-                    <a href="{% url 'visits:visits_list' %}" class="icon-link" title="Visit Logs">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="brand-text">VISITS</span>
-                    </a>
-                    <a href="{% url 'visits:visits_list' %}" class="icon-link" title="Visit Logs">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="brand-text">VISITS</span>
-                    </a>
-                    {% endif %}
-
+                    
                     <span class="divider">|</span>
 
                     <!-- Notification Widget -->
