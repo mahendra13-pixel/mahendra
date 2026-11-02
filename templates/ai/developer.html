@@ -1,102 +1,390 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Developer — Mahendra Kunwar{% endblock %}
+{% block title %}Developer — {{ profile.name|default:"Portfolio" }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <div style="max-width: 720px; margin: 0 auto;">
+<div class="dev-wrap">
 
-        <!-- Profile card -->
-        <div
-            style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px 20px; text-align: center;">
-            <img src="{% static 'images/1.jpg' %}" alt="Mahendra Kunwar"
-                style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; margin-bottom: 16px;">
-            <h2 style="margin: 0 0 4px; font-size: 1.4rem;">Mahendra Kunwar</h2>
-            <p style="color: #6b7280; margin: 0 0 4px; font-size: 0.9rem;">
-                Python Developer · Full-Stack · IT Officer Assistant
-            </p>
-            <p style="color: #9ca3af; margin: 0 0 18px; font-size: 0.8rem;">
-                Grande International Hospital, Nepal
-            </p>
+    <!-- PROFILE -->
+    {% if profile %}
+    <div class="dev-card text-center">
+        {% if profile.photo_info %}
+        <img src="{% url 'ai:telegram_media' 'profile' profile.pk 'photo' %}"
+             alt="{{ profile.name }}" class="dev-avatar">
+        {% endif %}
+        <h2 class="dev-name">{{ profile.name }}</h2>
+        <p class="dev-headline">{{ profile.headline }}</p>
+        {% if profile.workplace %}<p class="dev-sub">{{ profile.workplace }}</p>{% endif %}
 
-            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                <a href="mailto:your-email@example.com" class="dev-btn">📧 Email</a>
-                <a href="https://wa.me/9779742386629" target="_blank" rel="noopener noreferrer" class="dev-btn">💬
-                    WhatsApp</a>
+        <!-- Contact buttons -->
+        <div class="dev-btn-row">
+            {% for c in contacts %}
+            <a href="{{ c.link }}" {% if c.kind != 'email' and c.kind != 'phone' %}target="_blank" rel="noopener noreferrer"{% endif %} class="dev-btn">{{ c.icon }} {{ c.text }}</a>
+            {% endfor %}
+        </div>
+
+        <!-- ✅ CV buttons — public, next to profile -->
+        {% if cv_info %}
+        <div class="dev-btn-row" style="margin-top: 8px;">
+            <a href="{% url 'ai:developer_cv' %}" target="_blank" rel="noopener noreferrer" class="dev-btn">👁 View CV</a>
+            <a href="{% url 'ai:developer_cv' %}?download=1" class="dev-btn">⬇ Download CV</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ABOUT -->
+    {% for a in about_sections %}
+    <div class="dev-card">
+        <h3 class="dev-h">{{ a.title }}</h3>
+        <div class="dev-row">
+            {% if a.photo_info %}
+            <img src="{% url 'ai:telegram_media' 'about' a.pk 'photo' %}"
+                 alt="{{ a.title }}" class="dev-thumb">
+            {% endif %}
+            <p class="dev-text">{{ a.content|linebreaksbr }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- EDUCATION -->
+    {% if education_list %}
+    <div class="dev-card">
+        <h3 class="dev-h">Education</h3>
+        {% for e in education_list %}
+        <div class="dev-item">
+            {% if e.photo_info %}
+            <img src="{% url 'ai:telegram_media' 'education' e.pk 'photo' %}"
+                 alt="{{ e.institution }}" class="dev-thumb-sm">
+            {% endif %}
+            <div>
+                <strong>{{ e.degree }}</strong>
+                <div class="dev-sub">{{ e.institution }}
+                    {% if e.start_year or e.end_year %}· {{ e.start_year }}{% if e.end_year %} – {{ e.end_year }}{% else %} – Present{% endif %}{% endif %}
+                </div>
+                {% if e.description %}<p class="dev-text mt-1 mb-0">{{ e.description|linebreaksbr }}</p>{% endif %}
             </div>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <!-- About -->
-        <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
-            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">About</h3>
-            <p style="color: #374151; line-height: 1.7; margin: 0; font-size: 0.9rem;">
-                BSc CSIT graduate and Python developer with 6 months of experience building full-stack web
-                applications. Currently working as IT Officer Assistant at Grande International Hospital.
-                Passionate about clean code, backend architecture, and delivering practical software that solves
-                real problems. This issue solver is one of my primary projects — designed to streamline IT
-                support workflows inside the hospital.
-            </p>
+    <!-- ✅ HORIZONTAL STRIP GALLERY (single row, ◀ ▶ buttons, click to enlarge) -->
+    {% if slides %}
+    <div class="dev-card">
+        <h3 class="dev-h">Gallery</h3>
+        <div class="hstrip-wrap">
+            <button type="button" class="hstrip-btn hstrip-prev" aria-label="Scroll left"
+                    onclick="hstripScroll('hstripSlides', -1)">‹</button>
+            <div class="hstrip" id="hstripSlides">
+                {% for s in slides %}
+                {% if s.image_info %}
+                <div class="hstrip-item"
+                     data-full="{% url 'ai:telegram_media' 'slide' s.pk 'image' %}"
+                     data-title="{{ s.title|default:'' }}"
+                     data-caption="{{ s.caption|default:'' }}"
+                     onclick="openLightbox(this)">
+                    <img src="{% url 'ai:telegram_media' 'slide' s.pk 'image' %}"
+                         alt="{{ s.title }}" class="hstrip-img">
+                    {% if s.title or s.caption %}
+                    <div class="hstrip-caption">
+                        {% if s.title %}<div class="hstrip-title">{{ s.title }}</div>{% endif %}
+                        {% if s.caption %}<div class="hstrip-sub">{{ s.caption }}</div>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <button type="button" class="hstrip-btn hstrip-next" aria-label="Scroll right"
+                    onclick="hstripScroll('hstripSlides', 1)">›</button>
         </div>
+    </div>
+    {% endif %}
 
-        <!-- Qualifications & Experience -->
-        <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
-            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">Qualifications & Experience</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 0.9rem; line-height: 1.8;">
-                <li><strong>BSc CSIT</strong> — Bachelor of Science in Computer Science and Information Technology
-                </li>
-                <li><strong>Python Developer</strong> — 6 months of hands-on experience</li>
-                <li><strong>IT Officer Assistant</strong> — Grande International Hospital (current)</li>
-                <li><strong>Full-Stack Web Development</strong> — Django, React, Bootstrap</li>
-            </ul>
-        </div>
-
-        <!-- Skills -->
-        <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px;">
-            <h3 style="font-size: 1.05rem; margin: 0 0 12px;">Skills</h3>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <span class="tech-tag">Python</span>
-                <span class="tech-tag">Django</span>
-                <span class="tech-tag">HTML</span>
-                <span class="tech-tag">CSS</span>
-                <span class="tech-tag">JavaScript</span>
-                <span class="tech-tag">React</span>
-                <span class="tech-tag">Bootstrap</span>
-                <span class="tech-tag">SQLite</span>
-                <span class="tech-tag">Git</span>
+    <!-- WORK EXPERIENCE -->
+    {% if experiences %}
+    <div class="dev-card">
+        <h3 class="dev-h">Work Experience</h3>
+        {% for w in experiences %}
+        <div class="dev-item">
+            {% if w.photo_info %}
+            <img src="{% url 'ai:telegram_media' 'experience' w.pk 'photo' %}"
+                 alt="{{ w.organization }}" class="dev-thumb-sm">
+            {% endif %}
+            <div>
+                <strong>{{ w.role }}</strong>
+                <div class="dev-sub">{{ w.organization }} · {{ w.start_date }} – {% if w.end_date %}{{ w.end_date }}{% else %}Present{% endif %}</div>
+                {% if w.points %}
+                <ul class="dev-text mt-1 mb-0">
+                    {% for p in w.points %}<li>{{ p }}</li>{% endfor %}
+                </ul>
+                {% endif %}
             </div>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- SKILLS -->
+    {% if skills_by_category %}
+    <div class="dev-card">
+        <h3 class="dev-h">Skills</h3>
+        {% for category, skills in skills_by_category.items %}
+        <div class="mb-3">
+            <div class="dev-sub mb-2"><strong>{{ category }}</strong></div>
+            <div class="dev-tags">
+                {% for s in skills %}
+                    {% if s.level %}
+                    <div class="dev-skillbar">
+                        <div class="d-flex justify-content-between"><span>{{ s.name }}</span><span>{{ s.level }}%</span></div>
+                        <div class="dev-bar"><div style="width: {{ s.level }}%"></div></div>
+                    </div>
+                    {% else %}
+                    <span class="tech-tag">{{ s.name }}</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- OTHER LINKS -->
+    {% if links %}
+    <div class="dev-card">
+        <h3 class="dev-h">Links</h3>
+        {% for l in links %}
+        <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="dev-item dev-link">
+            {% if l.image_info %}
+            <img src="{% url 'ai:telegram_media' 'link' l.pk 'image' %}"
+                 alt="{{ l.title }}" class="dev-thumb-sm">
+            {% endif %}
+            <div>
+                <strong>{{ l.title }}</strong>
+                {% if l.description %}<div class="dev-sub">{{ l.description }}</div>{% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- CONTACT -->
+    {% if contacts %}
+    <div class="dev-card">
+        <h3 class="dev-h">Contact</h3>
+        <ul class="dev-text dev-contact-list">
+            {% for c in contacts %}
+            <li>{{ c.icon }} <strong>{{ c.text }}:</strong>
+                <a href="{{ c.link }}" {% if c.kind != 'email' and c.kind != 'phone' %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ c.value }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+</div>
+</div>
+
+<!-- ✅ Lightbox overlay -->
+<div id="devLightbox" class="dev-lightbox" onclick="closeLightbox(event)">
+    <span class="dev-lightbox-close" onclick="closeLightbox(event, true)">×</span>
+    <div class="dev-lightbox-inner" onclick="event.stopPropagation()">
+        <img id="devLightboxImg" src="" alt="">
+        <div id="devLightboxTitle" class="dev-lightbox-title"></div>
+        <div id="devLightboxCaption" class="dev-lightbox-caption"></div>
     </div>
 </div>
 
 <style>
-    .dev-btn {
-        display: inline-block;
-        padding: 8px 16px;
+    .dev-wrap { max-width: 720px; margin: 0 auto; }
+    .dev-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 16px; }
+    .dev-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; margin-bottom: 16px; }
+    .dev-name { margin: 0 0 4px; font-size: 1.4rem; }
+    .dev-headline { color: #6b7280; margin: 0 0 4px; font-size: 0.9rem; }
+    .dev-sub { color: #6b7280; font-size: 0.82rem; }
+    .dev-h { font-size: 1.05rem; margin: 0 0 12px; }
+    .dev-text { color: #374151; line-height: 1.7; font-size: 0.9rem; margin: 0; }
+    .dev-row { display: flex; gap: 16px; align-items: flex-start; }
+    .dev-thumb { width: 110px; height: 110px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+    .dev-thumb-sm { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .dev-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
+    .dev-item:last-child { border-bottom: 0; }
+    .dev-link { text-decoration: none; color: inherit; }
+    .dev-link:hover strong { color: #1d4ed8; }
+    .dev-btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .dev-btn { display: inline-block; padding: 8px 16px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+        border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: all .15s ease; }
+    .dev-btn:hover { background: #dbeafe; }
+    .dev-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tech-tag { padding: 4px 12px; background: #f3f4f6; border-radius: 20px; font-size: 0.75rem; color: #374151; font-weight: 600; }
+    .dev-skillbar { width: 100%; font-size: 0.8rem; color: #374151; }
+    .dev-bar { height: 6px; background: #e5e7eb; border-radius: 6px; overflow: hidden; margin-top: 3px; }
+    .dev-bar div { height: 100%; background: #3b82f6; }
+    .dev-contact-list { list-style: none; padding: 0; }
+    .dev-contact-list li { padding: 4px 0; }
+
+    /* ✅ Horizontal strip gallery */
+    .hstrip-wrap { position: relative; display: flex; align-items: center; gap: 6px; }
+    .hstrip {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        padding: 4px 2px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .hstrip::-webkit-scrollbar { display: none; }
+    .hstrip-item {
+        flex: 0 0 auto;
+        width: 140px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f3f4f6;
+        position: relative;
+        cursor: pointer;
+    }
+    .hstrip-item:hover .hstrip-img { opacity: 0.9; }
+    .hstrip-img {
+        width: 140px;
+        height: 100px;
+        object-fit: cover;
+        display: block;
+        transition: opacity .15s ease;
+    }
+    .hstrip-caption {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,.55);
+        color: #fff;
+        padding: 3px 6px;
+        font-size: 0.65rem;
+        line-height: 1.2;
+    }
+    .hstrip-title { font-weight: 700; }
+    .hstrip-sub { opacity: 0.85; }
+    .hstrip-btn {
+        flex: 0 0 auto;
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        border: 1px solid #bfdbfe;
         background: #eff6ff;
         color: #1d4ed8;
-        border: 1px solid #bfdbfe;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .15s ease;
+    }
+    .hstrip-btn:hover { background: #dbeafe; }
+    .hstrip-btn:active { transform: scale(0.95); }
+
+    /* ✅ Lightbox */
+    .dev-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.85);
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .dev-lightbox.active { display: flex; }
+    .dev-lightbox-inner {
+        max-width: 95vw;
+        max-height: 95vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .dev-lightbox-inner img {
+        max-width: 95vw;
+        max-height: 80vh;
+        object-fit: contain;
         border-radius: 8px;
-        text-decoration: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        background: #111;
+    }
+    .dev-lightbox-title {
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        text-align: center;
+    }
+    .dev-lightbox-caption {
+        color: #d1d5db;
         font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.15s ease;
+        text-align: center;
+        max-width: 80vw;
     }
-
-    .dev-btn:hover {
-        background: #dbeafe;
+    .dev-lightbox-close {
+        position: absolute;
+        top: 14px; right: 20px;
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 700;
+        cursor: pointer;
+        line-height: 1;
+        background: rgba(0, 0, 0, 0.4);
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+    .dev-lightbox-close:hover { background: rgba(255, 255, 255, 0.2); }
 
-    .tech-tag {
-        padding: 4px 12px;
-        background: #f3f4f6;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        color: #374151;
-        font-weight: 600;
+    @media (max-width: 576px) {
+        .dev-row { flex-direction: column; }
+        .hstrip-item { width: 110px; }
+        .hstrip-img { width: 110px; height: 80px; }
+        .dev-lightbox-inner img { max-height: 70vh; }
     }
 </style>
+
+<script>
+    function hstripScroll(id, dir) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.scrollBy({ left: dir * (140 * 3 + 16), behavior: 'smooth' });
+    }
+
+    function openLightbox(el) {
+        var img = document.getElementById('devLightboxImg');
+        var title = document.getElementById('devLightboxTitle');
+        var caption = document.getElementById('devLightboxCaption');
+        var box = document.getElementById('devLightbox');
+
+        img.src = el.getAttribute('data-full') || '';
+        title.textContent = el.getAttribute('data-title') || '';
+        caption.textContent = el.getAttribute('data-caption') || '';
+        title.style.display = title.textContent ? 'block' : 'none';
+        caption.style.display = caption.textContent ? 'block' : 'none';
+
+        box.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(e, force) {
+        if (e && !force && e.target.id !== 'devLightbox') return;
+        var box = document.getElementById('devLightbox');
+        box.classList.remove('active');
+        document.getElementById('devLightboxImg').src = '';
+        document.body.style.overflow = '';
+    }
+
+    // Close with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLightbox(null, true);
+    });
+</script>
 {% endblock %}
