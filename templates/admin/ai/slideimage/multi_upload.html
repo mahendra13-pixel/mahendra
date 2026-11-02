@@ -1,0 +1,56 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='ai' %}">Ai</a>
+    &rsaquo; <a href="{% url 'admin:ai_slideimage_changelist' %}">Slide images</a>
+    &rsaquo; Multi Upload
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <fieldset class="module aligned">
+            <h2>Upload multiple slides</h2>
+
+            <div class="form-row">
+                <label for="images" class="required">Select images:</label>
+                <input type="file" id="images" name="images" multiple required accept="image/*">
+                <div class="help">
+                    Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple.
+                    Files upload in the order you select them.
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="title_prefix">Title prefix:</label>
+                <input type="text" id="title_prefix" name="title_prefix"
+                       placeholder="e.g. Slide" maxlength="150">
+                <div class="help">Each file becomes "&lt;prefix&gt; 1", "&lt;prefix&gt; 2", ...</div>
+            </div>
+
+            <div class="form-row">
+                <label for="caption">Caption (all):</label>
+                <input type="text" id="caption" name="caption"
+                       placeholder="Optional caption for all slides" maxlength="250">
+            </div>
+
+            <div class="form-row">
+                <label for="is_active">Active:</label>
+                <input type="checkbox" id="is_active" name="is_active" checked>
+                <div class="help">Uncheck to hide all uploaded slides from the gallery.</div>
+            </div>
+        </fieldset>
+
+        <div class="submit-row">
+            <input type="submit" value="Upload slides" class="default">
+            <a href="{% url 'admin:ai_slideimage_changelist' %}" class="closelink">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

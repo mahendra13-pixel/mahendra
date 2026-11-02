@@ -1,3 +1,5 @@
+from django.urls import path
+from django.shortcuts import redirect, render
 import json
 from django.contrib import admin, messages
 from django.core.files.storage import default_storage
@@ -335,6 +337,9 @@ class WorkExperienceAdmin(admin.ModelAdmin):
 # ============================================================
 # ✅ SlideImage
 # ============================================================
+# ============================================================
+# ✅ SlideImage — single upload + MULTI upload
+# ============================================================
 @admin.register(SlideImage)
 class SlideImageAdmin(admin.ModelAdmin):
     list_display = ("__str__", "order", "is_active")
@@ -343,7 +348,9 @@ class SlideImageAdmin(admin.ModelAdmin):
         (None, {"fields": ("title", "caption", "order", "is_active")}),
         ("Image (Telegram)", {"fields": ("upload_image", "delete_image")}),
     )
+    change_list_template = "admin/ai/slideimage/change_list.html"
 
+    # ---- Single-upload (existing) ----
     def save_model(self, request, obj, form, change):
         tmp_names = []
         try:
@@ -366,6 +373,101 @@ class SlideImageAdmin(admin.ModelAdmin):
             ])
             for n in tmp_names:
                 _cleanup_temp_file(n)
+
+    # ---- Multi-upload ----
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path(
+                "multi-upload/",
+                self.admin_site.admin_view(self.multi_upload_view),
+                name="ai_slideimage_multi_upload",
+            ),
+        ]
+        return custom + urls
+
+    def multi_upload_view(self, request):
+        from django.contrib import messages
+        from filemanager.telegram_storage import upload_to_telegram
+        from filemanager.utils import sanitize_filename
+
+        if request.method == "POST":
+            files = request.FILES.getlist("images")
+            title_prefix = (request.POST.get("title_prefix") or "").strip()
+            caption = (request.POST.get("caption") or "").strip()
+            is_active = request.POST.get("is_active") == "on"
+
+            if not files:
+                messages.error(request, "No files selected.")
+                return redirect(".")
+
+            # Start order after current max
+            max_order = (
+                SlideImage.objects.order_by("-order")
+                .values_list("order", flat=True)
+                .first()
+                or 0
+            )
+
+            created = 0
+            failed = 0
+
+            for idx, uploaded in enumerate(files, start=1):
+                title = f"{title_prefix} {idx}".strip() if title_prefix else ""
+
+                slide = SlideImage.objects.create(
+                    title=title,
+                    caption=caption,
+                    order=max_order + idx,
+                    is_active=is_active,
+                )
+
+                try:
+                    uploaded.seek(0)
+                except Exception:
+                    pass
+
+                try:
+                    info = upload_to_telegram(
+                        uploaded,
+                        filename=sanitize_filename(uploaded.name),
+                    )
+                except Exception as e:
+                    info = None
+                    messages.warning(
+                        request, f"⚠️ '{uploaded.name}' upload failed: {e}"
+                    )
+
+                if info:
+                    slide.set_telegram_file("image", info)
+                    slide.save(update_fields=["image_telegram_files"])
+                    created += 1
+                else:
+                    slide.delete()
+                    failed += 1
+                    messages.warning(
+                        request,
+                        f"⚠️ '{uploaded.name}' returned no info — row removed.",
+                    )
+
+            if created:
+                messages.success(
+                    request, f"✅ {created} slide(s) uploaded successfully."
+                )
+            if failed:
+                messages.warning(request, f"⚠️ {failed} slide(s) failed.")
+
+            return redirect("..")
+
+        return render(
+            request,
+            "admin/ai/slideimage/multi_upload.html",
+            {
+                "title": "Multi Upload Slides",
+                "opts": self.model._meta,
+                "has_view_permission": True,
+            },
+        )
 
 
 # ============================================================
