@@ -71,3 +71,5 @@ db.sqlite3
 !/static/images/**/*.png
 !/static/images/**/*.gif
 !/static/images/**/*.ico
+
+all_commits.txt
