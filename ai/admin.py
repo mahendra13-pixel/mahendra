@@ -1,5 +1,6 @@
 import json
 from django.contrib import admin, messages
+from django.core.files.storage import default_storage
 
 from filemanager.telegram_storage import upload_to_telegram, delete_telegram_message
 from filemanager.utils import sanitize_filename
@@ -17,13 +18,29 @@ def _push_to_telegram(request, obj, slot, upload_field, delete_field, label="Fil
     """
     Handles upload / replace / delete for one Telegram slot.
     Uses the model's mixin map (get_telegram_map / set_telegram_file).
+    Reads the actual uploaded file from request.FILES (not the DB path),
+    so it never crashes on a stale/missing file path in production.
     """
-    new_file = getattr(obj, upload_field)
     do_delete = getattr(obj, delete_field)
     existing = obj.get_telegram_map().get(slot)
+    uploaded = request.FILES.get(upload_field)
 
-    # 1) Delete or replace
-    if (do_delete or new_file) and existing:
+    # Nothing uploaded this save → just clear stale DB field and return
+    if not uploaded:
+        setattr(obj, upload_field, None)
+        setattr(obj, delete_field, False)
+
+        if do_delete and existing:
+            if existing.get("message_id"):
+                try:
+                    delete_telegram_message(existing["message_id"])
+                except Exception:
+                    pass
+            obj.remove_telegram_file(slot)
+        return
+
+    # 1) Delete or replace existing
+    if existing:
         if existing.get("message_id"):
             try:
                 delete_telegram_message(existing["message_id"])
@@ -32,21 +49,20 @@ def _push_to_telegram(request, obj, slot, upload_field, delete_field, label="Fil
         obj.remove_telegram_file(slot)
 
     # 2) Upload
-    if new_file:
-        if new_file.size > 20 * 1024 * 1024:
-            messages.error(request, f"{label} '{new_file.name}' exceeds 20 MB.")
-        else:
-            try:
-                info = upload_to_telegram(
-                    new_file, filename=sanitize_filename(new_file.name)
-                )
-                if info:
-                    obj.set_telegram_file(slot, info)
-                    messages.success(request, f"✅ {label} uploaded to Telegram.")
-                else:
-                    messages.warning(request, f"⚠️ {label} upload returned no info.")
-            except Exception as e:
-                messages.warning(request, f"⚠️ {label} upload failed: {e}")
+    if uploaded.size > 20 * 1024 * 1024:
+        messages.error(request, f"{label} '{uploaded.name}' exceeds 20 MB.")
+    else:
+        try:
+            info = upload_to_telegram(
+                uploaded, filename=sanitize_filename(uploaded.name)
+            )
+            if info:
+                obj.set_telegram_file(slot, info)
+                messages.success(request, f"✅ {label} uploaded to Telegram.")
+            else:
+                messages.warning(request, f"⚠️ {label} upload returned no info.")
+        except Exception as e:
+            messages.warning(request, f"⚠️ {label} upload failed: {e}")
 
     # 3) Clear widget fields
     setattr(obj, upload_field, None)
@@ -57,12 +73,26 @@ def _push_to_telegram(request, obj, slot, upload_field, delete_field, label="Fil
 # ✅ CV helper — uses the CV-specific map (cv_telegram_files)
 # ============================================================
 def _push_cv_to_telegram(request, obj):
-    cv_file = getattr(obj, "upload_cv", None)
     del_cv = getattr(obj, "delete_cv", False)
     existing_cv = obj.get_cv_telegram_map().get("cv")
+    uploaded = request.FILES.get("upload_cv")
 
-    # 1) Delete or replace
-    if (del_cv or cv_file) and existing_cv:
+    # Nothing uploaded this save → just clear stale DB field and return
+    if not uploaded:
+        obj.upload_cv = None
+        obj.delete_cv = False
+
+        if del_cv and existing_cv:
+            if existing_cv.get("message_id"):
+                try:
+                    delete_telegram_message(existing_cv["message_id"])
+                except Exception:
+                    pass
+            obj.remove_cv_telegram_file("cv")
+        return
+
+    # 1) Delete or replace existing
+    if existing_cv:
         if existing_cv.get("message_id"):
             try:
                 delete_telegram_message(existing_cv["message_id"])
@@ -71,25 +101,47 @@ def _push_cv_to_telegram(request, obj):
         obj.remove_cv_telegram_file("cv")
 
     # 2) Upload
-    if cv_file:
-        if cv_file.size > 20 * 1024 * 1024:
-            messages.error(request, f"CV '{cv_file.name}' exceeds 20 MB.")
-        else:
-            try:
-                info = upload_to_telegram(
-                    cv_file, filename=sanitize_filename(cv_file.name)
-                )
-                if info:
-                    obj.set_cv_telegram_file("cv", info)
-                    messages.success(request, "✅ CV uploaded to Telegram.")
-                else:
-                    messages.warning(request, "⚠️ CV upload returned no info.")
-            except Exception as e:
-                messages.warning(request, f"⚠️ CV upload failed: {e}")
+    if uploaded.size > 20 * 1024 * 1024:
+        messages.error(request, f"CV '{uploaded.name}' exceeds 20 MB.")
+    else:
+        try:
+            info = upload_to_telegram(
+                uploaded, filename=sanitize_filename(uploaded.name)
+            )
+            if info:
+                obj.set_cv_telegram_file("cv", info)
+                messages.success(request, "✅ CV uploaded to Telegram.")
+            else:
+                messages.warning(request, "⚠️ CV upload returned no info.")
+        except Exception as e:
+            messages.warning(request, f"⚠️ CV upload failed: {e}")
 
     # 3) Clear widget fields
     obj.upload_cv = None
     obj.delete_cv = False
+
+
+def _cleanup_temp_file(name):
+    """Best-effort delete of a temp upload file from disk."""
+    if not name:
+        return
+    try:
+        default_storage.delete(name)
+    except Exception:
+        pass
+
+
+def _safe_finalize(obj, update_fields):
+    """
+    Bulletproof DB clear of widget fields — never raises.
+    Called from every save_model's finally block.
+    """
+    try:
+        obj.save(update_fields=update_fields)
+    except Exception:
+        # Never mask the original error; the admin view will still
+        # show the real exception if super().save_model failed.
+        pass
 
 
 # ============================================================
@@ -127,23 +179,38 @@ class DeveloperProfileAdmin(admin.ModelAdmin):
         return f"{info.get('file_name', 'cv')} ({size_kb:.1f} KB)"
 
     def save_model(self, request, obj, form, change):
-        # 1) Save base object
-        super().save_model(request, obj, form, change)
+        tmp_names = []
 
-        # 2) Profile photo (mixin map)
-        _push_to_telegram(
-            request, obj,
-            slot="photo",
-            upload_field="upload_photo",
-            delete_field="delete_photo",
-            label="Profile photo",
-        )
+        try:
+            super().save_model(request, obj, form, change)
 
-        # 3) CV (its OWN map)
-        _push_cv_to_telegram(request, obj)
+            # Capture what Django wrote to disk
+            if obj.upload_photo:
+                tmp_names.append(obj.upload_photo.name)
+            if obj.upload_cv:
+                tmp_names.append(obj.upload_cv.name)
 
-        # 4) Persist both maps
-        obj.save(update_fields=["photo_telegram_files", "cv_telegram_files"])
+            _push_to_telegram(
+                request, obj,
+                slot="photo",
+                upload_field="upload_photo",
+                delete_field="delete_photo",
+                label="Profile photo",
+            )
+            _push_cv_to_telegram(request, obj)
+        finally:
+            # Always clear widget fields in DB
+            obj.upload_photo = None
+            obj.delete_photo = False
+            obj.upload_cv = None
+            obj.delete_cv = False
+            _safe_finalize(obj, [
+                "photo_telegram_files", "cv_telegram_files",
+                "upload_photo", "delete_photo", "upload_cv", "delete_cv",
+            ])
+            # Cleanup leaked temp files
+            for n in tmp_names:
+                _cleanup_temp_file(n)
 
 
 # ============================================================
@@ -159,15 +226,27 @@ class AboutSectionAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        _push_to_telegram(
-            request, obj,
-            slot="photo",
-            upload_field="upload_photo",
-            delete_field="delete_photo",
-            label="Photo",
-        )
-        obj.save(update_fields=["photo_telegram_files"])
+        tmp_names = []
+        try:
+            super().save_model(request, obj, form, change)
+            if obj.upload_photo:
+                tmp_names.append(obj.upload_photo.name)
+
+            _push_to_telegram(
+                request, obj,
+                slot="photo",
+                upload_field="upload_photo",
+                delete_field="delete_photo",
+                label="Photo",
+            )
+        finally:
+            obj.upload_photo = None
+            obj.delete_photo = False
+            _safe_finalize(obj, [
+                "photo_telegram_files", "upload_photo", "delete_photo",
+            ])
+            for n in tmp_names:
+                _cleanup_temp_file(n)
 
 
 # ============================================================
@@ -184,15 +263,27 @@ class EducationAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        _push_to_telegram(
-            request, obj,
-            slot="photo",
-            upload_field="upload_photo",
-            delete_field="delete_photo",
-            label="Photo",
-        )
-        obj.save(update_fields=["photo_telegram_files"])
+        tmp_names = []
+        try:
+            super().save_model(request, obj, form, change)
+            if obj.upload_photo:
+                tmp_names.append(obj.upload_photo.name)
+
+            _push_to_telegram(
+                request, obj,
+                slot="photo",
+                upload_field="upload_photo",
+                delete_field="delete_photo",
+                label="Photo",
+            )
+        finally:
+            obj.upload_photo = None
+            obj.delete_photo = False
+            _safe_finalize(obj, [
+                "photo_telegram_files", "upload_photo", "delete_photo",
+            ])
+            for n in tmp_names:
+                _cleanup_temp_file(n)
 
 
 # ============================================================
@@ -218,15 +309,27 @@ class WorkExperienceAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        _push_to_telegram(
-            request, obj,
-            slot="photo",
-            upload_field="upload_photo",
-            delete_field="delete_photo",
-            label="Photo",
-        )
-        obj.save(update_fields=["photo_telegram_files"])
+        tmp_names = []
+        try:
+            super().save_model(request, obj, form, change)
+            if obj.upload_photo:
+                tmp_names.append(obj.upload_photo.name)
+
+            _push_to_telegram(
+                request, obj,
+                slot="photo",
+                upload_field="upload_photo",
+                delete_field="delete_photo",
+                label="Photo",
+            )
+        finally:
+            obj.upload_photo = None
+            obj.delete_photo = False
+            _safe_finalize(obj, [
+                "photo_telegram_files", "upload_photo", "delete_photo",
+            ])
+            for n in tmp_names:
+                _cleanup_temp_file(n)
 
 
 # ============================================================
@@ -242,15 +345,27 @@ class SlideImageAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        _push_to_telegram(
-            request, obj,
-            slot="image",
-            upload_field="upload_image",
-            delete_field="delete_image",
-            label="Image",
-        )
-        obj.save(update_fields=["image_telegram_files"])
+        tmp_names = []
+        try:
+            super().save_model(request, obj, form, change)
+            if obj.upload_image:
+                tmp_names.append(obj.upload_image.name)
+
+            _push_to_telegram(
+                request, obj,
+                slot="image",
+                upload_field="upload_image",
+                delete_field="delete_image",
+                label="Image",
+            )
+        finally:
+            obj.upload_image = None
+            obj.delete_image = False
+            _safe_finalize(obj, [
+                "image_telegram_files", "upload_image", "delete_image",
+            ])
+            for n in tmp_names:
+                _cleanup_temp_file(n)
 
 
 # ============================================================
@@ -266,15 +381,27 @@ class UsefulLinkAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        _push_to_telegram(
-            request, obj,
-            slot="image",
-            upload_field="upload_image",
-            delete_field="delete_image",
-            label="Image",
-        )
-        obj.save(update_fields=["image_telegram_files"])
+        tmp_names = []
+        try:
+            super().save_model(request, obj, form, change)
+            if obj.upload_image:
+                tmp_names.append(obj.upload_image.name)
+
+            _push_to_telegram(
+                request, obj,
+                slot="image",
+                upload_field="upload_image",
+                delete_field="delete_image",
+                label="Image",
+            )
+        finally:
+            obj.upload_image = None
+            obj.delete_image = False
+            _safe_finalize(obj, [
+                "image_telegram_files", "upload_image", "delete_image",
+            ])
+            for n in tmp_names:
+                _cleanup_temp_file(n)
 
 
 # ============================================================
