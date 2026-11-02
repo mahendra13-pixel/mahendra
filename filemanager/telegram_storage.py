@@ -13,15 +13,27 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 def upload_to_telegram(file_obj, filename=None):
     """Upload file to Telegram. Returns dict with file_id/message_id, or None."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print(
+            f"[telegram] MISSING CONFIG — "
+            f"TOKEN={'set' if TELEGRAM_BOT_TOKEN else 'EMPTY'}, "
+            f"CHAT_ID={'set' if TELEGRAM_CHAT_ID else 'EMPTY'}"
+        )
         return None
 
     if not filename:
         filename = getattr(file_obj, 'name', 'file')
 
     try:
+        file_obj.seek(0)
+    except Exception:
+        pass
+
+    try:
         files = {'document': (filename, file_obj)}
         data = {'chat_id': TELEGRAM_CHAT_ID}
         r = requests.post(f"{TELEGRAM_API}/sendDocument", data=data, files=files, timeout=60)
+        print(f"[telegram] HTTP status: {r.status_code}")
+        print(f"[telegram] response: {r.text[:500]}")
         res = r.json()
 
         if not res.get('ok'):
@@ -39,6 +51,8 @@ def upload_to_telegram(file_obj, filename=None):
             'message_id': res['result']['message_id'],
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print("Telegram upload exception:", e)
         return None
 
