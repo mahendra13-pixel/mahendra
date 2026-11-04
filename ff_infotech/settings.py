@@ -56,7 +56,6 @@ EXTERNAL_APPS = [
     'core',
     'latest_export',
     'filemanager',
-    'recordings',
     'personal_store', 
     'ai',
     'link_store',
