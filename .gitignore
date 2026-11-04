@@ -21,7 +21,7 @@ db.sqlite3-journal
 /staticfiles/
 /media/
 
-# ---------- Media / images (never in git) ----------
+# ---------- Uploads / media (never in git) ----------
 media/
 *.mp4
 *.MP4
@@ -30,21 +30,6 @@ media/
 *.mkv
 *.webm
 *.pdf
-*.png
-*.PNG
-*.jpg
-*.JPG
-*.jpeg
-*.JPEG
-*.gif
-*.GIF
-*.ico
-*.ICO
-*.webp
-*.WEBP
-*.svg
-*.SVG
-*.webmanifest
 
 # ---------- IDE / OS ----------
 .vscode/
