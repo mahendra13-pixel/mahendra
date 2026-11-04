@@ -1,4 +1,4 @@
-﻿# Python
+﻿# ---------- Python ----------
 __pycache__/
 *.py[cod]
 *.class
@@ -11,22 +11,17 @@ env.bak/
 venv.bak/
 *.log
 
-# Django
+# ---------- Django ----------
 *.log
 *.pot
 *.pyc
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/static/*
-!/static/images
-/static/images/*
-!/static/images/
-!/static/images/**
 /staticfiles/
 /media/
 
-# Media files (stored locally, not in git)
+# ---------- Media / images (never in git) ----------
 media/
 *.mp4
 *.MP4
@@ -36,17 +31,22 @@ media/
 *.webm
 *.pdf
 *.png
+*.PNG
 *.jpg
+*.JPG
 *.jpeg
+*.JPEG
 *.gif
+*.GIF
 *.ico
+*.ICO
+*.webp
+*.WEBP
+*.svg
+*.SVG
 *.webmanifest
 
-# Static assets (keep locally)
-staticfiles/images/
-staticfiles/admin/js/vendor/
-
-# IDE
+# ---------- IDE / OS ----------
 .vscode/
 .idea/
 *.swp
@@ -54,22 +54,24 @@ staticfiles/admin/js/vendor/
 *~
 .DS_Store
 
-# Environment
+# ---------- Environment / secrets ----------
 .env
 .env.local
 .env.*.local
 
-# Backup files
+# ---------- Backup files ----------
 *.bak
 *.backup
 *.corrupted.*
-db.sqlite3
 
-# Allow website source images
-!/static/images/**/*.jpg
-!/static/images/**/*.jpeg
-!/static/images/**/*.png
-!/static/images/**/*.gif
-!/static/images/**/*.ico
+# ---------- Test / lint artifacts ----------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+htmlcov/
+.coverage
+.coverage.*
 
+# ---------- Stray logs ----------
 all_commits.txt
