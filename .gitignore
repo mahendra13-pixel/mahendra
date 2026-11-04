@@ -60,3 +60,4 @@ htmlcov/
 
 # ---------- Stray logs ----------
 all_commits.txt
+commits.txt
